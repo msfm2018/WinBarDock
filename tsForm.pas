@@ -35,8 +35,8 @@ implementation
 {$R *.dfm}
 
 const
-  VisHeight: Integer = 9; // Â¶Í·¸ß¶È
-  snapValue: Integer = 40; // Îü¸½¾àÀë
+  VisHeight: Integer = 9; // éœ²å¤´é«˜åº¦
+  snapValue: Integer = 40; // å¸é™„è·ç¦»
   img_width = 72;
 
   Original_HeightWidth = 134; // 110; // 144;
@@ -68,7 +68,7 @@ VAR
   arr_split: TArray<string>;
   exe_split: TArray<string>;
 begin
-  // ctrl+b   ÆÁÄ»¿ìÕÕ
+  // ctrl+b   å±å¹•å¿«ç…§
   if FindAtom('ZWXhotKey') = 0 then
   begin
     FShowkeyid := GlobalAddAtom('ZWXhotKey');
@@ -81,13 +81,13 @@ begin
   myinifile := Tinifile.Create(Filename);
 
   var bgv:=myinifile.ReadString('config', 'bg', 'bg');
-    bg.Picture.LoadFromFile('img\'+bgv+'.png');
-
+   // bg.Picture.LoadFromFile('img\'+bgv+'.png');
+ bg.Picture.LoadFromFile(ExtractFilePath(Paramstr(0))+'img\'+bgv+'.png');
 
 
   pic_Num := myinifile.ReadInteger('config', 'count', 0);
 
-  setlength(img_arr_position, pic_Num + 1); // ÒòÎª0¿ªÊ¼ ËùÒÔ+1
+  setlength(img_arr_position, pic_Num + 1); // å› ä¸º0å¼€å§‹ æ‰€ä»¥+1
 
   setlength(img_arr, pic_Num);
   for I := 1 to pic_Num do
@@ -99,7 +99,7 @@ begin
     var
     imgv := myinifile.ReadString('config', i.ToString, '1');
     arr_split := imgv.Split([';']);
-    img_arr[i].Hint := arr_split[1]; // ¿ÉÖ´ĞĞÎÄ¼ş
+    img_arr[i].Hint := arr_split[1]; // å¯æ‰§è¡Œæ–‡ä»¶
     img_arr[i].Picture.LoadFromFile('img\' + arr_split[0] + '.png');
     img_arr[i].Stretch := true;
     img_arr[i].Parent := self;
@@ -162,7 +162,7 @@ begin
   end
   else if Top < snapValue then
     Top := 0;
-  Invalidate; // ¾¹È»ÄÚ´æĞ¹Â©
+  Invalidate; // ç«Ÿç„¶å†…å­˜æ³„æ¼
 
   if DwmCompositionEnabled then
   else
@@ -283,8 +283,8 @@ end;
 procedure tform1.move_windows(h: thandle);
 begin
 
-  ReleaseCapture; // ÊÍ·ÅÊó±ê¿ØÖÆÇøÓò
-  SendMessage(h, WM_SYSCOMMAND, SC_MOVE + HTCaption, 0); // ·¢ËÍÒÆ¶¯±êÌâÀ¸ÏûÏ¢
+  ReleaseCapture; // é‡Šæ”¾é¼ æ ‡æ§åˆ¶åŒºåŸŸ
+  SendMessage(h, WM_SYSCOMMAND, SC_MOVE + HTCaption, 0); // å‘é€ç§»åŠ¨æ ‡é¢˜æ æ¶ˆæ¯
 
 end;
 
