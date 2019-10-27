@@ -100,7 +100,7 @@ begin
     imgv := myinifile.ReadString('config', i.ToString, '1');
     arr_split := imgv.Split([';']);
     img_arr[i].Hint := arr_split[1]; // 可执行文件
-    img_arr[i].Picture.LoadFromFile('img\' + arr_split[0] + '.png');
+    img_arr[i].Picture.LoadFromFile(ExtractFilePath(Paramstr(0))+'img\' + arr_split[0] + '.png');
     img_arr[i].Stretch := true;
     img_arr[i].Parent := self;
     img_arr[i].OnMouseMove := Image111MouseMove;
