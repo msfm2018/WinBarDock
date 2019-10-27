@@ -162,7 +162,7 @@ begin
   end
   else if Top < snapValue then
     Top := 0;
-  Invalidate; // 竟然内存泄漏
+  Invalidate; 
 
   if DwmCompositionEnabled then
   else
@@ -175,7 +175,7 @@ begin
     end;
   end;
 
-  //inherited;
+
 end;
 
 procedure TForm1.FormShow(Sender: TObject);
