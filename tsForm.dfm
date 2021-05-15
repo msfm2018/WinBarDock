@@ -15,16 +15,16 @@ object Form1: TForm1
   GlassFrame.Enabled = True
   GlassFrame.SheetOfGlass = True
   OldCreateOrder = False
+  PopupMenu = PopupMenu1
   Position = poDesigned
   Scaled = False
-  OnCreate = FormCreate
+  OnClose = FormClose
   OnDestroy = FormDestroy
   OnMouseDown = FormMouseDown
-  OnPaint = FormPaint
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 12
-  object bg: TImage
+  object img_bg: TImage
     Left = 0
     Top = 0
     Width = 144
@@ -32,8 +32,30 @@ object Form1: TForm1
     Align = alClient
     Stretch = True
     Transparent = True
+    OnMouseMove = img_bgMouseMove
     ExplicitLeft = 208
     ExplicitWidth = 976
     ExplicitHeight = 104
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 64
+    Top = 16
+    object N1: TMenuItem
+      Caption = #35774#32622
+      OnClick = N1Click
+    end
+    object N2: TMenuItem
+      Caption = #24555#25463#24212#29992
+      OnClick = N2Click
+    end
+    object exit1: TMenuItem
+      Caption = 'exit'
+      OnClick = exit1Click
+    end
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    Left = 104
+    Top = 16
   end
 end

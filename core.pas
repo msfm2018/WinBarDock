@@ -5,7 +5,7 @@ interface
 uses shellapi, Wininet, classes, winapi.windows, Graphics, SysUtils,
   UrlMon, Tlhelp32, messages, CoreDB, Registry, aclapi,
   AccCtrl, forms,
-  vcl.controls, shlobj, ComObj, activex, u_debug, WindowsSysVersion,
+  vcl.controls, shlobj, ComObj, activex,  WindowsSysVersion,
   System.Generics.Collections;
 
 type

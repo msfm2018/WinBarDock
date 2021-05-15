@@ -1,16 +1,19 @@
 program tsFm;
 
 uses
-  Forms, windows,
-  tsForm in 'tsForm.pas' {Form1};
+  Forms,
+  windows,
+  tsForm in 'tsForm.pas' {Form1},
+  cfgForm in 'cfgForm.pas' {mycfg};
 
 {$R *.res}
 
 begin
-//ReportMemoryLeaksOnShutdown:=    DebugHook<>0;
+
   Application.Initialize;
   Application.MainFormOnTaskbar := False;
   Application.CreateForm(TForm1, Form1);
+
   Application.Run;
 
 end.

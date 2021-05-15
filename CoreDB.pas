@@ -2,7 +2,8 @@ unit CoreDB;
 
 interface
 
-uses SysUtils, SQLiteTable3, Classes;
+uses
+  SysUtils, SQLiteTable3, Classes, system.Generics.Collections;
 
 type
   // datArr=array of array of Variant;
@@ -11,7 +12,6 @@ type
 
   TDestTopDB = class(tbasedb)
   public
-
     constructor Create();
     destructor destroy; override;
     function CheckExists(FileName: string): Boolean;
@@ -20,7 +20,6 @@ type
     function DeleteRecord(FileName: string): Boolean;
     function DeleteAll(): Boolean;
     function UpdateRecord(Path, Rename: string): Boolean;
-
     function UpdateSearchUrl(url: string): Boolean;
     function GetSearchUrl: string;
     function UpdateToolbar(inx: Integer; url, hint: string): Boolean;
@@ -32,7 +31,6 @@ type
     function GetString(ValName: string): string;
     function GetInteger(ValName: string): Integer;
     function GetBoolean(ValName: string; ADefault: Boolean = false): Boolean;
-
     procedure SetVarValue(ValName: string; val: Variant);
     procedure SetValue(ValName: string; val: string); overload;
     procedure SetValue(ValName: string; val: Integer); overload;
@@ -40,6 +38,24 @@ type
     procedure SetValue(ValName: string; val: Double); overload;
     procedure DeleteValue(ValName: string);
     function GetKeys(AKey: string): string;
+  public
+    constructor Create();
+    destructor destroy; override;
+  end;
+
+  TfilesDB = class(tbasedb)
+  public
+    function GetString(ValName: string): string;
+    function GetInteger(ValName: string): Integer;
+    function GetBoolean(ValName: string; ADefault: Boolean = false): Boolean;
+    procedure SetVarValue(ValName: string; val: Variant);
+    procedure SetValue(ValName: string; val: string); overload;
+    procedure SetValue(ValName: string; val: Integer); overload;
+    procedure SetValue(ValName: string; val: Boolean); overload;
+    procedure SetValue(ValName: string; val: Double); overload;
+    procedure DeleteValue(ValName: string);
+    function GetKeys(): tlist<string>;
+    procedure clean;
   public
     constructor Create();
     destructor destroy; override;
@@ -65,12 +81,14 @@ type
   tgdb = record
     syspara: TBasProfileDB;
     DestTopDB: TDestTopDB;
+    filesDB: TfilesDB;
     engdb: TEnglishDb;
   end;
 
 implementation
 
-uses core;
+uses
+  core;
 
 var
   sldb: TSQLiteDatabase;
@@ -81,8 +99,7 @@ function TDestTopDB.CheckExists(FileName: string): Boolean;
 var
   SQLTemp: string;
 begin
-  SQLTemp := 'Select 1 ' + ' From DestTop ' + ' Where Path=' +
-    Quotedstr(FileName);
+  SQLTemp := 'Select 1 ' + ' From DestTop ' + ' Where Path=' + Quotedstr(FileName);
 
   if sldb.GetTableString(SQLTemp) <> '' then
     Result := false
@@ -126,51 +143,39 @@ begin
     ssql := 'CREATE TABLE toolbar ([ID] INTEGER PRIMARY KEY,idx integer,url varchar(200),hint varchar(200) )';
     sldb.execsql(ssql);
     sldb.execsql('CREATE INDEX toolbarIndx ON [toolbar]([idx]);');
-  ss := Format('Insert Into toolbar(idx,url,hint) Values(1,''%s'',''%s'')',
-      ['', '']);
+    ss := Format('Insert Into toolbar(idx,url,hint) Values(1,''%s'',''%s'')', ['', '']);
     sldb.execsql(ss);
     /// /////////////
-    ss := Format('Insert Into toolbar(idx,url,hint) Values(2,''%s'',''%s'')',
-      ['', '']);
+    ss := Format('Insert Into toolbar(idx,url,hint) Values(2,''%s'',''%s'')', ['', '']);
     sldb.execsql(ss);
     /// /////////////
-    ss := Format('Insert Into toolbar(idx,url,hint) Values(3,''%s'',''%s'')',
-      ['', '']);
+    ss := Format('Insert Into toolbar(idx,url,hint) Values(3,''%s'',''%s'')', ['', '']);
     sldb.execsql(ss);
     /// /////////////
-    ss := Format('Insert Into toolbar(idx,url,hint) Values(4,''%s'',''%s'')',
-      ['', '']);
+    ss := Format('Insert Into toolbar(idx,url,hint) Values(4,''%s'',''%s'')', ['', '']);
     sldb.execsql(ss);
     /// /////////////
-    ss := Format('Insert Into toolbar(idx,url,hint) Values(5,''%s'',''%s'')',
-      ['', '']);
+    ss := Format('Insert Into toolbar(idx,url,hint) Values(5,''%s'',''%s'')', ['', '']);
     sldb.execsql(ss);
     /// /////////////
-    ss := Format('Insert Into toolbar(idx,url,hint) Values(6,''%s'',''%s'')',
-      ['', '']);
+    ss := Format('Insert Into toolbar(idx,url,hint) Values(6,''%s'',''%s'')', ['', '']);
     sldb.execsql(ss);
     /// /////////////
-    ss := Format('Insert Into toolbar(idx,url,hint) Values(7,''%s'',''%s'')',
-      ['', '']);
+    ss := Format('Insert Into toolbar(idx,url,hint) Values(7,''%s'',''%s'')', ['', '']);
     sldb.execsql(ss);
     /// /////////////
-    ss := Format('Insert Into toolbar(idx,url,hint) Values(8,''%s'',''%s'')',
-      ['', '']);
+    ss := Format('Insert Into toolbar(idx,url,hint) Values(8,''%s'',''%s'')', ['', '']);
     sldb.execsql(ss);
     /// /////////////
-    ss := Format('Insert Into toolbar(idx,url,hint) Values(9,''%s'',''%s'')',
-      ['', '']);
+    ss := Format('Insert Into toolbar(idx,url,hint) Values(9,''%s'',''%s'')', ['', '']);
     sldb.execsql(ss);
 
-        ss := Format('Insert Into toolbar(idx,url,hint) Values(10,''%s'',''%s'')',
-      ['', '']);
+    ss := Format('Insert Into toolbar(idx,url,hint) Values(10,''%s'',''%s'')', ['', '']);
     sldb.execsql(ss);
 
-        ss := Format('Insert Into toolbar(idx,url,hint) Values(11,''%s'',''%s'')',
-      ['', '']);
+    ss := Format('Insert Into toolbar(idx,url,hint) Values(11,''%s'',''%s'')', ['', '']);
     sldb.execsql(ss);
-        ss := Format('Insert Into toolbar(idx,url,hint) Values(12,''%s'',''%s'')',
-      ['', '']);
+    ss := Format('Insert Into toolbar(idx,url,hint) Values(12,''%s'',''%s'')', ['', '']);
     sldb.execsql(ss);
   end;
 end;
@@ -181,8 +186,7 @@ var
 begin
 
   Result := True;
-  SQLTemp := Format('Insert Into DestTop(path,FileName) Values(''%s'',''%s'')',
-    [Path, FileName]);
+  SQLTemp := Format('Insert Into DestTop(path,FileName) Values(''%s'',''%s'')', [Path, FileName]);
   try
     sldb.BeginTransaction;
     sldb.execsql(SQLTemp);
@@ -205,11 +209,9 @@ begin
   Result := TStringList.Create;
   sltb.MoveFirst;
   if sltb.Count > 0 then
-
     while not sltb.EOF do
     begin
-      Result.Add(sltb.FieldAsString(sltb.FieldIndex['FileName']) + ',' +
-        sltb.FieldAsString(sltb.FieldIndex['path']));
+      Result.Add(sltb.FieldAsString(sltb.FieldIndex['FileName']) + ',' + sltb.FieldAsString(sltb.FieldIndex['path']));
       sltb.Next;
     end;
 end;
@@ -247,8 +249,7 @@ function TDestTopDB.UpdateRecord(Path, Rename: string): Boolean;
 var
   SQL: string;
 begin
-  SQL := 'update DestTop' + ' Set FileName =' + Quotedstr(Rename) +
-    ' Where  path=' + Quotedstr(Path);
+  SQL := 'update DestTop' + ' Set FileName =' + Quotedstr(Rename) + ' Where  path=' + Quotedstr(Path);
   try
     sldb.BeginTransaction;
     sldb.execsql(SQL);
@@ -271,8 +272,7 @@ begin
 
     sltb.MoveFirst;
     if sltb.Count > 0 then
-      Result := sltb.FieldAsString(sltb.FieldIndex['url']) + '^' +
-        sltb.FieldAsString(sltb.FieldIndex['hint']);
+      Result := sltb.FieldAsString(sltb.FieldIndex['url']) + '^' + sltb.FieldAsString(sltb.FieldIndex['hint']);
   except
 
   end;
@@ -282,8 +282,7 @@ function TDestTopDB.UpdateToolbar(inx: Integer; url, hint: string): Boolean;
 var
   SQL: string;
 begin
-  SQL := 'update toolbar' + ' Set url =' + Quotedstr(url) + ',  hint =' +
-    Quotedstr(hint) + ' Where  idx=' + IntToStr(inx);
+  SQL := 'update toolbar' + ' Set url =' + Quotedstr(url) + ',  hint =' + Quotedstr(hint) + ' Where  idx=' + IntToStr(inx);
   try
     sldb.BeginTransaction;
     sldb.execsql(SQL);
@@ -306,7 +305,6 @@ begin
 
   sltb.MoveFirst;
   if sltb.Count > 0 then
-
     Result := (sltb.FieldAsString(sltb.FieldIndex['url']));
 
 end;
@@ -330,9 +328,7 @@ constructor TBasProfileDB.Create;
 var
   FInitSQL: string;
 begin
-  FInitSQL := 'Create Table SysProfile(ID Integer Primary Key, ' +
-    'ValKey varchar(50) COLLATE NOCASE, Value varchar(400) COLLATE NOCASE);' +
-    'Create Index idx_SysProfile_ValKey On SysProfile(ValKey)';
+  FInitSQL := 'Create Table SysProfile(ID Integer Primary Key, ' + 'ValKey varchar(50) COLLATE NOCASE, Value varchar(400) COLLATE NOCASE);' + 'Create Index idx_SysProfile_ValKey On SysProfile(ValKey)';
 
   if not sldb.TableExists('SysProfile') then
   begin
@@ -359,26 +355,24 @@ begin
   r := GetString(ValName);
   if r = '' then
     exit;
-  Result :=UpperCase( r )<> 'FALSE';
+  Result := UpperCase(r) <> 'FALSE';
 
 end;
 
-
-
 function TBasProfileDB.GetInteger(ValName: string): Integer;
-
 var
   r: string;
 begin
   Result := -1;
   r := GetString(ValName);
-    Result := Trunc(StrToFloat(r));
+  if r='' then  result:=0 else
+
+  Result := Trunc(StrToFloat(r));
 end;
 
 function TBasProfileDB.GetKeys(AKey: string): string;
 begin
-  sltb := sldb.GetTable('Select ValKey from SysProfile where ValKey like ''' +
-    AKey + '%'' order by ID asc');
+  sltb := sldb.GetTable('Select ValKey from SysProfile where ValKey like ''' + AKey + '%'' order by ID asc');
 
   sltb.MoveFirst;
   if sltb.Count > 0 then
@@ -387,15 +381,14 @@ end;
 
 function TBasProfileDB.GetString(ValName: string): string;
 var
- sltb : TSQLiteTable;
+  sltb: TSQLiteTable;
 begin
-  sltb := sldb.GetTable('select Value from SysProfile where ValKey=''' +
-    ValName + '''');
+  sltb := sldb.GetTable('select Value from SysProfile where ValKey=''' + ValName + '''');
   sltb.MoveFirst;
   if sltb.Count > 0 then
     Result := (sltb.FieldAsString(sltb.FieldIndex['Value']));
-  if sltb<>nil then
-           FreeAndNil(sltb);
+  if sltb <> nil then
+    FreeAndNil(sltb);
 end;
 
 procedure TBasProfileDB.SetValue(ValName: string; val: Integer);
@@ -420,29 +413,23 @@ end;
 
 procedure TBasProfileDB.SetVarValue(ValName: string; val: Variant);
 var
-
   SQL: string;
   c: Integer;
 begin
   try
 
-    sltb := sldb.GetTable
-      (Format('select count(*) as co from SysProfile where ValKey=''%s''',
-      [ValName]));
+    sltb := sldb.GetTable(Format('select count(*) as co from SysProfile where ValKey=''%s''', [ValName]));
 
     sltb.MoveFirst;
     if sltb.Count > 0 then
       c := (sltb.FieldAsInteger(sltb.FieldIndex['co']));
     if c = 0 then
     begin
-      SQL := Format
-        ('Insert Into SysProfile(ValKey, Value) Values(''%s'', ''%s'')',
-        [ValName, val])
+      SQL := Format('Insert Into SysProfile(ValKey, Value) Values(''%s'', ''%s'')', [ValName, val])
     end
     else
     begin
-      SQL := Format('update SysProfile Set Value=''%s'' where ValKey=''%s''',
-        [val, ValName]);
+      SQL := Format('update SysProfile Set Value=''%s'' where ValKey=''%s''', [val, ValName]);
 
     end;
     try
@@ -465,9 +452,7 @@ constructor TEnglishDb.Create;
 var
   FInitSQL: string;
 begin
-  FInitSQL := 'Create Table engdb(ID Integer Primary Key, ' +
-    'ValKey varchar(50) COLLATE NOCASE, Value varchar(400) COLLATE NOCASE);' +
-    'Create Index idx_engdb_ValKey On SysProfile(ValKey)';
+  FInitSQL := 'Create Table engdb(ID Integer Primary Key, ' + 'ValKey varchar(50) COLLATE NOCASE, Value varchar(400) COLLATE NOCASE);' + 'Create Index idx_engdb_ValKey On SysProfile(ValKey)';
 
   if not sldb.TableExists('engdb') then
   begin
@@ -498,21 +483,18 @@ begin
 
 end;
 
-
 function TEnglishDb.GetInteger(ValName: string): Integer;
-
 var
   r: string;
 begin
   Result := -1;
   r := GetString(ValName);
-    Result := Trunc(StrToFloat(r));
+  Result := Trunc(StrToFloat(r));
 end;
 
 function TEnglishDb.GetKeys(AKey: string): string;
 begin
-  sltb := sldb.GetTable('Select ValKey from engdb where ValKey like ''' + AKey +
-    '%'' order by ID asc');
+  sltb := sldb.GetTable('Select ValKey from engdb where ValKey like ''' + AKey + '%'' order by ID asc');
 
   sltb.MoveFirst;
   if sltb.Count > 0 then
@@ -521,8 +503,7 @@ end;
 
 function TEnglishDb.GetString(ValName: string): string;
 begin
-  sltb := sldb.GetTable('select Value from engdb where ValKey=''' +
-    ValName + '''');
+  sltb := sldb.GetTable('select Value from engdb where ValKey=''' + ValName + '''');
 
   sltb.MoveFirst;
   if sltb.Count > 0 then
@@ -552,28 +533,161 @@ end;
 
 procedure TEnglishDb.SetVarValue(ValName: string; val: Variant);
 var
-
   SQL: string;
   c: Integer;
 begin
   try
 
-    sltb := sldb.GetTable
-      (Format('select count(*) as co from engdb where ValKey=''%s''',
-      [ValName]));
+    sltb := sldb.GetTable(Format('select count(*) as co from engdb where ValKey=''%s''', [ValName]));
 
     sltb.MoveFirst;
     if sltb.Count > 0 then
       c := (sltb.FieldAsInteger(sltb.FieldIndex['co']));
     if c = 0 then
     begin
-      SQL := Format('Insert Into engdb(ValKey, Value) Values(''%s'', ''%s'')',
-        [ValName, val])
+      SQL := Format('Insert Into engdb(ValKey, Value) Values(''%s'', ''%s'')', [ValName, val])
     end
     else
     begin
-      SQL := Format('update engdb Set Value=''%s'' where ValKey=''%s''',
-        [val, ValName]);
+      SQL := Format('update engdb Set Value=''%s'' where ValKey=''%s''', [val, ValName]);
+
+    end;
+    try
+      sldb.BeginTransaction;
+      sldb.execsql(SQL);
+      sldb.Commit;
+    except
+      sldb.RollBack;
+    end;
+
+  finally
+
+  end;
+
+end;
+
+{ TfilesDB }
+
+//constructor TfilesDB.Create;
+//begin
+//
+//end;
+
+constructor TfilesDB.Create;
+var
+  FInitSQL: string;            //SysProfile
+begin
+  FInitSQL := 'Create Table filesdb(ID Integer Primary Key, ' + 'ValKey varchar(50) COLLATE NOCASE, Value varchar(400) COLLATE NOCASE);' + 'Create Index idx_SysProfile_ValKey On SysProfile(ValKey)';
+
+  if not sldb.TableExists('filesdb') then
+  begin
+    sldb.execsql(FInitSQL);
+  end;
+end;
+
+procedure TfilesDB.DeleteValue(ValName: string);
+begin
+  sldb.execsql('delete from filesdb where ValKey=''' + ValName + '''');
+end;
+
+procedure TfilesDB.clean();
+begin
+  sldb.execsql('delete from filesdb ');
+end;
+
+destructor TfilesDB.destroy;
+begin
+
+  inherited;
+end;
+
+function TfilesDB.GetBoolean(ValName: string; ADefault: Boolean): Boolean;
+var
+  r: string;
+begin
+  Result := ADefault;
+  r := GetString(ValName);
+  if r = '' then
+    exit;
+  Result := UpperCase(r) <> 'FALSE';
+
+end;
+
+function TfilesDB.GetInteger(ValName: string): Integer;
+var
+  r: string;
+begin
+  Result := -1;
+  r := GetString(ValName);
+  Result := Trunc(StrToFloat(r));
+end;
+
+function TfilesDB.GetKeys(): tlist<string>;
+var
+  sltb: TSQLiteTable;
+begin
+  sltb := sldb.GetTable('Select ValKey from filesdb ');
+  result := TList<string>.Create;
+  while not sltb.EOF do
+  begin
+    result.Add(sltb.FieldAsString(sltb.FieldIndex['ValKey']));
+    sltb.Next;
+  end;
+  if sltb <> nil then
+    FreeAndNil(sltb);
+end;
+
+function TfilesDB.GetString(ValName: string): string;
+var
+  sltb: TSQLiteTable;
+begin
+  sltb := sldb.GetTable('select Value from filesdb where ValKey=''' + ValName + '''');
+  sltb.MoveFirst;
+  if sltb.Count > 0 then
+    Result := (sltb.FieldAsString(sltb.FieldIndex['Value']));
+  if sltb <> nil then
+    FreeAndNil(sltb);
+end;
+
+procedure TfilesDB.SetValue(ValName: string; val: Integer);
+begin
+  SetVarValue(ValName, val);
+end;
+
+procedure TfilesDB.SetValue(ValName, val: string);
+begin
+  SetVarValue(ValName, val);
+end;
+
+procedure TfilesDB.SetValue(ValName: string; val: Double);
+begin
+  SetVarValue(ValName, val);
+end;
+
+procedure TfilesDB.SetValue(ValName: string; val: Boolean);
+begin
+  SetVarValue(ValName, val);
+end;
+
+procedure TfilesDB.SetVarValue(ValName: string; val: Variant);
+var
+  SQL: string;
+  c: Integer;
+begin
+  try
+
+    sltb := sldb.GetTable(Format('select count(*) as co from filesdb where ValKey=''%s''', [ValName]));
+
+    sltb.MoveFirst;
+    if sltb.Count > 0 then
+      c := (sltb.FieldAsInteger(sltb.FieldIndex['co']));
+    if c = 0 then
+    begin
+      SQL := Format('Insert Into filesdb(ValKey, Value) Values(''%s'', ''%s'')', [ValName, val])
+    end
+    else
+    begin
+      SQL := Format('update filesdb Set Value=''%s'' where ValKey=''%s''', [val, ValName]);
 
     end;
     try
@@ -592,20 +706,25 @@ end;
 
 initialization
 //
-if sldb = nil then
-  sldb := TSQLiteDatabase.Create(ExtractFilepath(ParamStr(0)) + 'DestTopdb.db');
-if g_core.db.DestTopDB = nil then
-  g_core.db.DestTopDB := TDestTopDB.Create;
-if g_core.db.syspara = nil then
-  g_core.db.syspara := TBasProfileDB.Create;
+  if sldb = nil then
+    sldb := TSQLiteDatabase.Create(ExtractFilepath(ParamStr(0)) + 'DestTopdb.db');
+  if g_core.db.DestTopDB = nil then
+    g_core.db.DestTopDB := TDestTopDB.Create;
+  if g_core.db.syspara = nil then
+    g_core.db.syspara := TBasProfileDB.Create;
+
+  if g_core.db.filesDB = nil then
+    g_core.db.filesDB := TfilesDB.Create;
 
 
 finalization
+  if g_core.db.DestTopDB <> nil then
+    FreeAndNil(g_core.db.DestTopDB);
+  if g_core.db.syspara <> nil then
+    FreeAndNil(g_core.db.syspara);
 
-if g_core.db.DestTopDB <> nil then
-  FreeAndNil(g_core.db.DestTopDB);
-if g_core.db.syspara <> nil then
-  FreeAndNil(g_core.db.syspara);
-
+  if g_core.db.filesDB <> nil then
+    FreeAndNil(g_core.db.filesDB);
 
 end.
+
