@@ -48,8 +48,8 @@ implementation
 {$R *.dfm}
 
 const
-  VisHeight: Integer = 9; // Â¶Í·¸ß¶È
-  top_snap_gap: Integer = 40; // Îü¸½¾àÀë
+  VisHeight: Integer = 9; // éœ²å¤´é«˜åº¦
+  top_snap_gap: Integer = 40; // å¸é™„è·ç¦»
 
   img_width = 64;
   img_height = 64;
@@ -64,10 +64,10 @@ var
   img_arr: array of timage;
 
 var
-//Êó±ê×ó¼üÒÑµã»÷
+//é¼ æ ‡å·¦é”®å·²ç‚¹å‡»
   mouse_left_clicking: Boolean = false;
 
-//  Ö´ĞĞÖĞ
+//  æ‰§è¡Œä¸­
   launcher_ing: Boolean = false;
   previous_y: Integer = 0;
   previous_x: Integer = 0;
@@ -90,7 +90,7 @@ var
   I: Integer;
 begin
   app_cfging := False;
-  // ctrl+b   ¶¨Òå¿ì½İ¼ü
+  // ctrl+b   å®šä¹‰å¿«æ·é”®
   if FindAtom('xxyyzz_hot') = 0 then
   begin
     FShowkeyid := GlobalAddAtom('xxyyzz_hot');
@@ -188,7 +188,7 @@ begin
   if not PtInRect(self.BoundsRect, lp) then
   begin
 
-//    ¸´Ô­°´Å¥Ô­Ê¼³ß´ç
+//    å¤åŸæŒ‰é’®åŸå§‹å°ºå¯¸
     for I := 0 to btns_count - 1 do
     begin
       img_arr[I].Left := img_arr_position[I];
@@ -196,7 +196,7 @@ begin
       img_arr[I].height := img_height;
     end;
 
-//    Îü¸½×ÀÃæ¶¥¶Ë
+//    å¸é™„æ¡Œé¢é¡¶ç«¯
     if Top < top_snap_gap then
     begin
       Top := -(Height - VisHeight) - 5;
@@ -221,6 +221,7 @@ end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
+  timer1.Interval:=100;
   snap_top_windows();
 end;
 
@@ -258,7 +259,7 @@ begin
   if app_cfging then
     Exit;
 
-//    µã»÷ÊÂ¼ş
+//    ç‚¹å‡»äº‹ä»¶
   if (ssleft in Shift) and (mouse_left_clicking) then
   begin
 
@@ -275,7 +276,7 @@ begin
   end
   else
   begin
-//  ÒÆ¶¯ÊÂ¼ş
+//  ç§»åŠ¨äº‹ä»¶
     var lp: tpoint;
     var I: Integer;
     GetCursorPos(lp);
@@ -350,8 +351,8 @@ end;
 procedure tform1.move_windows(h: thandle);
 begin
 
-  ReleaseCapture; // ÊÍ·ÅÊó±ê¿ØÖÆÇøÓò
-  SendMessage(h, WM_SYSCOMMAND, SC_MOVE + HTCaption, 0); // ·¢ËÍÒÆ¶¯±êÌâÀ¸ÏûÏ¢
+  ReleaseCapture; // é‡Šæ”¾é¼ æ ‡æ§åˆ¶åŒºåŸŸ
+  SendMessage(h, WM_SYSCOMMAND, SC_MOVE + HTCaption, 0); // å‘é€ç§»åŠ¨æ ‡é¢˜æ æ¶ˆæ¯
 
 end;
 
@@ -366,7 +367,7 @@ end;
 
 procedure TForm1.N2Click(Sender: TObject);
 begin
-  var cc := inputbox('ctrl+b ¿ì½İ¼ü', '¿ì½İ¼üÓ¦ÓÃ³ÌĞòÍêÕûÂ·¾¶', '');
+  var cc := inputbox('ctrl+b å¿«æ·é”®', 'å¿«æ·é”®åº”ç”¨ç¨‹åºå®Œæ•´è·¯å¾„', '');
   if cc.trim <> '' then
   begin
     Shortcut_key := cc;
