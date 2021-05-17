@@ -48,12 +48,13 @@ implementation
 {$R *.dfm}
 
 const
-  VisHeight: Integer = 9; // éœ²å¤´é«˜åº¦
-  top_snap_gap: Integer = 40; // å¸é™„è·ç¦»
+  VisHeight: Integer = 9; // Â¶Í·¸ß¶È
+  top_snap_gap: Integer = 40; // Îü¸½¾àÀë
+
 
   img_width = 64;
   img_height = 64;
-  img_gap = 20;
+  img_gap = 30;
   zoom_factor = 101.82 * 3; // sqrt(img_width*img_width+ img_height*img_height)=101.8...
 //        zoom_factor=50.91*3;
 
@@ -64,13 +65,14 @@ var
   img_arr: array of timage;
 
 var
-//é¼ æ ‡å·¦é”®å·²ç‚¹å‡»
+//Êó±ê×ó¼üÒÑµã»÷
   mouse_left_clicking: Boolean = false;
 
-//  æ‰§è¡Œä¸­
+//  Ö´ĞĞÖĞ
   launcher_ing: Boolean = false;
   previous_y: Integer = 0;
   previous_x: Integer = 0;
+  final_width: Integer;
 
 procedure to_launcher(n: string);
 begin
@@ -90,7 +92,7 @@ var
   I: Integer;
 begin
   app_cfging := False;
-  // ctrl+b   å®šä¹‰å¿«æ·é”®
+  // ctrl+b   ¶¨Òå¿ì½İ¼ü
   if FindAtom('xxyyzz_hot') = 0 then
   begin
     FShowkeyid := GlobalAddAtom('xxyyzz_hot');
@@ -129,7 +131,7 @@ begin
 
     end;
 
-    img_arr[I].top := 2;
+    img_arr[I].top := 22;
     img_arr[I].width := img_width;
     img_arr[I].height := img_height;
     img_arr[I].Transparent := true;
@@ -148,7 +150,8 @@ begin
   h := GetDC(0);
   BorderStyle := bsNone;
 
-  form1.width := btns_count * img_width + btns_count * img_gap + img_width ;
+  form1.width := btns_count * img_width + btns_count * img_gap + img_width;
+  final_width := form1.Width;
   FreeAndNil(list_str);
 end;
 
@@ -188,7 +191,7 @@ begin
   if not PtInRect(self.BoundsRect, lp) then
   begin
 
-//    å¤åŸæŒ‰é’®åŸå§‹å°ºå¯¸
+//    ¸´Ô­°´Å¥Ô­Ê¼³ß´ç
     for I := 0 to btns_count - 1 do
     begin
       img_arr[I].Left := img_arr_position[I];
@@ -196,7 +199,7 @@ begin
       img_arr[I].height := img_height;
     end;
 
-//    å¸é™„æ¡Œé¢é¡¶ç«¯
+//    Îü¸½×ÀÃæ¶¥¶Ë
     if Top < top_snap_gap then
     begin
       Top := -(Height - VisHeight) - 5;
@@ -221,7 +224,7 @@ end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
-  timer1.Interval:=100;
+  timer1.Interval := 100;
   snap_top_windows();
 end;
 
@@ -259,7 +262,7 @@ begin
   if app_cfging then
     Exit;
 
-//    ç‚¹å‡»äº‹ä»¶
+//    µã»÷ÊÂ¼ş
   if (ssleft in Shift) and (mouse_left_clicking) then
   begin
 
@@ -276,7 +279,7 @@ begin
   end
   else
   begin
-//  ç§»åŠ¨äº‹ä»¶
+//  ÒÆ¶¯ÊÂ¼ş
     var lp: tpoint;
     var I: Integer;
     GetCursorPos(lp);
@@ -316,10 +319,11 @@ begin
       if (rate > 1) then
         rate := 1;
 
-      img_arr[I].Width := round(img_width * 2 * rate);
+      img_arr[I].Width := ceil(img_width * 2 * rate);
       img_arr[I].Height := ceil(img_width * 2 * rate);
 
     end;
+
   end;
 end;
 
@@ -351,8 +355,8 @@ end;
 procedure tform1.move_windows(h: thandle);
 begin
 
-  ReleaseCapture; // é‡Šæ”¾é¼ æ ‡æ§åˆ¶åŒºåŸŸ
-  SendMessage(h, WM_SYSCOMMAND, SC_MOVE + HTCaption, 0); // å‘é€ç§»åŠ¨æ ‡é¢˜æ æ¶ˆæ¯
+  ReleaseCapture;
+  SendMessage(h, WM_SYSCOMMAND, SC_MOVE + HTCaption, 0);
 
 end;
 
@@ -367,7 +371,7 @@ end;
 
 procedure TForm1.N2Click(Sender: TObject);
 begin
-  var cc := inputbox('ctrl+b å¿«æ·é”®', 'å¿«æ·é”®åº”ç”¨ç¨‹åºå®Œæ•´è·¯å¾„', '');
+  var cc := inputbox('ctrl+b ¿ì½İ¼ü', '¿ì½İ¼üÓ¦ÓÃ³ÌĞòÍêÕûÂ·¾¶', '');
   if cc.trim <> '' then
   begin
     Shortcut_key := cc;
