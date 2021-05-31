@@ -5,8 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   core, Winapi.Dwmapi, Winapi.ShellAPI, Dialogs, Registry, ExtCtrls, CoreDB,
-  Vcl.StdCtrls, Vcl.Imaging.pngimage, inifiles, FileCtrl, Vcl.Imaging.jpeg,
-  System.Math, cfgForm, Vcl.Menus;
+  Vcl.StdCtrls, Vcl.Imaging.pngimage, inifiles, FileCtrl, Vcl.Imaging.jpeg, u_debug,
+  System.Math, cfgForm, Vcl.Menus,bottomForm;
 
 type
   TForm1 = class(TForm)
@@ -16,6 +16,7 @@ type
     exit1: TMenuItem;
     Timer1: TTimer;
     N2: TMenuItem;
+    N3: TMenuItem;
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure Image111MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure FormShow(Sender: TObject);
@@ -25,7 +26,7 @@ type
     procedure exit1Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure N2Click(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure N3Click(Sender: TObject);
   private
     FAltF4Key, FShowkeyid: Word;
     procedure hotkey(var Msg: tmsg); message WM_HOTKEY;
@@ -33,8 +34,10 @@ type
     procedure move_windows(h: thandle);
     procedure snap_top_windows;
     procedure imagelllmouseLeave(sender: tobject);
+    procedure ApplicationIdle(Sender: TObject; var Done: Boolean);
   public
     procedure init;
+
   end;
 
 var
@@ -224,7 +227,7 @@ end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
-  timer1.Interval := 100;
+  timer1.Interval := 10;
   snap_top_windows();
 end;
 
@@ -238,8 +241,22 @@ begin
   ShowWindow(Application.Handle, SW_HIDE);
   SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
   Shortcut_key := g_core.db.syspara.GetString('shortcut');
+
+  Application.OnIdle := ApplicationIdle;
+
+  if   bottomFrm=nil then
+        bottomFrm:= TbottomFrm.Create(self);
+    bottomFrm.Show;
+    bottomFrm.Top:=Screen.WorkAreaHeight-bottomFrm.height;
+    bottomFrm.Left:=((Screen.WorkAreaWidth-bottomFrm.Width) div 2)
 end;
 
+procedure TForm1.ApplicationIdle(Sender: TObject; var Done: Boolean);
+begin
+      g_core.db.syspara.SetVarValue('left', Left);
+  g_core.db.syspara.SetVarValue('top', Top);
+//  debug.Show('ApplicationIdle');
+end;
 procedure TForm1.hotkey(var Msg: tmsg);
 begin
   if (Msg.message = FShowkeyid) and (Shortcut_key.Trim <> '') then
@@ -327,12 +344,6 @@ begin
   end;
 end;
 
-procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  g_core.db.syspara.SetVarValue('left', Left);
-  g_core.db.syspara.SetVarValue('top', Top);
-end;
-
 procedure TForm1.FormDestroy(Sender: TObject);
 begin
   UnregisterHotKey(Handle, FShowkeyid);
@@ -377,6 +388,15 @@ begin
     Shortcut_key := cc;
     g_core.db.syspara.SetVarValue('shortcut', Shortcut_key.Trim);
   end;
+end;
+
+procedure TForm1.N3Click(Sender: TObject);
+begin
+    if   bottomFrm=nil then
+        bottomFrm:= TbottomFrm.Create(self);
+    bottomFrm.Show;
+    bottomFrm.Top:=Screen.WorkAreaHeight-bottomFrm.height;
+    bottomFrm.Left:=((Screen.WorkAreaWidth-bottomFrm.Width) div 2)
 end;
 
 end.

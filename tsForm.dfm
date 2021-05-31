@@ -18,7 +18,6 @@ object Form1: TForm1
   PopupMenu = PopupMenu1
   Position = poDesigned
   Scaled = False
-  OnClose = FormClose
   OnDestroy = FormDestroy
   OnMouseDown = FormMouseDown
   OnShow = FormShow
@@ -52,8 +51,13 @@ object Form1: TForm1
       Caption = 'exit'
       OnClick = exit1Click
     end
+    object N3: TMenuItem
+      Caption = #26174#31034#24213#37096#38754#26495
+      OnClick = N3Click
+    end
   end
   object Timer1: TTimer
+    Interval = 100
     OnTimer = Timer1Timer
     Left = 104
     Top = 16
