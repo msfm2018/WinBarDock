@@ -5,179 +5,178 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   core, Winapi.Dwmapi, Winapi.ShellAPI, Dialogs, Registry, ExtCtrls, CoreDB,
-  Vcl.StdCtrls, Vcl.Imaging.pngimage, inifiles, FileCtrl, Vcl.Imaging.jpeg, u_debug,
-  System.Math, cfgForm, Vcl.Menus,bottomForm;
+  Vcl.StdCtrls, Vcl.Imaging.pngimage, inifiles, FileCtrl, Vcl.Imaging.jpeg,
+  u_debug, System.Math, cfgForm, Vcl.Menus, bottomForm;
 
 type
   TForm1 = class(TForm)
     img_bg: TImage;
     PopupMenu1: TPopupMenu;
-    N1: TMenuItem;
-    exit1: TMenuItem;
+    action_set: TMenuItem;
+    action_terminate: TMenuItem;
     Timer1: TTimer;
-    N2: TMenuItem;
-    N3: TMenuItem;
+    action_set_acce: TMenuItem;
+    action_bootom_panel: TMenuItem;
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure Image111MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure img_bgMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
-    procedure N1Click(Sender: TObject);
-    procedure exit1Click(Sender: TObject);
+    procedure action_setClick(Sender: TObject);
+    procedure action_terminateClick(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
-    procedure N2Click(Sender: TObject);
-    procedure N3Click(Sender: TObject);
+    procedure action_set_acceClick(Sender: TObject);
+    procedure action_bootom_panelClick(Sender: TObject);
+    procedure img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
   private
-    FAltF4Key, FShowkeyid: Word;
+    FShowkeyid: Word;
     procedure hotkey(var Msg: tmsg); message WM_HOTKEY;
     procedure img_click(Sender: TObject);
     procedure move_windows(h: thandle);
     procedure snap_top_windows;
-    procedure imagelllmouseLeave(sender: tobject);
-    procedure ApplicationIdle(Sender: TObject; var Done: Boolean);
   public
     procedure init;
+  end;
 
+  tevent_define = record
+    left_click: Boolean;
+    y: Integer;
+    x: Integer;
+  end;
+
+  tgg = record
+    img_arr_count: integer;
+    img_arr_position: array of integer;
+    img_arr: array of timage;
+    a, b, rate: Real;
+    app_cfging: Boolean;
+    shortcut_key: string;
+    const
+      top_parent = 22;
+      VisHeight: Integer = 9; // 露头高度
+      top_snap_gap: Integer = 40; // 吸附距离
+
+      img_width = 64;
+      img_height = 64;
+      img_gap = 30;
+      zoom_factor = 101.82 * 3; // sqrt(img_width*img_width+ img_height*img_height)=101.8...
   end;
 
 var
   Form1: TForm1;
-  btns_count: integer;
-  app_cfging: Boolean;
-  Shortcut_key: string;
+  event_def: tevent_define;
+  gg: tgg;
 
 implementation
 
 {$R *.dfm}
 
-const
-  VisHeight: Integer = 9; // 露头高度
-  top_snap_gap: Integer = 40; // 吸附距离
-
-
-  img_width = 64;
-  img_height = 64;
-  img_gap = 30;
-  zoom_factor = 101.82 * 3; // sqrt(img_width*img_width+ img_height*img_height)=101.8...
-//        zoom_factor=50.91*3;
-
-var
-  h: HDC;
-  a, b, rate: Real;
-  img_arr_position: array of integer;
-  img_arr: array of timage;
-
-var
-//鼠标左键已点击
-  mouse_left_clicking: Boolean = false;
-
-//  执行中
-  launcher_ing: Boolean = false;
-  previous_y: Integer = 0;
-  previous_x: Integer = 0;
-  final_width: Integer;
-
 procedure to_launcher(n: string);
 begin
-  if launcher_ing then
+  if n.trim = '' then
     exit;
-  launcher_ing := true;
   if n.Contains('https') or n.Contains('http') or n.Contains('.html') or n.Contains('.htm') then
     Winapi.ShellAPI.ShellExecute(application.Handle, nil, PChar(n), nil, nil, SW_SHOWNORMAL)
   else
     ShellExecute(0, 'open', PChar(n), nil, nil, SW_SHOW);
 
-  launcher_ing := false;
 end;
 
 procedure tform1.init();
 var
   I: Integer;
 begin
-  app_cfging := False;
-  // ctrl+b   定义快捷键
+  gg.app_cfging := False;
+
   if FindAtom('xxyyzz_hot') = 0 then
   begin
     FShowkeyid := GlobalAddAtom('xxyyzz_hot');
-    RegisterHotKey(Handle, FShowkeyid, MOD_CONTROL, $42);
+    RegisterHotKey(Handle, FShowkeyid, MOD_CONTROL, $42);       // ctrl+b   定义快捷键
   end;
 
   img_bg.Picture.LoadFromFile(ExtractFilePath(Paramstr(0)) + 'img\bg.png');
 
-  var list_str := g_core.db.filesDB.GetKeys;
+  var keys := g_core.db.filesDB.GetKeys;
 
-  btns_count := list_str.Count;
+  gg.img_arr_count := keys.Count;
 
-  setlength(img_arr_position, btns_count);
+  setlength(gg.img_arr_position, gg.img_arr_count);
 
-  if img_arr <> nil then
+  if gg.img_arr <> nil then
   begin
-    for I := 0 to Length(img_arr) - 1 do
+    for I := 0 to Length(gg.img_arr) - 1 do
     begin
-      freeandnil(img_arr[I]);
+      freeandnil(gg.img_arr[I]);
     end;
   end;
 
-  setlength(img_arr, btns_count);
-  for I := 0 to btns_count - 1 do
+  setlength(gg.img_arr, gg.img_arr_count);
+  for I := 0 to gg.img_arr_count - 1 do
   begin
-    img_arr[I] := timage.Create(self);
+    gg.img_arr[I] := timage.Create(self);
 
-    img_arr[I].Name := 'image' + I.ToString;
+    gg.img_arr[I].Name := 'image' + I.ToString;
 
     if I = 0 then
-      img_arr[I].Left := I * img_width + img_gap
+      gg.img_arr[I].Left := I * gg.img_width + gg.img_gap
     else
     begin
 
-      img_arr[I].Left := img_arr[I - 1].Left + img_arr[I - 1].Width + img_gap;
+      gg.img_arr[I].Left := gg.img_arr[I - 1].Left + gg.img_arr[I - 1].Width + gg.img_gap;
 
     end;
+    with gg.img_arr[I] do
+    begin
+    //离父顶部高度
+      top := gg.top_parent;
+      Parent := Form1;
+      width := gg.img_width;
+      height := gg.img_height;
+      Transparent := true;
+      Center := true;
+      //借用 hint 存取信息 懒得扩展
+      Hint := g_core.db.filesDB.GetString(keys[I]);
+      Picture.LoadFromFile(keys[I]);
+      Stretch := true;
 
-    img_arr[I].top := 22;
-    img_arr[I].width := img_width;
-    img_arr[I].height := img_height;
-    img_arr[I].Transparent := true;
-    img_arr[I].Center := true;
-    img_arr[I].Hint := g_core.db.filesDB.GetString(list_str[I]);
-    img_arr[I].Picture.LoadFromFile(list_str[I]);
-    img_arr[I].Stretch := true;
-    img_arr[I].Parent := Form1;
-    img_arr[I].OnMouseMove := Image111MouseMove;
-    img_arr[I].OnMouseLeave := imagelllmouseLeave;
-    img_arr[I].OnMouseDown := FormMouseDown;
-    img_arr[I].OnClick := img_click;
-    img_arr_position[I] := img_arr[I].Left;
+      OnMouseMove := Image111MouseMove;
+      OnMouseDown := FormMouseDown;
+      OnClick := img_click;
+
+      gg.img_arr_position[I] := gg.img_arr[I].Left;
+    end;
   end;
 
-  h := GetDC(0);
   BorderStyle := bsNone;
 
-  form1.width := btns_count * img_width + btns_count * img_gap + img_width;
-  final_width := form1.Width;
-  FreeAndNil(list_str);
+  form1.width := gg.img_arr_count * gg.img_width + gg.img_arr_count * gg.img_gap + gg.img_width;
+  form1.Left := g_core.db.syspara.GetInteger('left');
+  form1.Top := g_core.db.syspara.GetInteger('top');
+  FreeAndNil(keys);
+
+  SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) and (not WS_EX_APPWINDOW));
+  ShowWindow(Application.Handle, SW_HIDE);
+  SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
+  gg.Shortcut_key := g_core.db.syspara.GetString('shortcut');
 end;
 
-procedure TForm1.img_bgMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+procedure TForm1.img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  if app_cfging then
-    exit;
-  move_windows(handle);
+  if (Button = mbLeft) then
+    move_windows(handle);
 
 end;
 
 procedure TForm1.img_click(Sender: TObject);
 begin
-  launcher_ing := false;
-  var arr_exe := timage(Sender).Hint.Split([',']);
-  for var I := 0 to high(arr_exe) do
-    to_launcher(arr_exe[I]);
+  to_launcher(timage(Sender).Hint);
+  event_def.left_click := false;
 
-  mouse_left_clicking := false;
 end;
 
-procedure TForm1.exit1Click(Sender: TObject);
+procedure TForm1.action_terminateClick(Sender: TObject);
 begin
+  g_core.db.syspara.SetVarValue('left', Left);
+  g_core.db.syspara.SetVarValue('top', Top);
   Application.Terminate;
 end;
 
@@ -187,7 +186,7 @@ var
   I: Integer;
 begin
 
-  if app_cfging then
+  if gg.app_cfging then
     exit;
 
   GetCursorPos(lp);
@@ -195,34 +194,23 @@ begin
   begin
 
 //    复原按钮原始尺寸
-    for I := 0 to btns_count - 1 do
+    for I := 0 to gg.img_arr_count - 1 do
     begin
-      img_arr[I].Left := img_arr_position[I];
-      img_arr[I].Width := img_width;
-      img_arr[I].height := img_height;
+      gg.img_arr[I].Left := gg.img_arr_position[I];
+      gg.img_arr[I].Width := gg.img_width;
+      gg.img_arr[I].height := gg.img_height;
     end;
 
 //    吸附桌面顶端
-    if Top < top_snap_gap then
+    if Top < gg.top_snap_gap then
     begin
-      Top := -(Height - VisHeight) - 5;
+      Top := -(Height - gg.VisHeight) - 5;
       Left := Screen.Width div 2 - Width div 2;
     end;
 
   end
-  else if Top < top_snap_gap then
+  else if Top < gg.top_snap_gap then
     Top := 0;
-
-  if not DwmCompositionEnabled then
-  begin
-    begin
-      AlphaBlend := true;
-
-      self.Parent.Perform(WM_ERASEBKGND, h, 0);
-      BitBlt(Form1.Canvas.Handle, 0, 0, ClientWidth, ClientHeight, h, self.Left, self.Top, SRCCOPY);
-    end;
-  end;
-  inherited
 end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);
@@ -233,111 +221,88 @@ end;
 
 procedure TForm1.FormShow(Sender: TObject);
 begin
+ if not TOSVersion.Check(6, 2) then // Windows 8
+    Application.Terminate;
   init();
-  form1.Left := g_core.db.syspara.GetInteger('left');
-  form1.Top := g_core.db.syspara.GetInteger('top');
 
-  SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) and (not WS_EX_APPWINDOW));
-  ShowWindow(Application.Handle, SW_HIDE);
-  SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
-  Shortcut_key := g_core.db.syspara.GetString('shortcut');
+  if bottomFrm = nil then
+    bottomFrm := TbottomFrm.Create(self);
+  bottomFrm.Show;
+  bottomFrm.Top := Screen.WorkAreaHeight - bottomFrm.height;
+  bottomFrm.Left := ((Screen.WorkAreaWidth - bottomFrm.Width) div 2);
 
-  Application.OnIdle := ApplicationIdle;
-
-  if   bottomFrm=nil then
-        bottomFrm:= TbottomFrm.Create(self);
-    bottomFrm.Show;
-    bottomFrm.Top:=Screen.WorkAreaHeight-bottomFrm.height;
-    bottomFrm.Left:=((Screen.WorkAreaWidth-bottomFrm.Width) div 2)
-end;
-
-procedure TForm1.ApplicationIdle(Sender: TObject; var Done: Boolean);
-begin
-      g_core.db.syspara.SetVarValue('left', Left);
-  g_core.db.syspara.SetVarValue('top', Top);
-//  debug.Show('ApplicationIdle');
-end;
-procedure TForm1.hotkey(var Msg: tmsg);
-begin
-  if (Msg.message = FShowkeyid) and (Shortcut_key.Trim <> '') then
+  with event_def do
   begin
-    launcher_ing := false;
-    to_launcher(Shortcut_key);
-
+    Y := 0;
+    X := 0;
+    left_click := False;
   end;
 end;
 
-procedure tform1.imagelllmouseLeave(sender: tobject);
+procedure TForm1.hotkey(var Msg: tmsg);
 begin
+  if (Msg.message = FShowkeyid) and (gg.Shortcut_key.Trim <> '') then
+    to_launcher(gg.Shortcut_key);
 
 end;
 
 procedure TForm1.Image111MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
-var
-  aName: string;
 begin
-  if app_cfging then
+  if gg.app_cfging then
     Exit;
 
-//    点击事件
-  if (ssleft in Shift) and (mouse_left_clicking) then
+  if (event_def.left_click) then
   begin
 
-    if (X <> previous_x) or (Y <> previous_y) then
+    if (X <> event_def.x) or (Y <> event_def.y) then
     begin
-      previous_x := X;
-      previous_y := Y;
+      event_def.x := X;
+      event_def.y := Y;
       move_windows(Handle);
+
     end
     else
-    begin
       TImage(Sender).OnClick(self);
-    end;
+
   end
   else
   begin
-//  移动事件
     var lp: tpoint;
     var I: Integer;
     GetCursorPos(lp);
 
-    for I := 0 to btns_count - 1 do
+    for I := 0 to gg.img_arr_count - 1 do
     begin
-//      if I = 0 then
-//        img_arr[0].Left := img_arr_position[0] - ceil((img_arr[0].Width - img_width) * rate)
-//      else
-      begin
-        var next_Compent := Form1.FindComponent('image' + inttostr(I + 1));
-        if next_Compent <> nil then
-          TImage(next_Compent).Left := img_arr_position[I + 1] + ceil((img_arr[I].Width - img_width) * rate);
 
-        var next_Compent2 := Form1.FindComponent('image' + inttostr(I + 2));
-        if next_Compent2 <> nil then
-          TImage(next_Compent2).Left := img_arr_position[I + 2] + ceil((img_arr[I + 1].Width - img_width) * rate * 0.5);
+      var next_Compent := Form1.FindComponent('image' + inttostr(I + 1));
+      if next_Compent <> nil then
+        TImage(next_Compent).Left := gg.img_arr_position[I + 1] + ceil((gg.img_arr[I].Width - gg.img_width) * gg.rate);
 
-        var pre_Compent := Form1.FindComponent('image' + inttostr(I - 1));
-        if pre_Compent <> nil then
-          TImage(pre_Compent).Left := img_arr_position[I - 1] - ceil((img_arr[I].Width - img_width) * rate);
+      var next_Compent2 := Form1.FindComponent('image' + inttostr(I + 2));
+      if next_Compent2 <> nil then
+        TImage(next_Compent2).Left := gg.img_arr_position[I + 2] + ceil((gg.img_arr[I + 1].Width - gg.img_width) * gg.rate * 0.5);
 
-        var pre_Compent2 := Form1.FindComponent('image' + inttostr(I - 2));
-        if pre_Compent2 <> nil then
-          TImage(pre_Compent2).Left := img_arr_position[I - 2] - ceil((img_arr[I - 1].Width - img_width) * rate * 0.5);
+      var pre_Compent := Form1.FindComponent('image' + inttostr(I - 1));
+      if pre_Compent <> nil then
+        TImage(pre_Compent).Left := gg.img_arr_position[I - 1] - ceil((gg.img_arr[I].Width - gg.img_width) * gg.rate);
 
-      end;
+      var pre_Compent2 := Form1.FindComponent('image' + inttostr(I - 2));
+      if pre_Compent2 <> nil then
+        TImage(pre_Compent2).Left := gg.img_arr_position[I - 2] - ceil((gg.img_arr[I - 1].Width - gg.img_width) * gg.rate * 0.5);
 
-      a := img_arr[I].Left - ScreenToClient(lp).X + img_arr[I].Width / 2;
-      b := ScreenToClient(lp).Y - img_arr[I].Top - img_arr[I].Height / 2;
+      gg.a := gg.img_arr[I].Left - ScreenToClient(lp).X + gg.img_arr[I].Width / 2;
+      gg.b := ScreenToClient(lp).Y - gg.img_arr[I].Top - gg.img_arr[I].Height / 2;
 
-      rate := 1 - sqrt(a * a + b * b) / zoom_factor;
+      gg.rate := 1 - sqrt(gg.a * gg.a + gg.b * gg.b) / gg.zoom_factor;
 
-      if (rate < 0.5) then
-        rate := 0.5;
+      if (gg.rate < 0.5) then
+        gg.rate := 0.5;
 
-      if (rate > 1) then
-        rate := 1;
+      if (gg.rate > 1) then
+        gg.rate := 1;
 
-      img_arr[I].Width := ceil(img_width * 2 * rate);
-      img_arr[I].Height := ceil(img_width * 2 * rate);
+      gg.img_arr[I].Width := ceil(gg.img_width * 2 * gg.rate);
+      gg.img_arr[I].Height := ceil(gg.img_width * 2 * gg.rate);
 
     end;
 
@@ -349,17 +314,16 @@ begin
   UnregisterHotKey(Handle, FShowkeyid);
   GlobalDeleteAtom(FShowkeyid);
 
-  ReleaseDC(0, h);
 end;
 
 procedure TForm1.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  if app_cfging then
+  if gg.app_cfging then
     exit;
 
-  mouse_left_clicking := true;
-  previous_y := Y;
-  previous_x := X;
+  event_def.left_click := true;
+  event_def.y := Y;
+  event_def.x := X;
 
 end;
 
@@ -371,32 +335,32 @@ begin
 
 end;
 
-procedure TForm1.N1Click(Sender: TObject);
+procedure TForm1.action_setClick(Sender: TObject);
 begin
   if mycfg = nil then
     mycfg := Tmycfg.Create(self);
   mycfg.Show;
-  app_cfging := true;
+  gg.app_cfging := true;
   SetWindowPos(mycfg.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
 end;
 
-procedure TForm1.N2Click(Sender: TObject);
+procedure TForm1.action_set_acceClick(Sender: TObject);
 begin
   var cc := inputbox('ctrl+b 快捷键', '快捷键应用程序完整路径', '');
   if cc.trim <> '' then
   begin
-    Shortcut_key := cc;
-    g_core.db.syspara.SetVarValue('shortcut', Shortcut_key.Trim);
+    gg.Shortcut_key := cc;
+    g_core.db.syspara.SetVarValue('shortcut', gg.Shortcut_key.Trim);
   end;
 end;
 
-procedure TForm1.N3Click(Sender: TObject);
+procedure TForm1.action_bootom_panelClick(Sender: TObject);
 begin
-    if   bottomFrm=nil then
-        bottomFrm:= TbottomFrm.Create(self);
-    bottomFrm.Show;
-    bottomFrm.Top:=Screen.WorkAreaHeight-bottomFrm.height;
-    bottomFrm.Left:=((Screen.WorkAreaWidth-bottomFrm.Width) div 2)
+  if bottomFrm = nil then
+    bottomFrm := TbottomFrm.Create(self);
+  bottomFrm.Show;
+  bottomFrm.Top := Screen.WorkAreaHeight - bottomFrm.height;
+  bottomFrm.Left := ((Screen.WorkAreaWidth - bottomFrm.Width) div 2)
 end;
 
 end.

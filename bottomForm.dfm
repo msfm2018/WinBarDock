@@ -21,8 +21,6 @@ object bottomFrm: TbottomFrm
     Height = 112
     Align = alClient
     TabOrder = 0
-    ExplicitLeft = 8
-    ExplicitTop = 8
     object Button1: TButton
       Left = 1
       Top = 1
@@ -103,6 +101,15 @@ object bottomFrm: TbottomFrm
       Caption = 'X'
       TabOrder = 8
       OnClick = Button9Click
+    end
+    object Button10: TButton
+      Left = 209
+      Top = 51
+      Width = 312
+      Height = 25
+      Caption = 'material.io/blog/material-design-for-large-screens'
+      TabOrder = 9
+      OnClick = Button1Click
     end
   end
 end

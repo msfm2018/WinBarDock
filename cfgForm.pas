@@ -96,8 +96,6 @@ begin
 
     ValueListEditor1.InsertRow(LabeledEdit1.Text, LabeledEdit2.Text, True);
 
-//    g_core.db.filesDB.SetVarValue(trim(LabeledEdit1.Text), trim(LabeledEdit2.Text));
-
   end;
   update_db();
   LabeledEdit1.Text := '';
@@ -109,7 +107,7 @@ procedure Tmycfg.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   update_db();
   Form1.init;
-  app_cfging := False;
+  gg.app_cfging := False;
   FreeAndNil(mycfg);
 end;
 

@@ -31,7 +31,7 @@ object Form1: TForm1
     Align = alClient
     Stretch = True
     Transparent = True
-    OnMouseMove = img_bgMouseMove
+    OnMouseDown = img_bgMouseDown
     ExplicitLeft = 208
     ExplicitWidth = 976
     ExplicitHeight = 104
@@ -39,21 +39,21 @@ object Form1: TForm1
   object PopupMenu1: TPopupMenu
     Left = 64
     Top = 16
-    object N1: TMenuItem
+    object action_set: TMenuItem
       Caption = #35774#32622
-      OnClick = N1Click
+      OnClick = action_setClick
     end
-    object N2: TMenuItem
-      Caption = #24555#25463#24212#29992
-      OnClick = N2Click
+    object action_set_acce: TMenuItem
+      Caption = #35774#32622#24555#25463#24212#29992
+      OnClick = action_set_acceClick
     end
-    object exit1: TMenuItem
+    object action_bootom_panel: TMenuItem
+      Caption = #24213#37096#38754#26495
+      OnClick = action_bootom_panelClick
+    end
+    object action_terminate: TMenuItem
       Caption = 'exit'
-      OnClick = exit1Click
-    end
-    object N3: TMenuItem
-      Caption = #26174#31034#24213#37096#38754#26495
-      OnClick = N3Click
+      OnClick = action_terminateClick
     end
   end
   object Timer1: TTimer
