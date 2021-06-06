@@ -201,7 +201,6 @@ end;
 function TDestTopDB.GetFile: TStringList;
 var
   SQLTemp: string;
-  pageCount: Integer;
   k, i, j, l: Integer;
 begin
   SQLTemp := 'Select path,FileName From DestTop ';
