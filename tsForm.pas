@@ -36,7 +36,10 @@ type
   public
     procedure init;
   end;
-
+  timage_ext=class(timage)
+  public
+    k_v:string;
+  end;
   tevent_define = record
     left_click: Boolean;
     y: Integer;
@@ -46,7 +49,7 @@ type
   tgg = record
     img_arr_count: integer;
     img_arr_position: array of integer;
-    img_arr: array of timage;
+    img_arr: array of timage_ext;
     a, b, rate: Real;
     app_cfging: Boolean;
     shortcut_key: string;
@@ -112,7 +115,7 @@ begin
   setlength(gg.img_arr, gg.img_arr_count);
   for I := 0 to gg.img_arr_count - 1 do
   begin
-    gg.img_arr[I] := timage.Create(self);
+    gg.img_arr[I] := timage_ext.Create(self);
 
     gg.img_arr[I].Name := 'image' + I.ToString;
 
@@ -133,8 +136,8 @@ begin
       height := gg.img_height;
       Transparent := true;
       Center := true;
-      //借用 hint 存取信息 懒得扩展
-      Hint := g_core.db.filesDB.GetString(keys[I]);
+      var ss:=keys[i];
+      k_v := g_core.db.filesDB.GetString(ss);
       Picture.LoadFromFile(keys[I]);
       Stretch := true;
 
@@ -168,7 +171,7 @@ end;
 
 procedure TForm1.img_click(Sender: TObject);
 begin
-  to_launcher(timage(Sender).Hint);
+  to_launcher(timage_ext(Sender).k_v);
   event_def.left_click := false;
 
 end;
