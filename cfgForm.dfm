@@ -1,7 +1,7 @@
 object mycfg: Tmycfg
   Left = 0
   Top = 0
-  Caption = #37197#32622#25991#20214
+  Caption = #36335#24452#37197#32622
   ClientHeight = 631
   ClientWidth = 635
   Color = clBtnFace
@@ -10,7 +10,6 @@ object mycfg: Tmycfg
   Font.Height = -12
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
   OnShow = FormShow
@@ -27,7 +26,7 @@ object mycfg: Tmycfg
     DoubleBuffered = True
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -12
+    Font.Height = -14
     Font.Name = 'Tahoma'
     Font.Style = []
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goEditing, goThumbTracking]
@@ -48,10 +47,10 @@ object mycfg: Tmycfg
   end
   object Button1: TButton
     Left = 248
-    Top = 586
+    Top = 593
     Width = 145
     Height = 37
-    Caption = 'add'
+    Caption = #28155#21152
     TabOrder = 1
     OnClick = Button1Click
   end
@@ -65,18 +64,20 @@ object mycfg: Tmycfg
     EditLabel.Caption = #22270#29255#36335#24452'(png)'
     LabelPosition = lpLeft
     TabOrder = 2
+    Text = ''
     OnDblClick = LabeledEdit1DblClick
   end
   object LabeledEdit2: TLabeledEdit
-    Left = 61
+    Left = 88
     Top = 558
-    Width = 485
+    Width = 458
     Height = 22
     EditLabel.Width = 48
     EditLabel.Height = 14
     EditLabel.Caption = #25991#20214#36335#24452
     LabelPosition = lpLeft
     TabOrder = 3
+    Text = ''
     OnDblClick = LabeledEdit2DblClick
   end
   object BitBtn1: TBitBtn

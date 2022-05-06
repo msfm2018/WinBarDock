@@ -14,7 +14,6 @@ object Form1: TForm1
   Font.Style = []
   GlassFrame.Enabled = True
   GlassFrame.SheetOfGlass = True
-  OldCreateOrder = False
   PopupMenu = PopupMenu1
   Position = poDesigned
   Scaled = False
@@ -52,7 +51,7 @@ object Form1: TForm1
       OnClick = action_bootom_panelClick
     end
     object action_terminate: TMenuItem
-      Caption = 'exit'
+      Caption = #36864#20986#24212#29992
       OnClick = action_terminateClick
     end
   end

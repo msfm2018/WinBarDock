@@ -27,8 +27,8 @@ type
     { Public declarations }
   end;
 
-var
-  bottomFrm: TbottomFrm;
+//var
+//  bottomFrm: TbottomFrm;
 
 implementation
 
@@ -42,8 +42,8 @@ end;
 
 procedure TbottomFrm.Button9Click(Sender: TObject);
 begin
-  bottomFrm.Close;
-  bottomFrm:=nil;
+  Close;
+//  bottomFrm:=nil;
 end;
 
 end.

@@ -11,7 +11,6 @@ object bottomFrm: TbottomFrm
   Font.Height = -12
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   PixelsPerInch = 96
   TextHeight = 14
   object FlowPanel1: TFlowPanel

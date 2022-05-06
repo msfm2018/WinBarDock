@@ -6,7 +6,9 @@ uses
   tsForm in 'tsForm.pas' {Form1},
   cfgForm in 'cfgForm.pas' {mycfg},
   u_debug in 'u_debug.pas',
-  bottomForm in 'bottomForm.pas' {bottomFrm};
+  bottomForm in 'bottomForm.pas' {bottomFrm},
+  core in 'core\core.pas',
+  event in 'core\event.pas';
 
 {$R *.res}
 
