@@ -34,10 +34,11 @@ type
     procedure img_click(Sender: TObject);
     procedure move_windows(h: thandle);
     procedure snap_top_windows;
+    procedure Image111MouseLeave(Sender: TObject);
+
   public
     procedure init;
   end;
-
 
 var
   Form1: TForm1;
@@ -50,7 +51,7 @@ implementation
 procedure tform1.init();
 begin
 
- g_core.app.app_cfging := False;
+  g_core.mainWindow.app_cfging := False;
 
   if FindAtom('xxyyzz_hotkey') = 0 then
   begin
@@ -62,40 +63,40 @@ begin
 
   var hashKeys1 := g_core.db.itemdb.GetKeys();
 
-  g_core.app.itemCount := hashKeys1.Count;
+  g_core.mainWindow.itemCount := hashKeys1.Count;
 
-  setlength(g_core.app.itemPosition, g_core.app.itemCount);
+  setlength(g_core.mainWindow.itemPosition, g_core.mainWindow.itemCount);
 
-  if g_core.app.items <> nil then
+  if g_core.mainWindow.items <> nil then
   begin
-    for var I := 0 to Length(g_core.app.items) - 1 do
+    for var I := 0 to Length(g_core.mainWindow.items) - 1 do
     begin
-      freeandnil(g_core.app.items[I]);
+      freeandnil(g_core.mainWindow.items[I]);
     end;
   end;
 
-  setlength(g_core.app.items, g_core.app.itemCount);
-  for var I := 0 to g_core.app.itemCount - 1 do
+  setlength(g_core.mainWindow.items, g_core.mainWindow.itemCount);
+  for var I := 0 to g_core.mainWindow.itemCount - 1 do
   begin
-    g_core.app.items[I] := timage_ext.Create(self);
+    g_core.mainWindow.items[I] := timage_ext.Create(self);
 
-    g_core.app.items[I].Name := 'image' + I.ToString;
+    g_core.mainWindow.items[I].Name := 'image' + I.ToString;
 
     if I = 0 then
-      g_core.app.items[I].Left := I * g_core.app.itemWidth + g_core.app.itemGap
+      g_core.mainWindow.items[I].Left := I * g_core.mainWindow.itemWidth + g_core.mainWindow.itemGap + 10
     else
     begin
 
-      g_core.app.items[I].Left := g_core.app.items[I - 1].Left + g_core.app.items[I - 1].Width + g_core.app.itemGap;
+      g_core.mainWindow.items[I].Left := g_core.mainWindow.items[I - 1].Left + g_core.mainWindow.items[I - 1].Width + g_core.mainWindow.itemGap;
 
     end;
-    with g_core.app.items[I] do
+    with g_core.mainWindow.items[I] do
     begin
     //离父顶部高度
-      top := g_core.app.marginTop;
+      top := g_core.mainWindow.marginTop;
       Parent := Form1;
-      width := g_core.app.itemWidth;
-      height := g_core.app.itemHeight;
+      width := g_core.mainWindow.itemWidth;
+      height := g_core.mainWindow.itemHeight;
       Transparent := true;
       Center := true;
       appPath := g_core.db.itemdb.GetString(hashKeys1[i], false);
@@ -106,16 +107,17 @@ begin
       Stretch := true;
 
       OnMouseMove := Image111MouseMove;
+      OnMouseLeave := Image111MouseLeave;
       OnMouseDown := FormMouseDown;
       OnClick := img_click;
 
-      g_core.app.itemPosition[I] := g_core.app.items[I].Left;
+      g_core.mainWindow.itemPosition[I] := g_core.mainWindow.items[I].Left;
     end;
   end;
 
   BorderStyle := bsNone;
 
-  form1.width := g_core.app.itemCount * g_core.app.itemWidth + g_core.app.itemCount * g_core.app.itemGap + g_core.app.itemWidth;
+  form1.width := g_core.mainWindow.itemCount * g_core.mainWindow.itemWidth + g_core.mainWindow.itemCount * g_core.mainWindow.itemGap + g_core.mainWindow.itemWidth;
   form1.Left := g_core.db.cfgDb.GetInteger('left');
   form1.Top := g_core.db.cfgDb.GetInteger('top');
 
@@ -123,7 +125,7 @@ begin
   SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) and (not WS_EX_APPWINDOW));
   ShowWindow(Application.Handle, SW_HIDE);
   SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
-  g_core.app.Shortcut_key := g_core.db.cfgdb.GetString('shortcut');
+  g_core.mainWindow.Shortcut_key := g_core.db.cfgdb.GetString('shortcut');
 end;
 
 procedure TForm1.img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -135,7 +137,7 @@ end;
 
 procedure TForm1.img_click(Sender: TObject);
 begin
- g_core.utils.to_launcher(timage_ext(Sender).appPath);
+  g_core.utils.to_launcher(timage_ext(Sender).appPath);
   eventDef.isLeftClick := false;
 
 end;
@@ -153,7 +155,7 @@ var
   I: Integer;
 begin
 
-  if g_core.app.app_cfging then
+  if g_core.mainWindow.app_cfging then
     exit;
 
   GetCursorPos(lp);
@@ -161,22 +163,22 @@ begin
   begin
 
 //    复原按钮原始尺寸
-    for I := 0 to g_core.app.itemCount - 1 do
+    for I := 0 to g_core.mainWindow.itemCount - 1 do
     begin
-      g_core.app.items[I].Left := g_core.app.itemPosition[I];
-      g_core.app.items[I].Width := g_core.app.itemWidth;
-      g_core.app.items[I].height := g_core.app.itemHeight;
+      g_core.mainWindow.items[I].Left := g_core.mainWindow.itemPosition[I];
+      g_core.mainWindow.items[I].Width := g_core.mainWindow.itemWidth;
+      g_core.mainWindow.items[I].height := g_core.mainWindow.itemHeight;
     end;
 
 //    吸附桌面顶端
-    if Top < g_core.app.top_snap_gap then
+    if Top < g_core.mainWindow.top_snap_gap then
     begin
-      Top := -(Height - g_core.app.VisHeight) - 5;
+      Top := -(Height - g_core.mainWindow.VisHeight) - 5;
       Left := Screen.Width div 2 - Width div 2;
     end;
 
   end
-  else if Top < g_core.app.top_snap_gap then
+  else if Top < g_core.mainWindow.top_snap_gap then
     Top := 0;
 end;
 
@@ -209,14 +211,19 @@ end;
 
 procedure TForm1.hotkey(var Msg: tmsg);
 begin
-  if (Msg.message = FShowkeyid) and (g_core.app.Shortcut_key.Trim <> '') then
-   g_core.utils.to_launcher(g_core.app.Shortcut_key);
+  if (Msg.message = FShowkeyid) and (g_core.mainWindow.Shortcut_key.Trim <> '') then
+    g_core.utils.to_launcher(g_core.mainWindow.Shortcut_key);
 
+end;
+
+procedure TForm1.Image111MouseLeave(Sender: TObject);
+begin
+  //
 end;
 
 procedure TForm1.Image111MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 begin
-  if g_core.app.app_cfging then
+  if g_core.mainWindow.app_cfging then
     Exit;
 
   if (eventDef.isLeftClick) then
@@ -240,47 +247,73 @@ begin
     var I: Integer;
     GetCursorPos(lp);
 
-    for I := 0 to g_core.app.itemCount - 1 do
+    for I := 0 to g_core.mainWindow.itemCount - 1 do
     begin
 
       var imga := FindComponent('image' + (I + 1).ToString);
       if imga <> nil then
-        TImage(imga).Left := g_core.app.itemPosition[I + 1] + Floor((g_core.app.items[I].Width - g_core.app.itemWidth) * g_core.app.rate);
+        TImage(imga).Left := g_core.mainWindow.itemPosition[I + 1] + Floor((g_core.mainWindow.items[I].Width - g_core.mainWindow.itemWidth) * g_core.mainWindow.rate);
 
       var imgb := FindComponent('image' + (I + 2).ToString);
       if imgb <> nil then
-        TImage(imgb).Left := g_core.app.itemPosition[I + 2] + Floor((g_core.app.items[I + 1].Width - g_core.app.itemWidth) * g_core.app.rate * 0.5);
-
+      begin
+        TImage(imgb).Left := g_core.mainWindow.itemPosition[I + 2] + Floor((g_core.mainWindow.items[I + 1].Width - g_core.mainWindow.itemWidth) * g_core.mainWindow.rate * 0.1);
+        TImage(imgb).Left := g_core.mainWindow.itemPosition[I + 2] + Floor((g_core.mainWindow.items[I + 1].Width - g_core.mainWindow.itemWidth) * g_core.mainWindow.rate * 0.2);
+        TImage(imgb).Left := g_core.mainWindow.itemPosition[I + 2] + Floor((g_core.mainWindow.items[I + 1].Width - g_core.mainWindow.itemWidth) * g_core.mainWindow.rate * 0.3);
+        TImage(imgb).Left := g_core.mainWindow.itemPosition[I + 2] + Floor((g_core.mainWindow.items[I + 1].Width - g_core.mainWindow.itemWidth) * g_core.mainWindow.rate * 0.4);
+        TImage(imgb).Left := g_core.mainWindow.itemPosition[I + 2] + Floor((g_core.mainWindow.items[I + 1].Width - g_core.mainWindow.itemWidth) * g_core.mainWindow.rate * 0.5);
+      end;
       var imgc := FindComponent('image' + (I - 1).ToString);
       if imgc <> nil then
-        TImage(imgc).Left := g_core.app.itemPosition[I - 1] - Floor((g_core.app.items[I].Width - g_core.app.itemWidth) * g_core.app.rate);
+      begin
+        TImage(imgc).Left := g_core.mainWindow.itemPosition[I - 1] - Floor((g_core.mainWindow.items[I].Width - g_core.mainWindow.itemWidth) * g_core.mainWindow.rate * 0.1);
+
+      end;
 
       var imgd := FindComponent('image' + (I - 2).ToString);
       if imgd <> nil then
-        TImage(imgd).Left := g_core.app.itemPosition[I - 2] - Floor((g_core.app.items[I - 1].Width - g_core.app.itemWidth) * g_core.app.rate * 0.5);
+      begin
+        TImage(imgd).Left := g_core.mainWindow.itemPosition[I - 2] - Floor((g_core.mainWindow.items[I - 1].Width - g_core.mainWindow.itemWidth) * g_core.mainWindow.rate * 0.1);
+        TImage(imgd).Left := g_core.mainWindow.itemPosition[I - 2] - Floor((g_core.mainWindow.items[I - 1].Width - g_core.mainWindow.itemWidth) * g_core.mainWindow.rate * 0.2);
+        TImage(imgd).Left := g_core.mainWindow.itemPosition[I - 2] - Floor((g_core.mainWindow.items[I - 1].Width - g_core.mainWindow.itemWidth) * g_core.mainWindow.rate * 0.3);
+        TImage(imgd).Left := g_core.mainWindow.itemPosition[I - 2] - Floor((g_core.mainWindow.items[I - 1].Width - g_core.mainWindow.itemWidth) * g_core.mainWindow.rate * 0.4);
+        TImage(imgd).Left := g_core.mainWindow.itemPosition[I - 2] - Floor((g_core.mainWindow.items[I - 1].Width - g_core.mainWindow.itemWidth) * g_core.mainWindow.rate * 0.5);
 
-      g_core.app.a := g_core.app.items[I].Left - ScreenToClient(lp).X + g_core.app.items[I].Width / 2;
-      g_core.app.b := ScreenToClient(lp).Y - g_core.app.items[I].Top - g_core.app.items[I].Height / 2;
+      end;
 
-      g_core.app.rate := 1 - sqrt(g_core.app.a * g_core.app.a + g_core.app.b * g_core.app.b) / g_core.app.zoom_factor;
-//
-//
-//
+      g_core.mainWindow.a := g_core.mainWindow.items[I].Left - ScreenToClient(lp).X + g_core.mainWindow.items[I].Width / 2;
+      g_core.mainWindow.b := g_core.mainWindow.items[I].Top - ScreenToClient(lp).Y + g_core.mainWindow.items[I].Height / 2;
 
+      g_core.mainWindow.rate := 1 - sqrt(g_core.mainWindow.a * g_core.mainWindow.a + g_core.mainWindow.b * g_core.mainWindow.b) / g_core.mainWindow.zoom_factor;
 
-      if (g_core.app.rate < 0.5) then
-        g_core.app.rate := 0.5
+      if (g_core.mainWindow.rate < 0.5) then
+        g_core.mainWindow.rate := 0.5
+      else if (g_core.mainWindow.rate > 1) then
+        g_core.mainWindow.rate := 1;
+
+//      g_core.mainWindow.items[I].Width := ceil(g_core.mainWindow.itemWidth * 2 * g_core.mainWindow.rate);
+//      g_core.mainWindow.items[I].Height := ceil(g_core.mainWindow.itemWidth * 2 * g_core.mainWindow.rate);
+      if I <> g_core.mainWindow.itemCount - 1 then
+        g_core.mainWindow.items[I].Left := g_core.mainWindow.itemPosition[I] - Floor((g_core.mainWindow.items[I].Width - g_core.mainWindow.itemWidth) * g_core.mainWindow.rate);
+      if I = g_core.mainWindow.itemCount - 1 then
+      begin
+        g_core.mainWindow.items[I].Width := Floor(g_core.mainWindow.itemWidth * 1.5 * g_core.mainWindow.rate);
+        g_core.mainWindow.items[I].Height := Floor(g_core.mainWindow.itemWidth * 1.5 * g_core.mainWindow.rate);
+      end
       else
-      if (g_core.app.rate > 1) then
-        g_core.app.rate := 1;
-
-//      g_core.app.items[I].Width := ceil(g_core.app.itemWidth * 2 * g_core.app.rate);
-//      g_core.app.items[I].Height := ceil(g_core.app.itemWidth * 2 * g_core.app.rate);
-                     g_core.app.items[I].Left:=g_core.app.itemPosition[I] - Floor((g_core.app.items[I].Width - g_core.app.itemWidth) * g_core.app.rate);
-           g_core.app.items[I].Width := Floor(g_core.app.itemWidth * 1.8 * g_core.app.rate);
-      g_core.app.items[I].Height := Floor(g_core.app.itemWidth * 1.8 * g_core.app.rate);
+      begin
+        g_core.mainWindow.items[I].Width := Floor(g_core.mainWindow.itemWidth * 1.8 * g_core.mainWindow.rate);
+        g_core.mainWindow.items[I].Height := Floor(g_core.mainWindow.itemWidth * 1.8 * g_core.mainWindow.rate);
+      end;
 
     end;
+    var sumWidth: Integer;
+    sumWidth := 0;
+    for I := 0 to g_core.mainWindow.itemCount - 1 do
+    begin
+      sumWidth := sumWidth + g_core.mainWindow.items[I].Width;
+    end;
+//    self.Width := Round(sumWidth * 1.3);
 
   end;
 end;
@@ -294,7 +327,7 @@ end;
 
 procedure TForm1.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  if g_core.app.app_cfging then
+  if g_core.mainWindow.app_cfging then
     exit;
 
   eventDef.isLeftClick := true;
@@ -319,7 +352,7 @@ begin
   g_core.formObject.TryGetValue('cfgForm', vobj);
   Tmycfg(vobj).Show;
 
-  g_core.app.app_cfging := true;
+  g_core.mainWindow.app_cfging := true;
   SetWindowPos(Tmycfg(vobj).Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
 end;
 
@@ -328,8 +361,8 @@ begin
   var cc := inputbox('ctrl+b 快捷键', '快捷键应用程序完整路径', '');
   if cc.trim <> '' then
   begin
-    g_core.app.Shortcut_key := cc;
-    g_core.db.cfgDb.SetVarValue('shortcut', g_core.app.Shortcut_key.Trim);
+    g_core.mainWindow.Shortcut_key := cc;
+    g_core.db.cfgDb.SetVarValue('shortcut', g_core.mainWindow.Shortcut_key.Trim);
   end;
 end;
 

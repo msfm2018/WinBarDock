@@ -4,7 +4,7 @@ object Form1: TForm1
   AlphaBlendValue = 180
   BorderStyle = bsNone
   ClientHeight = 119
-  ClientWidth = 144
+  ClientWidth = 250
   Color = clBtnFace
   DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
@@ -25,15 +25,14 @@ object Form1: TForm1
   object img_bg: TImage
     Left = 0
     Top = 0
-    Width = 144
+    Width = 250
     Height = 119
     Align = alClient
     Stretch = True
     Transparent = True
     OnMouseDown = img_bgMouseDown
-    ExplicitLeft = 208
-    ExplicitWidth = 976
-    ExplicitHeight = 104
+    ExplicitWidth = 267
+    ExplicitHeight = 193
   end
   object PopupMenu1: TPopupMenu
     Left = 64
