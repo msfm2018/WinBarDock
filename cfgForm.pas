@@ -113,6 +113,7 @@ end;
 
 procedure Tmycfg.FormShow(Sender: TObject);
 begin
+  ValueListEditor1.Strings.Clear;
   var vvvv := g_core.db.itemdb.GetKeys;
   for var i := 0 to vvvv.Count - 1 do
   begin
