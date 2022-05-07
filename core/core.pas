@@ -14,7 +14,7 @@ type
     appPath: string;
   end;
 
-  TAPP = record
+  TMainWindow = record
     itemCount: integer;
     itemPosition: array of integer;
     items: array of timage_ext;
@@ -42,7 +42,7 @@ type
     db: tgdb;
     formObject: TDictionary<string, TObject>;
     utils: TUtils;
-    app: TAPP;
+    mainWindow: TMainWindow;
   end;
 
 var
