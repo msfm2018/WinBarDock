@@ -108,7 +108,7 @@ procedure Tmycfg.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   update_db();
   Form1.init;
-  g_core.app.app_cfging := False;
+  g_core.mainWindow.app_cfging := False;
 end;
 
 procedure Tmycfg.FormShow(Sender: TObject);
