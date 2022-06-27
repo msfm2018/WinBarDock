@@ -13,7 +13,6 @@ object CfgForm: TCfgForm
   Position = poScreenCenter
   OnClose = FormClose
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 12
   object ValueListEditor1: TValueListEditor
     Left = 0
