@@ -196,7 +196,7 @@ begin
         rn :=#13#10;
         WriteConsole(hConsole, @msg[1], length(msg), nCharsWritten, nil);
         WriteConsole(hConsole, @rn[1], length(rn), nCharsWritten, nil);
-        SetConsoleTextAttribute(hConsole, defColor);
+//        SetConsoleTextAttribute(hConsole, defColor);
         err :=false;
     end;
 {$endif DEBUG}

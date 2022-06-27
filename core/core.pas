@@ -4,45 +4,72 @@ interface
 
 uses
   shellapi, Wininet, classes, winapi.windows, Graphics, SysUtils, UrlMon,
-  Tlhelp32, messages, CoreDB, Registry, aclapi, AccCtrl, forms, vcl.controls,
-  shlobj, ComObj, activex, WindowsSysVersion, System.Generics.Collections,
-  u_debug, cfgForm, bottomForm, Vcl.ExtCtrls;
+  Tlhelp32, messages, core_db, Registry, aclapi, AccCtrl, forms, vcl.controls,
+  shlobj, ComObj, activex, System.Generics.Collections, System.Hash, u_debug,
+  cfg_form, bottom_form, Vcl.ExtCtrls, math;
 
 type
-  timage_ext = class(timage)
+//叶节点
+  TNode = class(timage)
   public
-    appPath: string;
+  ///节点名称
+    nodeName: string;
+  ///节点路径
+    nodePath: string;
+    ///每个节点靠左位置
+    nodeLeft: integer;
   end;
 
-  TMainWindow = record
-    itemCount: integer;
-    itemPosition: array of integer;
-    items: array of timage_ext;
-    a, b, rate: Real;
-    app_cfging: Boolean;
-    shortcut_key: string;
+  TNodes = record
+    nodeCount: integer;
+    diagnosticsNode: array of TNode;
+    isCfging: Boolean;
+
+    nodeWidth, nodeHeight: integer;
+
     const
       marginTop = 22;
       visHeight: Integer = 9; // 露头高度
-      top_snap_gap: Integer = 40; // 吸附距离
+      topSnapGap: Integer = 40; // 吸附距离
 
-      itemWidth = 64;
-      itemHeight = 64;
-      itemGap = 30;      //间隔
-      zoom_factor = 101.82 * 5; // sqrt(img_width*img_width+ img_height*img_height)=101.8...
+      ///原始数据
+      nodeWidth_ = 72;
+      nodeHeight_ = 72;
+      nodeGap_ = 30;      //间隔
+//      zoom_factor = 101.82 * 5; // sqrt(*img_width+ img_height*img_height)=101.8...
   end;
 
-  TUtils = class
-    class procedure to_launcher(n: string); static;
+  TUtils = record
+    ///
+    ///  node 存储辅助
+    fileMap: TDictionary<string, string>;
 
+    shortcutKey: string;
+  public
+    procedure launcher(path: string);
+       //根据宽度 得到间隙
+    function get_snap(w: integer): integer;
+//    比例因子
+    function get_zoom_factor(iw: integer): double;
+      ///自动运行
+    procedure SetAutoRun(ok: Boolean);
+
+    ///formheight
+    function get_form_height(ih: Integer): integer;
+              ///
+    procedure update_db();
   end;
 
   TGblVar = class
   public
     db: tgdb;
-    formObject: TDictionary<string, TObject>;
+
     utils: TUtils;
-    mainWindow: TMainWindow;
+    nodes: TNodes;
+    private
+       formObject: TDictionary<string, TObject>;
+    public
+    function find(name_: string): TObject;
   end;
 
 var
@@ -50,7 +77,7 @@ var
 
 implementation
 
-procedure SetAutoRun(ok: Boolean);
+procedure TUtils.SetAutoRun(ok: Boolean);
 var
   reg: TRegistry;
 begin
@@ -67,42 +94,105 @@ begin
   end;
 end;
 
-
-
-
-{ TUtils }
-
-class procedure TUtils.to_launcher(n: string);
+procedure TUtils.update_db;
+var
+  hash: string;
+  v: string;
 begin
-  if n.trim = '' then
-    exit;
-  if n.Contains('https') or n.Contains('http') or n.Contains('.html') or n.Contains('.htm') then
-    Winapi.ShellAPI.ShellExecute(application.Handle, nil, PChar(n), nil, nil, SW_SHOWNORMAL)
-  else
-    ShellExecute(0, 'open', PChar(n), nil, nil, SW_SHOW);
+  g_core.db.itemdb.clean();
+  g_core.db.itemdb.clean(false);
+
+  for var key in fileMap.Keys do
+  begin
+    v := '';
+    fileMap.TryGetValue(key, v);
+
+    hash := THashMD5.GetHashString(key);
+       //k v 存储在不同表中
+    g_core.db.itemdb.SetVarValue(hash, key);
+    g_core.db.itemdb.SetVarValue(hash, v, false);
+
+  end;
+
 end;
+
+function TUtils.get_form_height(ih: Integer): integer;
+begin
+  Result := math.Ceil(g_core.nodes.nodeHeight_ * ih / 118) + g_core.db.cfgDb.GetInteger('ih'); //     118:72:198:xx
+end;
+
+function TUtils.get_snap(w: integer): integer;
+begin
+  result := round(w * g_core.nodes.nodeGap_ / g_core.nodes.nodeWidth_); //64:30=128:?
+
+end;
+
+function TUtils.get_zoom_factor(iw: integer): double;
+begin
+                //计算比例因子
+  result := (101.82 * 5 * iw) / g_core.nodes.nodeWidth_;
+end;
+
+procedure TUtils.launcher(path: string);
+begin
+  if path.trim = '' then
+    exit;
+  if path.Contains('https') or path.Contains('http') or path.Contains('.html') or path.Contains('.htm') then
+    Winapi.ShellAPI.ShellExecute(application.Handle, nil, PChar(path), nil, nil, SW_SHOWNORMAL)
+  else
+    ShellExecute(0, 'open', PChar(path), nil, nil, SW_SHOW);
+end;
+
+{ TGblVar }
+
+function TGblVar.find(name_: string): TObject;
+var
+  vobj: TObject;
+begin
+  if g_core.formObject.TryGetValue(name_, vobj) then
+    result := vobj
+  else
+    result := nil;
+end;
+
+
 
 initialization
   g_core := TGblVar.Create;
+
   if g_core.db.cfgDb = nil then
     g_core.db.cfgDb := TCfgDB.Create;
 
   if g_core.db.itemdb = nil then
     g_core.db.itemdb := TItemsDb.Create;
 
-  g_core.formObject := TDictionary<string, TObject>.create;
-  g_core.formObject.AddOrSetValue('cfgForm', Tmycfg.Create(nil));
-  g_core.formObject.AddOrSetValue('bottomForm', TbottomFrm.Create(nil));
+  g_core.db.desktopdb := TdesktopDb.Create;
 
-  SetAutoRun(true);
+  g_core.utils.fileMap := TDictionary<string, string>.Create;
+
+    //初始化数据
+
+
+  g_core.nodes.nodeWidth := g_core.db.cfgDb.getInteger('ih');
+  g_core.nodes.nodeHeight := g_core.db.cfgDb.getInteger('ih');
+
+  g_core.formObject := TDictionary<string, TObject>.create;
+  g_core.formObject.AddOrSetValue('cfgForm', TCfgForm.Create(nil));
+  g_core.formObject.AddOrSetValue('bottomForm', TbottomForm.Create(nil));
+
+  g_core.utils.SetAutoRun(true);
 
 
 finalization
   for var MyElem in g_core.formObject.Values do
-  begin
-    FreeAndNil(MyElem)
-  end;
+    FreeAndNil(MyElem);
   g_core.formObject.Free;
+
+  g_core.utils.fileMap.Free;
+
+//   g_core.db.desktopdb.Free;
+//   g_core.db.itemdb.Free;
+//   g_core.db.cfgDb.Free;
 
   g_core.Free;
 
