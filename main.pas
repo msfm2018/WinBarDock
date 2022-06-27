@@ -17,6 +17,9 @@ type
     action_terminate: TMenuItem;
     action_set_acce: TMenuItem;
     action_bootom_panel: TMenuItem;
+    N1: TMenuItem;
+    N2: TMenuItem;
+    N3: TMenuItem;
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure Image111MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure FormShow(Sender: TObject);
@@ -26,6 +29,7 @@ type
     procedure action_set_acceClick(Sender: TObject);
     procedure action_bootom_panelClick(Sender: TObject);
     procedure img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure N1Click(Sender: TObject);
   private
     FShowkeyid: Word;
     procedure hotkey(var Msg: tmsg); message WM_HOTKEY;
@@ -349,6 +353,11 @@ begin
   ReleaseCapture;
   SendMessage(h, WM_SYSCOMMAND, SC_MOVE + HTCaption, 0);
 
+end;
+
+procedure TForm1.N1Click(Sender: TObject);
+begin
+ g_core.utils.launcher('https://fanyi.baidu.com/');
 end;
 
 procedure TForm1.action_setClick(Sender: TObject);

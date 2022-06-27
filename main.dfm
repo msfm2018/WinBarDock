@@ -20,7 +20,6 @@ object Form1: TForm1
   OnDestroy = FormDestroy
   OnMouseDown = FormMouseDown
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 12
   object img_bg: TImage
     Left = 0
@@ -37,6 +36,13 @@ object Form1: TForm1
   object PopupMenu1: TPopupMenu
     Left = 64
     Top = 16
+    object N1: TMenuItem
+      Caption = #32763#35793
+      OnClick = N1Click
+    end
+    object N3: TMenuItem
+      Caption = '-'
+    end
     object action_set: TMenuItem
       Caption = #35774#32622
       OnClick = action_setClick
@@ -48,6 +54,9 @@ object Form1: TForm1
     object action_set_acce: TMenuItem
       Caption = #28909#38190
       OnClick = action_set_acceClick
+    end
+    object N2: TMenuItem
+      Caption = '-'
     end
     object action_terminate: TMenuItem
       Caption = #36864#20986#24212#29992
