@@ -7,7 +7,7 @@ uses
   core, Winapi.Dwmapi, Winapi.ShellAPI, Dialogs, Registry, ExtCtrls, core_db,
   Vcl.StdCtrls, Vcl.Imaging.pngimage, inifiles, FileCtrl, Vcl.Imaging.jpeg,
   u_debug, System.Math, cfg_form, Vcl.Menus, bottom_Form,
-  system.Generics.Collections, event, GDIPAPI, GDIPOBJ, GDIPUTIL;
+  System.Generics.Collections, event, GDIPAPI, GDIPOBJ, GDIPUTIL;
 
 type
   TForm1 = class(TForm)
@@ -20,20 +20,23 @@ type
     N1: TMenuItem;
     N2: TMenuItem;
     N3: TMenuItem;
-    procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure Image111MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Image111MouseMove(Sender: TObject; Shift: TShiftState;
+      X, Y: Integer);
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure action_setClick(Sender: TObject);
     procedure action_terminateClick(Sender: TObject);
     procedure action_set_acceClick(Sender: TObject);
     procedure action_bootom_panelClick(Sender: TObject);
-    procedure img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure img_bgMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
     procedure N1Click(Sender: TObject);
   private
     FShowkeyid: Word;
     procedure hotkey(var Msg: tmsg); message WM_HOTKEY;
-    procedure wndproc(var msg: tmessage); override;
+    procedure wndproc(var Msg: tmessage); override;
     procedure img_click(Sender: TObject);
     procedure move_windows(h: thandle);
     procedure snap_top_windows;
@@ -51,7 +54,7 @@ implementation
 
 {$R *.dfm}
 
-procedure tform1.layout();
+procedure TForm1.layout();
 begin
   g_core.nodes.nodeWidth := g_core.db.cfgDb.GetInteger('ih');
   g_core.nodes.nodeHeight := g_core.db.cfgDb.GetInteger('ih');
@@ -59,15 +62,18 @@ begin
 
   img_bg.Picture.LoadFromFile(localPath + 'img\bgx.png');
 
-  var hashKeys1 := g_core.db.itemdb.GetKeys();
+  var
+  hashKeys1 := g_core.db.itemdb.GetKeys();
 
   g_core.nodes.nodeCount := hashKeys1.Count;
 
-  ///首次加载软件
+  /// 首次加载软件
   if g_core.nodes.nodeCount = 0 then
   begin
-    var sysdir: pchar;
-    var SysTemDir: string;
+    var
+      sysdir: pchar;
+    var
+      SysTemDir: string;
 
     Getmem(sysdir, 100);
     try
@@ -77,17 +83,28 @@ begin
       Freemem(sysdir, 100);
     end;
 
-    g_core.utils.fileMap.TryAdd(localPath + 'img\01.png', SysTemDir + '\notepad.exe');
-    g_core.utils.fileMap.TryAdd(localPath + 'img\02.png', SysTemDir + '\calc.exe');
-    g_core.utils.fileMap.TryAdd(localPath + 'img\03.png', SysTemDir + '\mspaint.exe');
-    g_core.utils.fileMap.TryAdd(localPath + 'img\04.png', SysTemDir + '\cmd.exe');
-    g_core.utils.fileMap.TryAdd(localPath + 'img\05.png', SysTemDir + '\mstsc.exe');
-    g_core.utils.fileMap.TryAdd(localPath + 'img\06.png', SysTemDir + '\mstsc.exe');
-    g_core.utils.fileMap.TryAdd(localPath + 'img\07.png', SysTemDir + '\mstsc.exe');
-    g_core.utils.fileMap.TryAdd(localPath + 'img\08.png', SysTemDir + '\mstsc.exe');
-    g_core.utils.fileMap.TryAdd(localPath + 'img\09.png', SysTemDir + '\mstsc.exe');
-    g_core.utils.fileMap.TryAdd(localPath + 'img\10.png', SysTemDir + '\mstsc.exe');
-    g_core.utils.fileMap.TryAdd(localPath + 'img\11.png', SysTemDir + '\mstsc.exe');
+    g_core.utils.fileMap.TryAdd(localPath + 'img\01.png',
+      SysTemDir + '\notepad.exe');
+    g_core.utils.fileMap.TryAdd(localPath + 'img\02.png',
+      SysTemDir + '\calc.exe');
+    g_core.utils.fileMap.TryAdd(localPath + 'img\03.png',
+      SysTemDir + '\mspaint.exe');
+    g_core.utils.fileMap.TryAdd(localPath + 'img\04.png',
+      SysTemDir + '\cmd.exe');
+    g_core.utils.fileMap.TryAdd(localPath + 'img\05.png',
+      SysTemDir + '\mstsc.exe');
+    g_core.utils.fileMap.TryAdd(localPath + 'img\06.png',
+      SysTemDir + '\mstsc.exe');
+    g_core.utils.fileMap.TryAdd(localPath + 'img\07.png',
+      SysTemDir + '\mstsc.exe');
+    g_core.utils.fileMap.TryAdd(localPath + 'img\08.png',
+      SysTemDir + '\mstsc.exe');
+    g_core.utils.fileMap.TryAdd(localPath + 'img\09.png',
+      SysTemDir + '\mstsc.exe');
+    g_core.utils.fileMap.TryAdd(localPath + 'img\10.png',
+      SysTemDir + '\mstsc.exe');
+    g_core.utils.fileMap.TryAdd(localPath + 'img\11.png',
+      SysTemDir + '\mstsc.exe');
     g_core.utils.update_db;
 
     g_core.nodes.nodeCount := g_core.db.itemdb.GetKeys().Count;
@@ -110,26 +127,30 @@ begin
     g_core.nodes.diagnosticsNode[I].Name := 'image' + I.ToString;
 
     if I = 0 then
-      g_core.nodes.diagnosticsNode[I].Left := I * g_core.nodes.nodeWidth + g_core.utils.get_snap(g_core.nodes.nodeWidth) + 10
+      g_core.nodes.diagnosticsNode[I].Left := I * g_core.nodes.nodeWidth +
+        g_core.utils.get_snap(g_core.nodes.nodeWidth) + 10
     else
     begin
 
-      g_core.nodes.diagnosticsNode[I].Left := g_core.nodes.diagnosticsNode[I - 1].Left + g_core.nodes.diagnosticsNode[I - 1].Width + g_core.utils.get_snap(g_core.nodes.nodeWidth);
+      g_core.nodes.diagnosticsNode[I].Left := g_core.nodes.diagnosticsNode
+        [I - 1].Left + g_core.nodes.diagnosticsNode[I - 1].Width +
+        g_core.utils.get_snap(g_core.nodes.nodeWidth);
 
     end;
 
     with g_core.nodes.diagnosticsNode[I] do
     begin
-    //离父顶部高度
+      // 离父顶部高度
       top := g_core.nodes.marginTop;
       Parent := Form1;
-      width := g_core.nodes.nodeWidth;
+      Width := g_core.nodes.nodeWidth;
       height := g_core.nodes.nodeHeight;
       Transparent := true;
       Center := true;
-      nodePath := g_core.db.itemdb.GetString(hashKeys1[i], false);
+      nodePath := g_core.db.itemdb.GetString(hashKeys1[I], False);
 
-      var tmp := g_core.db.itemdb.GetString(hashKeys1[i]);
+      var
+      tmp := g_core.db.itemdb.GetString(hashKeys1[I]);
       Picture.LoadFromFile(tmp);
 
       Stretch := true;
@@ -143,44 +164,73 @@ begin
     end;
 
   end;
+  var
+  testWidth := 0;
+  var
+  testTop := 0;
+  testTop := Screen.monitors[0].height;
+  case Screen.monitorcount of
+    1:
+      begin
+        testWidth := Screen.monitors[0].Width;
 
-  form1.width := g_core.nodes.nodeCount * g_core.db.cfgDb.GetInteger('ih') + g_core.nodes.nodeCount * g_core.utils.get_snap(g_core.nodes.nodeWidth) + 20;
-  form1.Left := g_core.db.cfgDb.GetInteger('left');
-  form1.Top := g_core.db.cfgDb.GetInteger('top');
+      end;
+    2:
+      begin
+        testWidth := Screen.monitors[0].Width + Screen.monitors[1].Width;
+      end
+  else
+    begin
+        testWidth:=  Screen.monitors[0].Width;
+    end;
+  end;
+  Form1.Width := g_core.nodes.nodeCount * g_core.db.cfgDb.GetInteger('ih') +
+    g_core.nodes.nodeCount * g_core.utils.get_snap(g_core.nodes.nodeWidth) + 20;
 
-  form1.Height := g_core.utils.get_form_height(g_core.db.cfgDb.GetInteger('ih'));
+  Form1.Left := g_core.db.cfgDb.GetInteger('left');
+  Form1.top := g_core.db.cfgDb.GetInteger('top');
+
+  if Form1.Left > testWidth then
+    Form1.Left := Screen.monitors[0].Width div 4;
+  if Form1.top > testTop then
+    Form1.top := 0;
+
+  Form1.height := g_core.utils.get_form_height
+    (g_core.db.cfgDb.GetInteger('ih'));
 
   freeandnil(hashKeys1);
-  SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) and (not WS_EX_APPWINDOW));
+  SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) and
+    (not WS_EX_APPWINDOW));
   ShowWindow(Application.Handle, SW_HIDE);
   SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
-  g_core.utils.shortcutKey := g_core.db.cfgdb.GetString('shortcut');
+  g_core.utils.shortcutKey := g_core.db.cfgDb.GetString('shortcut');
 
   restore_state();
 end;
 
-procedure TForm1.img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TForm1.img_bgMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
 begin
   if (Button = mbLeft) then
-    move_windows(handle);
+    move_windows(Handle);
 
 end;
 
 procedure TForm1.img_click(Sender: TObject);
 begin
   g_core.utils.launcher(tnode(Sender).nodePath);
-  EventDef.isLeftClick := false;
+  EventDef.isLeftClick := False;
 
 end;
 
 procedure TForm1.action_terminateClick(Sender: TObject);
 begin
   g_core.db.cfgDb.SetVarValue('left', Left);
-  g_core.db.cfgDb.SetVarValue('top', Top);
+  g_core.db.cfgDb.SetVarValue('top', top);
   Application.Terminate;
 end;
 
-procedure tform1.snap_top_windows();
+procedure TForm1.snap_top_windows();
 var
   lp: tpoint;
   I: Integer;
@@ -193,40 +243,41 @@ begin
   if not PtInRect(self.BoundsRect, lp) then
   begin
 
-//    复原按钮原始尺寸
+    // 复原按钮原始尺寸
     for I := 0 to g_core.nodes.nodeCount - 1 do
     begin
-      g_core.nodes.diagnosticsNode[I].Left := g_core.nodes.diagnosticsNode[I].nodeLeft;
+      g_core.nodes.diagnosticsNode[I].Left := g_core.nodes.diagnosticsNode
+        [I].nodeLeft;
       g_core.nodes.diagnosticsNode[I].Width := g_core.nodes.nodeWidth;
       g_core.nodes.diagnosticsNode[I].height := g_core.nodes.nodeHeight;
     end;
 
-//    吸附桌面顶端
-    if Top < g_core.nodes.topSnapGap then
+    // 吸附桌面顶端
+    if top < g_core.nodes.topSnapGap then
     begin
-      Top := -(Height - g_core.nodes.VisHeight) - 5;
+      top := -(height - g_core.nodes.VisHeight) - 5;
       Left := Screen.Width div 2 - Width div 2;
       restore_state();
     end;
 
   end
-  else if Top < g_core.nodes.topSnapGap then
-    Top := 0;
+  else if top < g_core.nodes.topSnapGap then
+    top := 0;
 end;
 
 procedure TimerProc(hwnd: hwnd; uMsg, idEvent: UINT; dwTime: DWORD); stdcall;
 begin
-  form1.snap_top_windows();
+  Form1.snap_top_windows();
 end;
 
-procedure TForm1.wndproc(var msg: tmessage);
+procedure TForm1.wndproc(var Msg: tmessage);
 begin
   inherited;
-  case msg.Msg of
+  case Msg.Msg of
     WM_MOUSEMOVE, WM_MOUSEACTIVATE, WM_MOUSEHOVER:
       begin
         KillTimer(Handle, 10);
-        SetTimer(handle, 10, 10, @TimerProc);
+        SetTimer(Handle, 10, 10, @TimerProc);
       end;
     WM_MOUSELEAVE:
       begin
@@ -246,15 +297,15 @@ begin
   if not TOSVersion.Check(6, 2) then // Windows 8
     Application.Terminate;
   BorderStyle := bsNone;
-    ///定义热键
+  /// 定义热键
   if FindAtom('xxyyzz_hotkey') = 0 then
   begin
     FShowkeyid := GlobalAddAtom('xxyyzz_hotkey');
-    RegisterHotKey(Handle, FShowkeyid, MOD_CONTROL, $42);       // ctrl+b   定义快捷键
+    RegisterHotKey(Handle, FShowkeyid, MOD_CONTROL, $42); // ctrl+b   定义快捷键
   end;
   localPath := ExtractFilePath(ParamStr(0));
-  ///检测顶部吸附
-  SetTimer(handle, 10, 10, @TimerProc);
+  /// 检测顶部吸附
+  SetTimer(Handle, 10, 10, @TimerProc);
   layout();
 
 end;
@@ -271,20 +322,21 @@ begin
   //
 end;
 
-procedure TForm1.Image111MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+procedure TForm1.Image111MouseMove(Sender: TObject; Shift: TShiftState;
+X, Y: Integer);
 var
   a, b, rate: Real;
 begin
   if g_core.nodes.isCfging then
-    Exit;
+    exit;
 
   if (EventDef.isLeftClick) then
   begin
 
-    if (X <> EventDef.x) or (Y <> EventDef.y) then
+    if (X <> EventDef.X) or (Y <> EventDef.Y) then
     begin
-      EventDef.x := X;
-      EventDef.y := Y;
+      EventDef.X := X;
+      EventDef.Y := Y;
       move_windows(Handle);
 
     end
@@ -294,18 +346,23 @@ begin
   end
   else
   begin
-  //以下谁数学好给优化下 告知一下啊
-    var lp: tpoint;
-    var I: Integer;
+    // 以下谁数学好给优化下 告知一下啊
+    var
+      lp: tpoint;
+    var
+      I: Integer;
     GetCursorPos(lp);
 
     for I := 0 to g_core.nodes.nodeCount - 1 do
     begin
 
-      a := g_core.nodes.diagnosticsNode[I].Left - ScreenToClient(lp).X + g_core.nodes.diagnosticsNode[I].Width / 2;
-      b := g_core.nodes.diagnosticsNode[I].Top - ScreenToClient(lp).Y + g_core.nodes.diagnosticsNode[I].Height / 4;
+      a := g_core.nodes.diagnosticsNode[I].Left - ScreenToClient(lp).X +
+        g_core.nodes.diagnosticsNode[I].Width / 2;
+      b := g_core.nodes.diagnosticsNode[I].top - ScreenToClient(lp).Y +
+        g_core.nodes.diagnosticsNode[I].height / 4;
 
-      rate := 1 - sqrt(a * a + b * b) / g_core.utils.get_zoom_factor(g_core.nodes.nodeWidth);
+      rate := 1 - sqrt(a * a + b * b) / g_core.utils.get_zoom_factor
+        (g_core.nodes.nodeWidth);
 
       if (rate <= 0.5) then
         rate := 0.5
@@ -314,15 +371,21 @@ begin
 
       if I = g_core.nodes.nodeCount then
       begin
-        g_core.nodes.diagnosticsNode[I].Width := Floor(g_core.nodes.nodeWidth * 1.8 * rate);
-        g_core.nodes.diagnosticsNode[I].Height := Floor(g_core.nodes.nodeWidth * 1.8 * rate);
+        g_core.nodes.diagnosticsNode[I].Width :=
+          Floor(g_core.nodes.nodeWidth * 1.8 * rate);
+        g_core.nodes.diagnosticsNode[I].height :=
+          Floor(g_core.nodes.nodeWidth * 1.8 * rate);
       end
       else
       begin
 
-        g_core.nodes.diagnosticsNode[I].Width := Floor(g_core.nodes.nodeWidth * 1.4 * rate);
-        g_core.nodes.diagnosticsNode[I].Height := Floor(g_core.nodes.nodeWidth * 1.4 * rate);
-        g_core.nodes.diagnosticsNode[I].Left := g_core.nodes.diagnosticsNode[I].nodeLeft - Floor((g_core.nodes.diagnosticsNode[I].Width - g_core.nodes.nodeWidth) * rate) - 6;
+        g_core.nodes.diagnosticsNode[I].Width :=
+          Floor(g_core.nodes.nodeWidth * 1.4 * rate);
+        g_core.nodes.diagnosticsNode[I].height :=
+          Floor(g_core.nodes.nodeWidth * 1.4 * rate);
+        g_core.nodes.diagnosticsNode[I].Left := g_core.nodes.diagnosticsNode[I]
+          .nodeLeft - Floor((g_core.nodes.diagnosticsNode[I].Width -
+          g_core.nodes.nodeWidth) * rate) - 6;
       end;
 
     end;
@@ -336,18 +399,19 @@ begin
   KillTimer(Handle, 10);
 end;
 
-procedure TForm1.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TForm1.FormMouseDown(Sender: TObject; Button: TMouseButton;
+Shift: TShiftState; X, Y: Integer);
 begin
   if g_core.nodes.isCfging then
     exit;
 
   EventDef.isLeftClick := true;
-  EventDef.y := Y;
-  EventDef.x := X;
+  EventDef.Y := Y;
+  EventDef.X := X;
 
 end;
 
-procedure tform1.move_windows(h: thandle);
+procedure TForm1.move_windows(h: thandle);
 begin
 
   ReleaseCapture;
@@ -357,18 +421,19 @@ end;
 
 procedure TForm1.N1Click(Sender: TObject);
 begin
- g_core.utils.launcher('https://fanyi.baidu.com/');
+  g_core.utils.launcher('https://fanyi.baidu.com/');
 end;
 
 procedure TForm1.action_setClick(Sender: TObject);
 var
   vobj: TObject;
 begin
-    vobj:=    g_core.find('cfgForm')    ;
+  vobj := g_core.find('cfgForm');
   TCfgForm(vobj).Show;
 
   g_core.nodes.isCfging := true;
-  SetWindowPos(TCfgForm(vobj).Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
+  SetWindowPos(TCfgForm(vobj).Handle, HWND_TOPMOST, 0, 0, 0, 0,
+    SWP_NOMOVE or SWP_NOSIZE);
 end;
 
 procedure TForm1.action_set_acceClick(Sender: TObject);
@@ -399,12 +464,12 @@ begin
   vobj := g_core.find('bottomForm');
   TbottomForm(vobj).Show;
 
-  TbottomForm(vobj).Top := Screen.WorkAreaHeight - TbottomForm(vobj).height;
+  TbottomForm(vobj).top := Screen.WorkAreaHeight - TbottomForm(vobj).height;
   TbottomForm(vobj).Width := Screen.WorkAreaWidth - 10;
-  TbottomForm(vobj).Left := ((Screen.WorkAreaWidth - TbottomForm(vobj).Width) div 2);
+  TbottomForm(vobj).Left :=
+    ((Screen.WorkAreaWidth - TbottomForm(vobj).Width) div 2);
 
   restore_state();
 end;
 
 end.
-
