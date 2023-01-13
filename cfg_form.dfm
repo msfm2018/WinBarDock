@@ -43,6 +43,7 @@ object CfgForm: TCfgForm
       #22270#29255#36335#24452
       #25991#20214#36335#24452)
     OnDblClick = ValueListEditor1DblClick
+    ExplicitWidth = 631
     ColWidths = (
       285
       348)
@@ -69,7 +70,7 @@ object CfgForm: TCfgForm
     Height = 20
     Hint = #21452#20987#28155#21152
     EditLabel.Width = 78
-    EditLabel.Height = 12
+    EditLabel.Height = 20
     EditLabel.Caption = #22270#26631#36335#24452'(png)'
     LabelPosition = lpLeft
     ParentShowHint = False
@@ -85,7 +86,7 @@ object CfgForm: TCfgForm
     Height = 20
     Hint = #21452#20987#28155#21152
     EditLabel.Width = 48
-    EditLabel.Height = 12
+    EditLabel.Height = 20
     EditLabel.Caption = #25991#20214#36335#24452
     LabelPosition = lpLeft
     ParentShowHint = False
@@ -104,11 +105,11 @@ object CfgForm: TCfgForm
     OnClick = Button2Click
   end
   object Button3: TButton
-    Left = 88
+    Left = 535
     Top = 598
     Width = 97
-    Height = 25
-    Caption = #35774#32622#36824#21407
+    Height = 20
+    Caption = #22270#26631#21021#22987#21270
     Font.Charset = GB2312_CHARSET
     Font.Color = clWindowText
     Font.Height = -20
@@ -127,5 +128,15 @@ object CfgForm: TCfgForm
     MinValue = 30
     TabOrder = 6
     Value = 64
+  end
+  object CheckBox1: TCheckBox
+    Left = 8
+    Top = 572
+    Width = 97
+    Height = 17
+    Caption = #21435#32972#26223
+    TabOrder = 7
+    Visible = False
+    OnClick = CheckBox1Click
   end
 end

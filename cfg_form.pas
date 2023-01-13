@@ -18,6 +18,7 @@ type
     Button2: TButton;
     Button3: TButton;
     Edit1: TSpinEdit;
+    CheckBox1: TCheckBox;
     procedure Button1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
@@ -26,6 +27,7 @@ type
     procedure ValueListEditor1DblClick(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure CheckBox1Click(Sender: TObject);
   private
     procedure update_db;
   public
@@ -98,6 +100,13 @@ begin
 //  Close();
 end;
 
+procedure TCfgForm.CheckBox1Click(Sender: TObject);
+var v:integer;
+begin
+//if not CheckBox1.Visible then v:=1 else v:=0;
+//    g_core.db.cfgDb.SetVarValue('bgVisible', v);
+end;
+
 procedure TCfgForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   if (oldNum <> g_core.utils.fileMap.Count) or reLayout or (edit1.Text <> oldValue.ToString) then
@@ -130,6 +139,10 @@ begin
   oldValue := g_core.db.cfgDb.GetInteger('ih');
   Edit1.Text := oldValue.ToString;
   reLayout := false;
+
+
+ if g_core.db.cfgDb.GetInteger('bgVisible')=1 then
+             CheckBox1.Checked:=true else  CheckBox1.Checked:=False;
 end;
 
 procedure TCfgForm.LabeledEdit1DblClick(Sender: TObject);
