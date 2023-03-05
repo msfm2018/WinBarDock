@@ -28,7 +28,7 @@ type
     nodeWidth, nodeHeight: integer;
 
     const
-      marginTop = 22;
+      marginTop =10;// 22;
       visHeight: Integer = 9; // 露头高度
       topSnapGap: Integer = 40; // 吸附距离
 
@@ -50,7 +50,7 @@ type
        //根据宽度 得到间隙
     function get_snap(w: integer): integer;
 //    比例因子
-    function get_zoom_factor(iw: integer): double;
+    function get_zoom_factor(w: double): double;
       ///自动运行
     procedure SetAutoRun(ok: Boolean);
 
@@ -127,10 +127,10 @@ begin
 
 end;
 
-function TUtils.get_zoom_factor(iw: integer): double;
+function TUtils.get_zoom_factor(w: double): double;
 begin
                 //计算比例因子
-  result := (101.82 * 5 * iw) / g_core.nodes.nodeWidth_;
+  result := (101.82 * 5 * w) / g_core.nodes.nodeWidth_;
 end;
 
 procedure TUtils.launcher(path: string);

@@ -77,6 +77,9 @@ begin
   begin
     if g_core.utils.fileMap.TryAdd(Trim(LabeledEdit1.Text), Trim(LabeledEdit2.Text)) then
     begin
+    if(Trim(LabeledEdit1.Text).Contains('http'))then
+        ValueListEditor1.InsertRow((Trim(LabeledEdit1.Text)), ExtractFileName(Trim(LabeledEdit2.Text)), True)
+    else
       ValueListEditor1.InsertRow(ExtractFileName(Trim(LabeledEdit1.Text)), ExtractFileName(Trim(LabeledEdit2.Text)), True);
       LabeledEdit1.Text := '';
       LabeledEdit2.Text := '';
@@ -103,8 +106,8 @@ end;
 procedure TCfgForm.CheckBox1Click(Sender: TObject);
 var v:integer;
 begin
-//if not CheckBox1.Visible then v:=1 else v:=0;
-//    g_core.db.cfgDb.SetVarValue('bgVisible', v);
+if not CheckBox1.Visible then v:=1 else v:=0;
+    g_core.db.cfgDb.SetVarValue('bgVisible', v);
 end;
 
 procedure TCfgForm.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -121,6 +124,7 @@ begin
 end;
 
 procedure TCfgForm.FormShow(Sender: TObject);
+var appPath, imgPath:string;
 begin
   ValueListEditor1.Strings.Clear;
   var vvvv := g_core.db.itemdb.GetKeys;
@@ -129,8 +133,11 @@ begin
     var a := g_core.db.itemdb.GetString(vvvv[i]);
     var b := g_core.db.itemdb.GetString(vvvv[i], false);
     g_core.utils.fileMap.TryAdd(a, b);
-    var imgPath := ExtractFilename(a);
-    var appPath := ExtractFilename(b);
+     imgPath := ExtractFilename(a);
+    if b.Contains('http')then
+                 appPath := b else
+                     appPath := ExtractFilename(b);
+//    var appPath := ExtractFilename(b);
     ValueListEditor1.InsertRow(imgPath, appPath, True);
   end;
 

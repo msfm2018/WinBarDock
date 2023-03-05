@@ -55,13 +55,13 @@ begin
   g_core.nodes.nodeHeight := g_core.db.cfgDb.GetInteger('ih');
   g_core.nodes.isCfging := False;
 
-  img_bg1.Parent := Self;
+  img_bg1.Parent := form1;
   img_bg1.Align := alClient;
   img_bg1.Transparent := true;
   img_bg1.Stretch := true;
 
 // if  g_core.db.cfgDb.GetInteger('bgVisible')=0 then begin
-  img_bg1.Picture.LoadFromFile(localPath + 'img\bgx.png');
+  img_bg1.Picture.LoadFromFile(localPath + 'img\bg.png');
 // end;
   img_bg1.OnMouseDown := img_bgMouseDown;
   var hashKeys1 := g_core.db.itemdb.GetKeys();
@@ -114,7 +114,7 @@ begin
     g_core.nodes.diagnosticsNode[I].Name := 'image' + I.ToString;
 
     if I = 0 then
-      g_core.nodes.diagnosticsNode[I].Left := I * g_core.nodes.nodeWidth + g_core.utils.get_snap(g_core.nodes.nodeWidth) + 10
+      g_core.nodes.diagnosticsNode[I].Left := g_core.utils.get_snap(g_core.nodes.nodeWidth) + 10
     else
     begin
 
@@ -152,20 +152,14 @@ begin
   testTop := Screen.monitors[0].height;
   case Screen.monitorcount of
     1:
-      begin
-        testWidth := Screen.monitors[0].Width;
-
-      end;
-    2:
-      begin
-        testWidth := Screen.monitors[0].Width + Screen.monitors[1].Width;
-      end
-  else
-    begin
       testWidth := Screen.monitors[0].Width;
-    end;
+
+    2:
+      testWidth := Screen.monitors[0].Width + Screen.monitors[1].Width;
+  else
+    testWidth := Screen.monitors[0].Width;
   end;
-  Form1.Width := g_core.nodes.nodeCount * g_core.db.cfgDb.GetInteger('ih') + g_core.nodes.nodeCount * g_core.utils.get_snap(g_core.nodes.nodeWidth) + 20;
+  Form1.Width := g_core.nodes.nodeCount * g_core.db.cfgDb.GetInteger('ih') + g_core.nodes.nodeCount * g_core.utils.get_snap(g_core.nodes.nodeWidth) + 40;
 
   Form1.Left := g_core.db.cfgDb.GetInteger('left');
   Form1.top := g_core.db.cfgDb.GetInteger('top');
@@ -178,12 +172,11 @@ begin
   Form1.height := g_core.utils.get_form_height(g_core.db.cfgDb.GetInteger('ih'));
 
   freeandnil(hashKeys1);
-  SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) and (not WS_EX_APPWINDOW));
-  ShowWindow(Application.Handle, SW_HIDE);
-  SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
+
   g_core.utils.shortcutKey := g_core.db.cfgDb.GetString('shortcut');
 
   restore_state();
+  Perform(WM_MOUSEMOVE, 0, 0);
 end;
 
 procedure TForm1.img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -273,6 +266,10 @@ begin
     Application.Terminate;
   BorderStyle := bsNone;
 
+  SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) and (not WS_EX_APPWINDOW));
+  ShowWindow(Application.Handle, SW_HIDE);
+  SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
+
   if FindAtom('xxyyzz_hotkey') = 0 then
   begin
     FShowkeyid := GlobalAddAtom('xxyyzz_hotkey');
@@ -298,14 +295,16 @@ begin
     m0.OnClick := draw_setClick;
     pm.Items.Add(m0);
 
-    m1 := TMenuItem.Create(self);
-    m1.Caption := '设置';
-    m1.OnClick := action_setClick;
-    pm.Items.Add(m1);
     m2 := TMenuItem.Create(self);
     m2.Caption := '应用';
     m2.OnClick := action_bootom_panelClick;
     pm.Items.Add(m2);
+
+    m1 := TMenuItem.Create(self);
+    m1.Caption := '设置';
+    m1.OnClick := action_setClick;
+    pm.Items.Add(m1);
+
     m3 := TMenuItem.Create(self);
     m3.Caption := '热键';
     pm.Items.Add(m3);
@@ -333,59 +332,47 @@ end;
 
 procedure TForm1.Image111MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 var
-  a, b, rate: Real;
+  a, rate: double;
+  b: double;
+  nodeWidth: double;
+  i: Integer;
 begin
   if g_core.nodes.isCfging then
     exit;
-
   if (EventDef.isLeftClick) then
   begin
-
     if (X <> EventDef.X) or (Y <> EventDef.Y) then
     begin
       EventDef.X := X;
       EventDef.Y := Y;
       move_windows(Handle);
-
     end
     else
       TImage(Sender).OnClick(self);
-
   end
   else
   begin
-
     var lp: tpoint;
-    var I: Integer;
     GetCursorPos(lp);
-
-    for I := 0 to g_core.nodes.nodeCount - 1 do
+    nodeWidth := g_core.nodes.nodeWidth;
+    for i := 0 to g_core.nodes.nodeCount - 1 do
     begin
+      a := g_core.nodes.diagnosticsNode[i].Left - ScreenToClient(lp).X + g_core.nodes.diagnosticsNode[i].Width / 2;
+      b := g_core.nodes.diagnosticsNode[i].Top - ScreenToClient(lp).Y + g_core.nodes.diagnosticsNode[i].Height / 4;
+      rate := 1 - sqrt(a * a + b * b) / g_core.utils.get_zoom_factor(nodeWidth);
+      rate := Min(Max(rate, 0.5), 1);
 
-      a := g_core.nodes.diagnosticsNode[I].Left - ScreenToClient(lp).X + g_core.nodes.diagnosticsNode[I].Width / 2;
-      b := g_core.nodes.diagnosticsNode[I].top - ScreenToClient(lp).Y + g_core.nodes.diagnosticsNode[I].height / 4;
 
-      rate := 1 - sqrt(a * a + b * b) / g_core.utils.get_zoom_factor(g_core.nodes.nodeWidth);
+//      a := Abs(g_core.nodes.diagnosticsNode[i].Left - ScreenToClient(lp).X);
+//      rate := 1 / (1 + Exp(-a / (g_core.nodes.nodeWidth * 2)));
+//      rate := Min(Max(rate, 0.5), 1);
 
-      if (rate <= 0.5) then
-        rate := 0.5
-      else if (rate >= 1) then
-        rate := 1;
 
-      if I = g_core.nodes.nodeCount then
-      begin
-        g_core.nodes.diagnosticsNode[I].Width := Floor(g_core.nodes.nodeWidth * 1.8 * rate);
-        g_core.nodes.diagnosticsNode[I].height := Floor(g_core.nodes.nodeWidth * 1.8 * rate);
-      end
-      else
-      begin
-
-        g_core.nodes.diagnosticsNode[I].Width := Floor(g_core.nodes.nodeWidth * 1.4 * rate);
-        g_core.nodes.diagnosticsNode[I].height := Floor(g_core.nodes.nodeWidth * 1.4 * rate);
-        g_core.nodes.diagnosticsNode[I].Left := g_core.nodes.diagnosticsNode[I].nodeLeft - Floor((g_core.nodes.diagnosticsNode[I].Width - g_core.nodes.nodeWidth) * rate) - 6;
-      end;
+      g_core.nodes.diagnosticsNode[i].Width := Floor(nodeWidth * 1.4 * rate);
+      g_core.nodes.diagnosticsNode[i].Height := Floor(nodeWidth * 1.4 * rate);
 
     end;
+
   end;
 end;
 

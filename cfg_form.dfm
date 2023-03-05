@@ -71,7 +71,7 @@ object CfgForm: TCfgForm
     Hint = #21452#20987#28155#21152
     EditLabel.Width = 78
     EditLabel.Height = 20
-    EditLabel.Caption = #22270#26631#36335#24452'(png)'
+    EditLabel.Caption = #22270#29255#36335#24452'(png)'
     LabelPosition = lpLeft
     ParentShowHint = False
     ShowHint = True
@@ -102,6 +102,7 @@ object CfgForm: TCfgForm
     Height = 21
     Caption = #22270#26631#22823#23567#35774#23450
     TabOrder = 4
+    Visible = False
     OnClick = Button2Click
   end
   object Button3: TButton
@@ -112,11 +113,12 @@ object CfgForm: TCfgForm
     Caption = #22270#26631#21021#22987#21270
     Font.Charset = GB2312_CHARSET
     Font.Color = clWindowText
-    Font.Height = -20
+    Font.Height = -16
     Font.Name = #23435#20307
     Font.Style = []
     ParentFont = False
     TabOrder = 5
+    Visible = False
     OnClick = Button3Click
   end
   object Edit1: TSpinEdit
@@ -128,6 +130,7 @@ object CfgForm: TCfgForm
     MinValue = 30
     TabOrder = 6
     Value = 64
+    Visible = False
   end
   object CheckBox1: TCheckBox
     Left = 8
