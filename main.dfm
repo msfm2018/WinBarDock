@@ -3,8 +3,8 @@ object Form1: TForm1
   Top = 15
   AlphaBlendValue = 180
   BorderStyle = bsNone
-  ClientHeight = 44
-  ClientWidth = 250
+  ClientHeight = 39
+  ClientWidth = 105
   Color = clBtnFace
   DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
@@ -16,6 +16,7 @@ object Form1: TForm1
   GlassFrame.SheetOfGlass = True
   Position = poDesigned
   Scaled = False
+  OnClose = FormClose
   OnDestroy = FormDestroy
   OnMouseDown = FormMouseDown
   OnShow = FormShow

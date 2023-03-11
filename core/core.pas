@@ -9,11 +9,11 @@ uses
   cfg_form, bottom_form, Vcl.ExtCtrls, math;
 
 type
+
 //叶节点
   TNode = class(timage)
   public
-  ///节点名称
-    nodeName: string;
+
   ///节点路径
     nodePath: string;
     ///每个节点靠左位置
@@ -25,10 +25,10 @@ type
     diagnosticsNode: array of TNode;
     isCfging: Boolean;
 
-    nodeWidth, nodeHeight: integer;
+    nodeWH: integer;
 
     const
-      marginTop =10;// 22;
+      marginTop = 10;
       visHeight: Integer = 9; // 露头高度
       topSnapGap: Integer = 40; // 吸附距离
 
@@ -36,11 +36,9 @@ type
       nodeWidth_ = 72;
       nodeHeight_ = 72;
       nodeGap_ = 30;      //间隔
-//      zoom_factor = 101.82 * 5; // sqrt(*img_width+ img_height*img_height)=101.8...
   end;
 
   TUtils = record
-    ///
     ///  node 存储辅助
     fileMap: TDictionary<string, string>;
 
@@ -54,21 +52,23 @@ type
       ///自动运行
     procedure SetAutoRun(ok: Boolean);
 
-    ///formheight
-    function get_form_height(ih: Integer): integer;
-              ///
+    function get_form_height(wh: Integer): integer;
+
     procedure update_db();
+  end;
+
+  tobj = record
   end;
 
   TGblVar = class
   public
     db: tgdb;
-
+    pathMap: TDictionary<integer, tobject>;
     utils: TUtils;
     nodes: TNodes;
-    private
-       formObject: TDictionary<string, TObject>;
-    public
+  private
+    formObject: TDictionary<string, TObject>;
+  public
     function find(name_: string): TObject;
   end;
 
@@ -116,9 +116,9 @@ begin
 
 end;
 
-function TUtils.get_form_height(ih: Integer): integer;
+function TUtils.get_form_height(wh: Integer): integer;
 begin
-  Result := math.Ceil(g_core.nodes.nodeHeight_ * ih / 118) + g_core.db.cfgDb.GetInteger('ih'); //     118:72:198:xx
+  Result := math.Ceil(g_core.nodes.nodeHeight_ * wh / 118) + g_core.db.cfgDb.GetInteger('ih'); //     118:72:198:xx
 end;
 
 function TUtils.get_snap(w: integer): integer;
@@ -155,8 +155,6 @@ begin
     result := nil;
 end;
 
-
-
 initialization
   g_core := TGblVar.Create;
 
@@ -173,8 +171,7 @@ initialization
     //初始化数据
 
 
-  g_core.nodes.nodeWidth := g_core.db.cfgDb.getInteger('ih');
-  g_core.nodes.nodeHeight := g_core.db.cfgDb.getInteger('ih');
+  g_core.nodes.nodeWH := g_core.db.cfgDb.getInteger('ih');
 
   g_core.formObject := TDictionary<string, TObject>.create;
   g_core.formObject.AddOrSetValue('cfgForm', TCfgForm.Create(nil));

@@ -90,8 +90,7 @@ end;
 
 procedure TCfgForm.Button2Click(Sender: TObject);
 begin
-  g_core.nodes.nodeWidth := strtoint(edit1.text);
-  g_core.nodes.nodeHeight := strtoint(edit1.text);
+  g_core.nodes.nodeWH := strtoint(edit1.text);
   g_core.db.cfgDb.SetVarValue('ih', StrToIntDef(edit1.Text, 118));
 end;
 
