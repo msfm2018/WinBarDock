@@ -22,11 +22,12 @@ type
     procedure img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure N1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormPaint(Sender: TObject);
   private
     FShowkeyid: Word;
     procedure hotkey(var Msg: tmsg); message WM_HOTKEY;
     procedure img_click(Sender: TObject);
-    procedure move_windows(h: thandle);
+  
     procedure snap_top_windows;
     procedure Image111MouseLeave(Sender: TObject);
 
@@ -57,36 +58,6 @@ begin
   var hashKeys1 := g_core.db.itemdb.GetKeys();
 
   g_core.nodes.nodeCount := hashKeys1.Count;
-
-//  if g_core.nodes.nodeCount = 0 then
-//  begin
-//    var sysdir: pchar;
-//    var SysTemDir: string;
-//
-//    Getmem(sysdir, 100);
-//    try
-//      getsystemdirectory(sysdir, 100);
-//      SysTemDir := string(sysdir);
-//    finally
-//      Freemem(sysdir, 100);
-//    end;
-//    var localPath := ExtractFilePath(ParamStr(0));
-//    g_core.utils.fileMap.TryAdd(localPath + 'img\01.png', SysTemDir + '\notepad.exe');
-//    g_core.utils.fileMap.TryAdd(localPath + 'img\02.png', SysTemDir + '\calc.exe');
-//    g_core.utils.fileMap.TryAdd(localPath + 'img\03.png', SysTemDir + '\mspaint.exe');
-//    g_core.utils.fileMap.TryAdd(localPath + 'img\04.png', SysTemDir + '\cmd.exe');
-//    g_core.utils.fileMap.TryAdd(localPath + 'img\05.png', SysTemDir + '\mstsc.exe');
-//    g_core.utils.fileMap.TryAdd(localPath + 'img\06.png', SysTemDir + '\mstsc.exe');
-//    g_core.utils.fileMap.TryAdd(localPath + 'img\07.png', SysTemDir + '\mstsc.exe');
-//    g_core.utils.fileMap.TryAdd(localPath + 'img\08.png', SysTemDir + '\mstsc.exe');
-//    g_core.utils.fileMap.TryAdd(localPath + 'img\09.png', SysTemDir + '\mstsc.exe');
-//    g_core.utils.fileMap.TryAdd(localPath + 'img\10.png', SysTemDir + '\mstsc.exe');
-//    g_core.utils.fileMap.TryAdd(localPath + 'img\11.png', SysTemDir + '\mstsc.exe');
-//    g_core.utils.update_db;
-//
-//    g_core.nodes.nodeCount := g_core.db.itemdb.GetKeys().Count;
-//    hashKeys1 := g_core.db.itemdb.GetKeys();
-//  end;
 
   if g_core.nodes.diagnosticsNode <> nil then
   begin
@@ -170,8 +141,6 @@ end;
 
 procedure TForm1.img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  if (Button = mbLeft) then
-    move_windows(Handle);
 
 end;
 
@@ -189,7 +158,25 @@ begin
   Application.Terminate;
 end;
 
+procedure TForm1.FormPaint(Sender: TObject);
+var
+  Image: TGPImage;
+  Graphics: TGPGraphics;   WidthRatio, HeightRatio, Ratio: Single;
+begin
+  Image := TGPImage.Create(ExtractFilePath(ParamStr(0)) + 'img\bg.png');
+  Graphics := TGPGraphics.Create(Canvas.Handle);
 
+try
+    WidthRatio := ClientWidth / Image.GetWidth;
+    HeightRatio := ClientHeight / Image.GetHeight;
+    Ratio := Min(WidthRatio, HeightRatio);
+    Graphics.DrawImage(Image, 0, 0, Image.GetWidth * Ratio, Image.GetHeight);
+
+  finally
+    Image.Free;
+    Graphics.Free;
+  end;
+end;
 procedure TForm1.snap_top_windows();
 var
   lp: tpoint;
@@ -233,17 +220,6 @@ begin
   if not TOSVersion.Check(6, 2) then
     Application.Terminate;
 
-  img_bg1 := TImage.Create(nil);
-  with img_bg1 do
-  begin
-    Parent := form1;
-    Align := alClient;
-    Transparent := true;
-    Stretch := true;
-    Picture.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\bg.png');
-    OnMouseDown := img_bgMouseDown;
-  end;
-
   BorderStyle := bsNone;
 
   SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) and (not WS_EX_APPWINDOW));
@@ -264,33 +240,33 @@ begin
   begin
     pm := TPopupMenu.Create(self);
     mi := TMenuItem.Create(self);
-    mi.Caption := '·­Òë';
+    mi.Caption := 'ç¿»è¯‘';
     mi.OnClick := N1Click;
 
     pm.Items.Add(mi);
 
     m0 := TMenuItem.Create(self);
-    m0.Caption := '»­Í¼';
+    m0.Caption := 'ç”»å›¾';
     m0.OnClick := draw_setClick;
     pm.Items.Add(m0);
 
     m2 := TMenuItem.Create(self);
-    m2.Caption := 'Ó¦ÓÃ';
+    m2.Caption := 'åº”ç”¨';
     m2.OnClick := action_bootom_panelClick;
     pm.Items.Add(m2);
 
     m1 := TMenuItem.Create(self);
-    m1.Caption := 'ÉèÖÃ';
+    m1.Caption := 'è®¾ç½®';
     m1.OnClick := action_setClick;
     pm.Items.Add(m1);
 
     m3 := TMenuItem.Create(self);
-    m3.Caption := 'ÈÈ¼ü';
+    m3.Caption := 'çƒ­é”®';
     pm.Items.Add(m3);
     m3.OnClick := action_set_acceClick;
 
     m4 := TMenuItem.Create(self);
-    m4.Caption := 'ÍË³ö';
+    m4.Caption := 'é€€å‡º';
     pm.Items.Add(m4);
     m4.OnClick := action_terminateClick;
     form1.PopupMenu := pm;
@@ -323,7 +299,7 @@ begin
     begin
       EventDef.X := X;
       EventDef.Y := Y;
-      move_windows(Handle);
+     
     end
     else
       TImage(Sender).OnClick(self);
@@ -336,9 +312,11 @@ begin
     begin
       a := g_core.nodes.diagnosticsNode[i].Left - ScreenToClient(lp).X + g_core.nodes.diagnosticsNode[i].Width / 2;
       b := g_core.nodes.diagnosticsNode[i].Top - ScreenToClient(lp).Y + g_core.nodes.diagnosticsNode[i].Height / 4;
-      rate := 1 - sqrt(a * a + b * b) / g_core.utils.get_zoom_factor(g_core.nodes.nodeWH);
+     // rate := 1 - sqrt(a * a + b * b) / g_core.utils.get_zoom_factor(g_core.nodes.nodeWH);
+    //  rate := Min(Max(rate, 0.5), 1);
+ rate := Exp(-sqrt(a * a + b * b) / g_core.utils.get_zoom_factor
+        (g_core.nodes.nodeWH));
       rate := Min(Max(rate, 0.5), 1);
-
 
 //      a := Abs(g_core.nodes.diagnosticsNode[i].Left - ScreenToClient(lp).X);
 //      rate := 1 / (1 + Exp(-a / (g_core.nodes.nodeWidth * 2)));
@@ -360,7 +338,6 @@ end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
 begin
-  img_bg1.Free;
   UnregisterHotKey(Handle, FShowkeyid);
   GlobalDeleteAtom(FShowkeyid);
   KillTimer(Handle, 10);
@@ -378,13 +355,7 @@ begin
 
 end;
 
-procedure TForm1.move_windows(h: thandle);
-begin
 
-  ReleaseCapture;
-  SendMessage(h, WM_SYSCOMMAND, SC_MOVE + HTCaption, 0);
-
-end;
 
 procedure TForm1.N1Click(Sender: TObject);
 begin
@@ -416,7 +387,7 @@ begin
   OpenDlg := TOpenDialog.Create(nil);
   with OpenDlg do
   begin
-    Filter := 'ctrl+b ÈÈ¼ü(*.exe)|*.exe';
+    Filter := 'ctrl+b çƒ­é”®(*.exe)|*.exe';
     DefaultExt := '*.exe';
 
     if Execute then
