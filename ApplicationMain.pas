@@ -38,6 +38,7 @@ type
     pm: TPopupMenu;
     menuItems: array of TMenuItem;
     procedure CreateRoundRectRgn1(w, h: Integer);
+    procedure CalculateAndPositionNodes;
 
   public
 
@@ -66,13 +67,9 @@ begin
   Form1.snap_top_windows();
 end;
 
-procedure TForm1.layout();
+procedure TForm1.CalculateAndPositionNodes();
 begin
-  g_core.NodeInformation.NodeSize :=
-    g_core.DatabaseManager.cfgDb.GetInteger('ih');
-
-  g_core.NodeInformation.IsConfiguring := False;
-
+  g_core.NodeInformation.NodeSize := g_core.NodeInformation.nodeWidth;
   var
   hashKeys1 := g_core.DatabaseManager.itemdb.GetKeys();
 
@@ -114,7 +111,6 @@ begin
       Transparent := true;
       Center := true;
       nodePath := g_core.DatabaseManager.itemdb.GetString(hashKeys1[I], False);
-      // tag := 1;
       var
       tmp := g_core.DatabaseManager.itemdb.GetString(hashKeys1[I]);
       Picture.LoadFromFile(tmp);
@@ -128,7 +124,7 @@ begin
       nodeLeft := g_core.NodeInformation.NodesArray[I].Left;
     end;
   end;
-
+  freeandnil(hashKeys1);
   Form1.Left := g_core.DatabaseManager.cfgDb.GetInteger('left');
   Form1.top := g_core.DatabaseManager.cfgDb.GetInteger('top');
   Form1.Width := g_core.NodeInformation.Count * g_core.NodeInformation.NodeSize
@@ -137,6 +133,16 @@ begin
 
   Form1.height := g_core.utils.CalculateFormHeight
     (g_core.NodeInformation.NodeSize, Form1.height);
+end;
+
+procedure TForm1.layout();
+begin
+  g_core.NodeInformation.NodeSize :=
+    g_core.DatabaseManager.cfgDb.GetInteger('ih');
+
+  g_core.NodeInformation.IsConfiguring := False;
+
+  CalculateAndPositionNodes();
 
   var
   TotalMonitorWidth := 0;
@@ -158,13 +164,18 @@ begin
   if Form1.top > PrimaryMonitorHeight then
     Form1.top := 0;
 
-  freeandnil(hashKeys1);
-
   g_core.utils.shortcutKey := g_core.DatabaseManager.cfgDb.GetString
     ('shortcut');
 
   restore_state();
   CreateRoundRectRgn1(Width, height);
+
+  if Form1.Width > TotalMonitorWidth then
+  begin
+    g_core.NodeInformation.nodeWidth := 36;
+    g_core.NodeInformation.NodeHeight := 36;
+    CalculateAndPositionNodes();
+  end;
 end;
 
 procedure TForm1.img_click(Sender: TObject);
