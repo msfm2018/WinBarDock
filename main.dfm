@@ -14,11 +14,14 @@ object Form1: TForm1
   Font.Style = []
   GlassFrame.Enabled = True
   GlassFrame.SheetOfGlass = True
+  OldCreateOrder = True
   Position = poDesigned
   Scaled = False
   OnClose = FormClose
   OnDestroy = FormDestroy
   OnMouseDown = FormMouseDown
+  OnPaint = FormPaint
   OnShow = FormShow
+  PixelsPerInch = 96
   TextHeight = 12
 end

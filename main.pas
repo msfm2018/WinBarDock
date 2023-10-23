@@ -1,4 +1,4 @@
-unit main;
+﻿unit main;
 
 interface
 
@@ -19,7 +19,6 @@ type
     procedure action_terminateClick(Sender: TObject);
     procedure action_set_acceClick(Sender: TObject);
     procedure action_bootom_panelClick(Sender: TObject);
-    procedure img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure N1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormPaint(Sender: TObject);
@@ -32,7 +31,7 @@ type
     procedure Image111MouseLeave(Sender: TObject);
 
   public
-    img_bg1: timage;
+
     procedure layout;
     procedure draw_setClick(Sender: TObject);
   end;
@@ -137,11 +136,6 @@ begin
   g_core.utils.shortcutKey := g_core.db.cfgDb.GetString('shortcut');
 
   restore_state();
-end;
-
-procedure TForm1.img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-
 end;
 
 procedure TForm1.img_click(Sender: TObject);
@@ -352,7 +346,8 @@ begin
   EventDef.isLeftClick := true;
   EventDef.Y := Y;
   EventDef.X := X;
-
+       ReleaseCapture;
+  SendMessage(Handle, WM_SYSCOMMAND, SC_MOVE + HTCaption, 0);
 end;
 
 
