@@ -3,7 +3,7 @@ unit event;
 interface
 
 type
-  TEventDefine = record
+  TMouseEvent  = record
     isLeftClick: Boolean;
     y: Integer;
     x: Integer;
@@ -12,7 +12,7 @@ type
 procedure restore_state();
 
 var
-  EventDef: TEventDefine;
+  EventDef: TMouseEvent ;
 
 implementation
 
@@ -20,11 +20,10 @@ procedure restore_state();
 begin
   with EventDef do
   begin
-    Y := 0;
-    X := 0;
+    y := 0;
+    x := 0;
     isLeftClick := False;
   end;
 end;
 
 end.
-
