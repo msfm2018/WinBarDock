@@ -1,8 +1,7 @@
 object Form1: TForm1
   Left = 270
   Top = 15
-  AlphaBlend = True
-  AlphaBlendValue = 200
+  AlphaBlendValue = 180
   BorderStyle = bsNone
   ClientHeight = 25
   ClientWidth = 221

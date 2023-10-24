@@ -13,8 +13,10 @@ uses
 
 type
   TForm1 = class(TForm)
-    procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure Image111MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Image111MouseMove(Sender: TObject; Shift: TShiftState;
+      X, Y: Integer);
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure action_setClick(Sender: TObject);
@@ -67,6 +69,7 @@ end;
 
 procedure TForm1.CalculateAndPositionNodes();
 begin
+  g_core.NodeInformation.NodeSize := g_core.NodeInformation.nodeWidth;
   var
   hashKeys1 := g_core.DatabaseManager.itemdb.GetKeys();
 
@@ -86,11 +89,15 @@ begin
     g_core.NodeInformation.NodesArray[I] := tnode.Create(self);
 
     if I = 0 then
-      g_core.NodeInformation.NodesArray[I].Left := g_core.NodeInformation.NodeGap + 10
+      g_core.NodeInformation.NodesArray[I].Left :=
+        g_core.utils.CalculateSnapWidth(g_core.NodeInformation.NodeSize) + 10
     else
     begin
 
-      g_core.NodeInformation.NodesArray[I].Left := g_core.NodeInformation.NodesArray[I - 1].Left + g_core.NodeInformation.NodesArray[I - 1].Width + g_core.NodeInformation.NodeGap;
+      g_core.NodeInformation.NodesArray[I].Left :=
+        g_core.NodeInformation.NodesArray[I - 1].Left +
+        g_core.NodeInformation.NodesArray[I - 1].Width +
+        g_core.utils.CalculateSnapWidth(g_core.NodeInformation.NodeSize);
 
     end;
 
@@ -120,14 +127,18 @@ begin
   freeandnil(hashKeys1);
   Form1.Left := g_core.DatabaseManager.cfgDb.GetInteger('left');
   Form1.top := g_core.DatabaseManager.cfgDb.GetInteger('top');
-  Form1.Width := g_core.NodeInformation.Count * g_core.NodeInformation.NodeSize + g_core.NodeInformation.Count * g_core.NodeInformation.NodeGap + 40;
+  Form1.Width := g_core.NodeInformation.Count * g_core.NodeInformation.NodeSize
+    + g_core.NodeInformation.Count * g_core.utils.CalculateSnapWidth
+    (g_core.NodeInformation.NodeSize) + 40;
 
-  Form1.height := g_core.utils.CalculateFormHeight(g_core.NodeInformation.NodeSize, Form1.height);
+  Form1.height := g_core.utils.CalculateFormHeight
+    (g_core.NodeInformation.NodeSize, Form1.height);
 end;
 
 procedure TForm1.layout();
 begin
-  g_core.NodeInformation.NodeSize := g_core.DatabaseManager.cfgDb.GetInteger('ih');
+  g_core.NodeInformation.NodeSize :=
+    g_core.DatabaseManager.cfgDb.GetInteger('ih');
 
   g_core.NodeInformation.IsConfiguring := False;
 
@@ -153,14 +164,16 @@ begin
   if Form1.top > PrimaryMonitorHeight then
     Form1.top := 0;
 
-  g_core.utils.shortcutKey := g_core.DatabaseManager.cfgDb.GetString('shortcut');
+  g_core.utils.shortcutKey := g_core.DatabaseManager.cfgDb.GetString
+    ('shortcut');
 
   restore_state();
   CreateRoundRectRgn1(Width, height);
 
   if Form1.Width > TotalMonitorWidth then
   begin
-    g_core.NodeInformation.NodeSize := 36;
+    g_core.NodeInformation.nodeWidth := 36;
+    g_core.NodeInformation.NodeHeight := 36;
     CalculateAndPositionNodes();
   end;
 end;
@@ -197,9 +210,12 @@ begin
 
     for I := 0 to g_core.NodeInformation.Count - 1 do
     begin
-      g_core.NodeInformation.NodesArray[I].Left := g_core.NodeInformation.NodesArray[I].nodeLeft;
-      g_core.NodeInformation.NodesArray[I].Width := g_core.NodeInformation.NodeSize;
-      g_core.NodeInformation.NodesArray[I].height := g_core.NodeInformation.NodeSize;
+      g_core.NodeInformation.NodesArray[I].Left :=
+        g_core.NodeInformation.NodesArray[I].nodeLeft;
+      g_core.NodeInformation.NodesArray[I].Width :=
+        g_core.NodeInformation.NodeSize;
+      g_core.NodeInformation.NodesArray[I].height :=
+        g_core.NodeInformation.NodeSize;
     end;
 
     if top < g_core.NodeInformation.TopSnapDistance then
@@ -218,7 +234,7 @@ procedure TForm1.CreateRoundRectRgn1(w, h: Integer);
 var
   Rgn: HRGN;
 begin
-  Rgn := CreateRoundRectRgn(0, 0, w, h, 30, 30);
+  Rgn := CreateRoundRectRgn(0, 0, w, h, 20, 20);
 
   SetWindowRgn(Handle, Rgn, true);
 end;
@@ -234,7 +250,8 @@ begin
 
   BorderStyle := bsNone;
 
-  SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) and (not WS_EX_APPWINDOW));
+  SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) and
+    (not WS_EX_APPWINDOW));
   ShowWindow(Application.Handle, SW_HIDE);
   SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
 
@@ -275,7 +292,8 @@ begin
 
 end;
 
-procedure TForm1.Image111MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+procedure TForm1.Image111MouseMove(Sender: TObject; Shift: TShiftState;
+  X, Y: Integer);
 var
   a, rate: double;
   b: double;
@@ -299,23 +317,26 @@ begin
     var
       lp: tpoint;
     GetCursorPos(lp);
-
     for I := 0 to g_core.NodeInformation.Count - 1 do
     begin
-      a := g_core.NodeInformation.NodesArray[I].Left - ScreenToClient(lp).X + g_core.NodeInformation.NodesArray[I].Width / 2;
-      b := g_core.NodeInformation.NodesArray[I].top - ScreenToClient(lp).Y + g_core.NodeInformation.NodesArray[I].height / 4;
+      a := g_core.NodeInformation.NodesArray[I].Left - ScreenToClient(lp).X +
+        g_core.NodeInformation.NodesArray[I].Width / 2;
+      b := g_core.NodeInformation.NodesArray[I].top - ScreenToClient(lp).Y +
+        g_core.NodeInformation.NodesArray[I].height / 4;
       // rate := 1 - sqrt(a * a + b * b) / g_core.utils.get_zoom_factor(g_core.NodeInformation.nodeWH);
       // rate := Min(Max(rate, 0.5), 1);
-      rate := Exp(-sqrt(a * a + b * b) / (101.82 * 5));
-
+      rate := Exp(-sqrt(a * a + b * b) / g_core.utils.CalculateZoomFactor
+        (g_core.NodeInformation.NodeSize));
       rate := Min(Max(rate, 0.5), 1);
 
       // a := Abs(g_core.NodeInformation.diagnosticsNode[i].Left - ScreenToClient(lp).X);
       // rate := 1 / (1 + Exp(-a / (g_core.NodeInformation.nodeWidth * 2)));
       // rate := Min(Max(rate, 0.5), 1);
 
-      g_core.NodeInformation.NodesArray[I].Width := Floor(g_core.NodeInformation.NodeSize * 1.4 * rate);
-      g_core.NodeInformation.NodesArray[I].height := Floor(g_core.NodeInformation.NodeSize * 1.4 * rate);
+      g_core.NodeInformation.NodesArray[I].Width :=
+        Floor(g_core.NodeInformation.NodeSize * 1.4 * rate);
+      g_core.NodeInformation.NodesArray[I].height :=
+        Floor(g_core.NodeInformation.NodeSize * 1.4 * rate);
 
     end;
 
@@ -335,7 +356,8 @@ begin
   action_terminateClick(self);
 end;
 
-procedure TForm1.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TForm1.FormMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
 begin
   if g_core.NodeInformation.IsConfiguring then
     exit;
@@ -360,7 +382,8 @@ begin
   TCfgForm(vobj).Show;
 
   g_core.NodeInformation.IsConfiguring := true;
-  SetWindowPos(TCfgForm(vobj).Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
+  SetWindowPos(TCfgForm(vobj).Handle, HWND_TOPMOST, 0, 0, 0, 0,
+    SWP_NOMOVE or SWP_NOSIZE);
 end;
 
 procedure TForm1.action_set_acceClick(Sender: TObject);
@@ -376,7 +399,8 @@ begin
     if Execute then
     begin
       g_core.utils.shortcutKey := filename;
-      g_core.DatabaseManager.cfgDb.SetVarValue('shortcut', g_core.utils.shortcutKey.Trim);
+      g_core.DatabaseManager.cfgDb.SetVarValue('shortcut',
+        g_core.utils.shortcutKey.Trim);
     end;
   end;
   OpenDlg.Free;
@@ -393,7 +417,8 @@ begin
 
   TbottomForm(vobj).top := Screen.WorkAreaHeight - TbottomForm(vobj).height;
   TbottomForm(vobj).Width := Screen.WorkAreaWidth - 10;
-  TbottomForm(vobj).Left := ((Screen.WorkAreaWidth - TbottomForm(vobj).Width) div 2);
+  TbottomForm(vobj).Left :=
+    ((Screen.WorkAreaWidth - TbottomForm(vobj).Width) div 2);
 
   restore_state();
 end;
