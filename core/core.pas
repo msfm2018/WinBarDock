@@ -29,9 +29,6 @@ type
     VisibleHeight: integer = 9; // 代表可见高度
     TopSnapDistance: integer = 40; // 吸附距离
 
-    /// 原始数据
-    NodeWidth = 72;
-    NodeHeight = 72;
     NodeGap = 30; // 间隔
   end;
 
@@ -42,13 +39,10 @@ type
 
   public
     procedure LaunchApplication(path: string);
-    // 根据宽度 得到间隙
-    function CalculateSnapWidth(w: integer): integer;
     // 比例因子
-    function CalculateZoomFactor(w: double): double;
     procedure SetAutoRun(ok: Boolean);
 
-     function CalculateFormHeight(nodeSize, windowHeight: Integer): Integer;
+    function CalculateFormHeight(NodeSize, windowHeight: integer): integer;
   end;
 
   TGblVar = class
@@ -84,28 +78,11 @@ begin
   end;
 end;
 
-
-
-function TUtils.CalculateFormHeight(nodeSize, windowHeight: Integer): Integer;
+function TUtils.CalculateFormHeight(NodeSize, windowHeight: integer): integer;
 begin
-  Result := Math.Ceil(g_core.NodeInformation.NodeHeight * nodeSize / 138)
-   +       g_core.DatabaseManager.cfgDb.GetInteger('ih');
+  Result := math.Ceil(g_core.NodeInformation.NodeSize * NodeSize / 138) +
+    g_core.DatabaseManager.cfgDb.GetInteger('ih');
 
-end;
-
-
-function TUtils.CalculateSnapWidth(w: integer): integer;
-begin
-  Result := round(w * g_core.NodeInformation.NodeGap /
-    g_core.NodeInformation.NodeWidth);
-  // 64:30=128:?
-
-end;
-
-function TUtils.CalculateZoomFactor(w: double): double;
-begin
-  // 计算比例因子
-  Result := (101.82 * 5 * w) / g_core.NodeInformation.NodeWidth;
 end;
 
 procedure TUtils.LaunchApplication(path: string);
@@ -135,6 +112,7 @@ end;
 initialization
 
 g_core := TGblVar.create;
+g_core.NodeInformation.NodeSize := 72;
 
 if g_core.DatabaseManager.cfgDb = nil then
   g_core.DatabaseManager.cfgDb := TCfgDB.create;
