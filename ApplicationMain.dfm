@@ -20,7 +20,6 @@ object Form1: TForm1
   OnClose = FormClose
   OnDestroy = FormDestroy
   OnMouseDown = FormMouseDown
-  OnPaint = FormPaint
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 12
