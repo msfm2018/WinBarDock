@@ -29,7 +29,16 @@ type
     VisibleHeight: integer = 9; // 代表可见高度
     TopSnapDistance: integer = 40; // 吸附距离
 
+    /// 原始数据
+    // NodeWidth = 72;
+    // NodeHeight = 72;
     NodeGap = 30; // 间隔
+
+  var
+    NodeWidth: integer;
+
+  var
+    NodeHeight: integer;
   end;
 
   TUtils = record
@@ -39,7 +48,10 @@ type
 
   public
     procedure LaunchApplication(path: string);
+    // 根据宽度 得到间隙
+    function CalculateSnapWidth(w: integer): integer;
     // 比例因子
+    function CalculateZoomFactor(w: double): double;
     procedure SetAutoRun(ok: Boolean);
 
     function CalculateFormHeight(NodeSize, windowHeight: integer): integer;
@@ -80,19 +92,29 @@ end;
 
 function TUtils.CalculateFormHeight(NodeSize, windowHeight: integer): integer;
 begin
-  Result := math.Ceil(g_core.NodeInformation.NodeSize * NodeSize / 138) +
-    g_core.DatabaseManager.cfgDb.GetInteger('ih');
+  Result := math.Ceil(g_core.NodeInformation.NodeHeight * NodeSize / 138) + g_core.DatabaseManager.cfgDb.GetInteger('ih');
 
+end;
+
+function TUtils.CalculateSnapWidth(w: integer): integer;
+begin
+  Result := round(w * g_core.NodeInformation.NodeGap / g_core.NodeInformation.NodeWidth);
+  // 64:30=128:?
+
+end;
+
+function TUtils.CalculateZoomFactor(w: double): double;
+begin
+  // 计算比例因子
+  Result := (101.82 * 5 * w) / g_core.NodeInformation.NodeWidth;
 end;
 
 procedure TUtils.LaunchApplication(path: string);
 begin
   if path.trim = '' then
     exit;
-  if path.Contains('https') or path.Contains('http') or path.Contains('.html')
-    or path.Contains('.htm') then
-    winapi.shellapi.ShellExecute(application.Handle, nil, PChar(path), nil, nil,
-      SW_SHOWNORMAL)
+  if path.Contains('https') or path.Contains('http') or path.Contains('.html') or path.Contains('.htm') then
+    winapi.shellapi.ShellExecute(application.Handle, nil, PChar(path), nil, nil, SW_SHOWNORMAL)
   else
     ShellExecute(0, 'open', PChar(path), nil, nil, SW_SHOW);
 end;
@@ -112,7 +134,8 @@ end;
 initialization
 
 g_core := TGblVar.create;
-g_core.NodeInformation.NodeSize := 72;
+g_core.NodeInformation.NodeWidth := 72;
+g_core.NodeInformation.NodeHeight := 72;
 
 if g_core.DatabaseManager.cfgDb = nil then
   g_core.DatabaseManager.cfgDb := TCfgDB.create;
@@ -126,13 +149,11 @@ g_core.utils.FileMap := TDictionary<string, string>.create;
 
 // 初始化数据
 
-g_core.NodeInformation.NodeSize :=
-  g_core.DatabaseManager.cfgDb.GetInteger('ih');
+g_core.NodeInformation.NodeSize := g_core.DatabaseManager.cfgDb.GetInteger('ih');
 
 g_core.FormObjectDictionary := TDictionary<string, tobject>.create;
 g_core.FormObjectDictionary.AddOrSetValue('cfgForm', TCfgForm.create(nil));
-g_core.FormObjectDictionary.AddOrSetValue('bottomForm',
-  TbottomForm.create(nil));
+g_core.FormObjectDictionary.AddOrSetValue('bottomForm', TbottomForm.create(nil));
 
 g_core.utils.SetAutoRun(true);
 

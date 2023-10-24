@@ -27,8 +27,7 @@ type
   public
     function GetString(ValName: string; keyflag: boolean = true): string;
 
-    procedure SetVarValue(ValName: string; val: Variant;
-      keyflag: boolean = true);
+    procedure SetVarValue(ValName: string; val: Variant; keyflag: boolean = true);
 
     procedure DeleteValue(ValName: string; keyflag: boolean = true);
     function GetKeys(keyflag: boolean = true): tlist<string>;
@@ -75,9 +74,7 @@ constructor TCfgDB.Create;
 var
   FInitSQL: string;
 begin
-  FInitSQL := 'Create Table SysProfile(ID Integer Primary Key, ' +
-    'ValKey varchar(50) COLLATE NOCASE, Value varchar(400) COLLATE NOCASE);' +
-    'Create Index idx_SysProfile_ValKey On SysProfile(ValKey)';
+  FInitSQL := 'Create Table SysProfile(ID Integer Primary Key, ' + 'ValKey varchar(50) COLLATE NOCASE, Value varchar(400) COLLATE NOCASE);' + 'Create Index idx_SysProfile_ValKey On SysProfile(ValKey)';
 
   if not sldb.TableExists('SysProfile') then
   begin
@@ -123,8 +120,7 @@ end;
 
 function TCfgDB.GetKeys(AKey: string): string;
 begin
-  sltb := sldb.GetTable('Select ValKey from SysProfile where ValKey like ''' +
-    AKey + '%'' order by ID asc');
+  sltb := sldb.GetTable('Select ValKey from SysProfile where ValKey like ''' + AKey + '%'' order by ID asc');
 
   sltb.MoveFirst;
   if sltb.Count > 0 then
@@ -135,8 +131,7 @@ function TCfgDB.GetString(ValName: string): string;
 var
   sltb: TSQLIteTable;
 begin
-  sltb := sldb.GetTable('select Value from SysProfile where ValKey=''' +
-    ValName + '''');
+  sltb := sldb.GetTable('select Value from SysProfile where ValKey=''' + ValName + '''');
   sltb.MoveFirst;
   if sltb.Count > 0 then
     Result := (sltb.FieldAsString(sltb.FieldIndex['Value']));
@@ -171,23 +166,18 @@ var
 begin
   try
 
-    sltb := sldb.GetTable
-      (Format('select count(*) as co from SysProfile where ValKey=''%s''',
-      [ValName]));
+    sltb := sldb.GetTable(Format('select count(*) as co from SysProfile where ValKey=''%s''', [ValName]));
 
     sltb.MoveFirst;
     if sltb.Count > 0 then
       c := (sltb.FieldAsInteger(sltb.FieldIndex['co']));
     if c = 0 then
     begin
-      SQL := Format
-        ('Insert Into SysProfile(ValKey, Value) Values(''%s'', ''%s'')',
-        [ValName, val])
+      SQL := Format('Insert Into SysProfile(ValKey, Value) Values(''%s'', ''%s'')', [ValName, val])
     end
     else
     begin
-      SQL := Format('update SysProfile Set Value=''%s'' where ValKey=''%s''',
-        [val, ValName]);
+      SQL := Format('update SysProfile Set Value=''%s'' where ValKey=''%s''', [val, ValName]);
 
     end;
     try
@@ -218,18 +208,14 @@ constructor TItemsDb.Create;
 var
   FInitSQL: string;
 begin
-  FInitSQL := 'Create Table keysdb(ID Integer Primary Key, ' +
-    'ValKey varchar(50) COLLATE NOCASE, Value varchar(400) COLLATE NOCASE);' +
-    'Create Index idx_SysProfile_ValKey On SysProfile(ValKey)';
+  FInitSQL := 'Create Table keysdb(ID Integer Primary Key, ' + 'ValKey varchar(50) COLLATE NOCASE, Value varchar(400) COLLATE NOCASE);' + 'Create Index idx_SysProfile_ValKey On SysProfile(ValKey)';
 
   if not sldb.TableExists('keysdb') then
   begin
     sldb.execsql(FInitSQL);
   end;
 
-  FInitSQL := 'Create Table valuesdb(ID Integer Primary Key, ' +
-    'ValKey varchar(50) COLLATE NOCASE, Value varchar(400) COLLATE NOCASE);' +
-    'Create Index idx_SysProfile_ValKey On SysProfile(ValKey)';
+  FInitSQL := 'Create Table valuesdb(ID Integer Primary Key, ' + 'ValKey varchar(50) COLLATE NOCASE, Value varchar(400) COLLATE NOCASE);' + 'Create Index idx_SysProfile_ValKey On SysProfile(ValKey)';
 
   if not sldb.TableExists('valuesdb') then
   begin
@@ -289,16 +275,14 @@ var
 begin
   if keyflag then
   begin
-    sltb := sldb.GetTable('select Value from keysdb where ValKey=''' +
-      ValName + '''');
+    sltb := sldb.GetTable('select Value from keysdb where ValKey=''' + ValName + '''');
     sltb.MoveFirst;
     if sltb.Count > 0 then
       Result := (sltb.FieldAsString(sltb.FieldIndex['Value']));
   end
   else
   begin
-    sltb := sldb.GetTable('select Value from valuesdb where ValKey=''' +
-      ValName + '''');
+    sltb := sldb.GetTable('select Value from valuesdb where ValKey=''' + ValName + '''');
     sltb.MoveFirst;
     if sltb.Count > 0 then
       Result := (sltb.FieldAsString(sltb.FieldIndex['Value']));
@@ -316,22 +300,18 @@ begin
   if keyflag then
   begin
 
-    sltb := sldb.GetTable
-      (Format('select count(*) as co from keysdb where ValKey=''%s''',
-      [ValName]));
+    sltb := sldb.GetTable(Format('select count(*) as co from keysdb where ValKey=''%s''', [ValName]));
 
     sltb.MoveFirst;
     if sltb.Count > 0 then
       c := (sltb.FieldAsInteger(sltb.FieldIndex['co']));
     if c = 0 then
     begin
-      SQL := Format('Insert Into keysdb(ValKey, Value) Values(''%s'', ''%s'')',
-        [ValName, val])
+      SQL := Format('Insert Into keysdb(ValKey, Value) Values(''%s'', ''%s'')', [ValName, val])
     end
     else
     begin
-      SQL := Format('update keysdb Set Value=''%s'' where ValKey=''%s''',
-        [val, ValName]);
+      SQL := Format('update keysdb Set Value=''%s'' where ValKey=''%s''', [val, ValName]);
 
     end;
     try
@@ -347,23 +327,18 @@ begin
 
   begin
 
-    sltb := sldb.GetTable
-      (Format('select count(*) as co from valuesdb where ValKey=''%s''',
-      [ValName]));
+    sltb := sldb.GetTable(Format('select count(*) as co from valuesdb where ValKey=''%s''', [ValName]));
 
     sltb.MoveFirst;
     if sltb.Count > 0 then
       c := (sltb.FieldAsInteger(sltb.FieldIndex['co']));
     if c = 0 then
     begin
-      SQL := Format
-        ('Insert Into valuesdb(ValKey, Value) Values(''%s'', ''%s'')',
-        [ValName, val])
+      SQL := Format('Insert Into valuesdb(ValKey, Value) Values(''%s'', ''%s'')', [ValName, val])
     end
     else
     begin
-      SQL := Format('update valuesdb Set Value=''%s'' where ValKey=''%s''',
-        [val, ValName]);
+      SQL := Format('update valuesdb Set Value=''%s'' where ValKey=''%s''', [val, ValName]);
 
     end;
     try
@@ -388,9 +363,7 @@ end;
 constructor TdesktopDb.Create;
 begin
   var
-  FInitSQL := 'Create Table desktopdb(ID Integer Primary Key, ' +
-    'ValKey varchar(50) COLLATE NOCASE, Value varchar(400) COLLATE NOCASE);' +
-    'Create Index idx_SysProfile_ValKey On SysProfile(ValKey)';
+  FInitSQL := 'Create Table desktopdb(ID Integer Primary Key, ' + 'ValKey varchar(50) COLLATE NOCASE, Value varchar(400) COLLATE NOCASE);' + 'Create Index idx_SysProfile_ValKey On SysProfile(ValKey)';
 
   if not sldb.TableExists('desktopdb') then
   begin
@@ -435,8 +408,7 @@ var
   sltb: TSQLIteTable;
 begin
 
-  sltb := sldb.GetTable('select Value from desktopdb where ValKey=''' +
-    ValName + '''');
+  sltb := sldb.GetTable('select Value from desktopdb where ValKey=''' + ValName + '''');
   sltb.MoveFirst;
   if sltb.Count > 0 then
     Result := (sltb.FieldAsString(sltb.FieldIndex['Value']));
@@ -451,22 +423,18 @@ var
   c: Integer;
 begin
 
-  sltb := sldb.GetTable
-    (Format('select count(*) as co from desktopdb where ValKey=''%s''',
-    [ValName]));
+  sltb := sldb.GetTable(Format('select count(*) as co from desktopdb where ValKey=''%s''', [ValName]));
 
   sltb.MoveFirst;
   if sltb.Count > 0 then
     c := (sltb.FieldAsInteger(sltb.FieldIndex['co']));
   if c = 0 then
   begin
-    SQL := Format('Insert Into desktopdb(ValKey, Value) Values(''%s'', ''%s'')',
-      [ValName, val])
+    SQL := Format('Insert Into desktopdb(ValKey, Value) Values(''%s'', ''%s'')', [ValName, val])
   end
   else
   begin
-    SQL := Format('update desktopdb Set Value=''%s'' where ValKey=''%s''',
-      [val, ValName]);
+    SQL := Format('update desktopdb Set Value=''%s'' where ValKey=''%s''', [val, ValName]);
 
   end;
   try
