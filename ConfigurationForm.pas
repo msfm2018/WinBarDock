@@ -76,15 +76,12 @@ procedure TCfgForm.Button1Click(Sender: TObject);
 begin
   if (Trim(LabeledEdit1.Text) <> '') and (Trim(LabeledEdit2.Text) <> '') then
   begin
-    if g_core.utils.fileMap.TryAdd(Trim(LabeledEdit1.Text),
-      Trim(LabeledEdit2.Text)) then
+    if g_core.utils.fileMap.TryAdd(Trim(LabeledEdit1.Text), Trim(LabeledEdit2.Text)) then
     begin
       if (Trim(LabeledEdit1.Text).Contains('http')) then
-        ValueListEditor1.InsertRow((Trim(LabeledEdit1.Text)),
-          ExtractFileName(Trim(LabeledEdit2.Text)), True)
+        ValueListEditor1.InsertRow((Trim(LabeledEdit1.Text)), ExtractFileName(Trim(LabeledEdit2.Text)), True)
       else
-        ValueListEditor1.InsertRow(ExtractFileName(Trim(LabeledEdit1.Text)),
-          ExtractFileName(Trim(LabeledEdit2.Text)), True);
+        ValueListEditor1.InsertRow(ExtractFileName(Trim(LabeledEdit1.Text)), ExtractFileName(Trim(LabeledEdit2.Text)), True);
       LabeledEdit1.Text := '';
       LabeledEdit2.Text := '';
     end;
@@ -96,12 +93,13 @@ procedure TCfgForm.Button2Click(Sender: TObject);
 begin
   g_core.NodeInformation.NodeSize := strtoint(Edit1.Text);
   g_core.DatabaseManager.cfgDb.SetVarValue('ih', StrToIntDef(Edit1.Text, 118));
+  close();
 end;
 
 procedure TCfgForm.Button3Click(Sender: TObject);
 begin
   // 初始化数据
-  g_core.DatabaseManager.cfgDb.SetVarValue('ih', 64);
+  g_core.DatabaseManager.cfgDb.SetVarValue('ih', 80);
   reLayout := True;
   // Close();
 end;
@@ -119,8 +117,7 @@ end;
 
 procedure TCfgForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  if (oldNum <> g_core.utils.fileMap.Count) or reLayout or
-    (Edit1.Text <> oldValue.ToString) then
+  if (oldNum <> g_core.utils.fileMap.Count) or reLayout or (Edit1.Text <> oldValue.ToString) then
   begin
 
     update_db();
@@ -135,16 +132,12 @@ var
   appPath, imgPath: string;
 begin
   ValueListEditor1.Strings.Clear;
-  var
-  Keys := g_core.DatabaseManager.itemdb.GetKeys;
+  var Keys := g_core.DatabaseManager.itemdb.GetKeys;
   for var i := 0 to Keys.Count - 1 do
   begin
-    var
-    key := Keys[i];
-    var
-    value := g_core.DatabaseManager.itemdb.GetString(key);
-    var
-    altValue := g_core.DatabaseManager.itemdb.GetString(key, false);
+    var key := Keys[i];
+    var value := g_core.DatabaseManager.itemdb.GetString(key);
+    var altValue := g_core.DatabaseManager.itemdb.GetString(key, false);
     g_core.utils.fileMap.TryAdd(value, altValue);
     imgPath := ExtractFileName(value);
     if altValue.Contains('http') then
@@ -203,13 +196,11 @@ end;
 
 procedure TCfgForm.ValueListEditor1DblClick(Sender: TObject);
 begin
-  var
-  pp := ValueListEditor1.Keys[ValueListEditor1.Row];
+  var pp := ValueListEditor1.Keys[ValueListEditor1.Row];
   if pp = '' then
     Exit;
   begin
-    var
-      inx: Integer;
+    var inx: Integer;
 
     for var key in g_core.utils.fileMap.Keys do
     begin
@@ -218,8 +209,7 @@ begin
         if ValueListEditor1.FindRow(pp, inx) then
         begin
           ValueListEditor1.DeleteRow(inx);
-          var
-          key_ := HashName(pansichar(key)).ToString;
+          var key_ := HashName(pansichar(key)).ToString;
           g_core.utils.fileMap.Remove(key);
           g_core.DatabaseManager.itemdb.DeleteValue(key_);
           g_core.DatabaseManager.itemdb.DeleteValue(key_, false);
@@ -234,3 +224,4 @@ begin
 end;
 
 end.
+

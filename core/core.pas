@@ -15,6 +15,8 @@ type
   public
     nodePath: string;
     nodeLeft: integer; // 每个节点靠左位置
+    OriginalWidth, OriginalHeight: integer;
+    CenterX, CenterY: integer;
   end;
 
   TNodes = record
@@ -23,22 +25,13 @@ type
     IsConfiguring: Boolean;
 
     NodeSize: integer;
+    NodeGap: integer;
 
   const
-    MarginTop = 10;
     VisibleHeight: integer = 9; // 代表可见高度
     TopSnapDistance: integer = 40; // 吸附距离
+    // NodeGap = 30; // 间隔
 
-    /// 原始数据
-    // NodeWidth = 72;
-    // NodeHeight = 72;
-    NodeGap = 30; // 间隔
-
-  var
-    NodeWidth: integer;
-
-  var
-    NodeHeight: integer;
   end;
 
   TUtils = record
@@ -48,8 +41,6 @@ type
 
   public
     procedure LaunchApplication(path: string);
-    // 根据宽度 得到间隙
-    function CalculateSnapWidth(w: integer): integer;
     // 比例因子
     function CalculateZoomFactor(w: double): double;
     procedure SetAutoRun(ok: Boolean);
@@ -63,21 +54,21 @@ type
     utils: TUtils;
     NodeInformation: TNodes;
   private
-    FormObjectDictionary: TDictionary<string, tobject>;
+    ObjectMap: TDictionary<string, tobject>;
   public
     function FindObjectByName(name_: string): tobject;
   end;
-
+ type
+  TMenuItemClickHandler = procedure(Sender: TObject) of object;
+  const   menuItemCaptions: array[0..4] of string = ('翻译', '应用', '设置', '热键', '退出');
 var
   g_core: TGblVar;
 
 implementation
 
 procedure TUtils.SetAutoRun(ok: Boolean);
-var
-  reg: TRegistry;
 begin
-  reg := TRegistry.create;
+ var reg := TRegistry.create;
   try
     reg.RootKey := HKEY_CURRENT_USER;
 
@@ -92,21 +83,15 @@ end;
 
 function TUtils.CalculateFormHeight(NodeSize, windowHeight: integer): integer;
 begin
-  Result := math.Ceil(g_core.NodeInformation.NodeHeight * NodeSize / 138) + g_core.DatabaseManager.cfgDb.GetInteger('ih');
-
+//  Result := math.Ceil(g_core.NodeInformation.NodeSize * NodeSize / 138) + g_core.DatabaseManager.cfgDb.GetInteger('ih');
+      result:=NodeSize+NodeSize div 2 +20;
 end;
 
-function TUtils.CalculateSnapWidth(w: integer): integer;
-begin
-  Result := round(w * g_core.NodeInformation.NodeGap / g_core.NodeInformation.NodeWidth);
-  // 64:30=128:?
-
-end;
 
 function TUtils.CalculateZoomFactor(w: double): double;
 begin
   // 计算比例因子
-  Result := (101.82 * 5 * w) / g_core.NodeInformation.NodeWidth;
+  Result := (101.82 * 5 * w) / g_core.NodeInformation.NodeSize;
 end;
 
 procedure TUtils.LaunchApplication(path: string);
@@ -125,7 +110,7 @@ function TGblVar.FindObjectByName(name_: string): tobject;
 var
   vobj: tobject;
 begin
-  if g_core.FormObjectDictionary.TryGetValue(name_, vobj) then
+  if g_core.ObjectMap.TryGetValue(name_, vobj) then
     Result := vobj
   else
     Result := nil;
@@ -134,9 +119,10 @@ end;
 initialization
 
 g_core := TGblVar.create;
-g_core.NodeInformation.NodeWidth := 72;
-g_core.NodeInformation.NodeHeight := 72;
 
+
+g_core.NodeInformation.NodeSize := g_core.DatabaseManager.cfgDb.GetInteger('ih');
+                     g_core.NodeInformation.NodeGap:=Round( g_core.NodeInformation.NodeSize div 4 ); //4根据 rate 最多增加宽度的一半
 if g_core.DatabaseManager.cfgDb = nil then
   g_core.DatabaseManager.cfgDb := TCfgDB.create;
 
@@ -147,21 +133,18 @@ g_core.DatabaseManager.desktopdb := TdesktopDb.create;
 
 g_core.utils.FileMap := TDictionary<string, string>.create;
 
-// 初始化数据
 
-g_core.NodeInformation.NodeSize := g_core.DatabaseManager.cfgDb.GetInteger('ih');
-
-g_core.FormObjectDictionary := TDictionary<string, tobject>.create;
-g_core.FormObjectDictionary.AddOrSetValue('cfgForm', TCfgForm.create(nil));
-g_core.FormObjectDictionary.AddOrSetValue('bottomForm', TbottomForm.create(nil));
+g_core.ObjectMap := TDictionary<string, tobject>.create;
+g_core.ObjectMap.AddOrSetValue('cfgForm', TCfgForm.create(nil));
+g_core.ObjectMap.AddOrSetValue('bottomForm', TbottomForm.create(nil));
 
 g_core.utils.SetAutoRun(true);
 
 finalization
 
-for var MyElem in g_core.FormObjectDictionary.Values do
+for var MyElem in g_core.ObjectMap.Values do
   FreeAndNil(MyElem);
-g_core.FormObjectDictionary.Free;
+g_core.ObjectMap.Free;
 
 g_core.utils.FileMap.Free;
 

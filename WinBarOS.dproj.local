@@ -13,12 +13,12 @@
     <Transaction>2022/06/27 09:43:45.000.801,C:\Users\Administrator\Desktop\git\win_mac_tool\desktopTool.dproj=C:\Users\Administrator\Desktop\git\win_mac_tool\tsFm.dproj</Transaction>
     <Transaction>2022/06/27 09:47:26.000.200,C:\Users\Administrator\Desktop\git\win_mac_tool\core\core_db.pas=C:\Users\Administrator\Desktop\git\win_mac_tool\core\CoreDB.pas</Transaction>
     <Transaction>2022/06/27 09:49:51.000.595,C:\Users\Administrator\Desktop\git\win_mac_tool\dTool.dproj=C:\Users\Administrator\Desktop\git\win_mac_tool\desktopTool.dproj</Transaction>
-    <Transaction>2023/10/23 22:59:37.424,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\WinBarOS.dproj=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\dTool.dproj</Transaction>
-    <Transaction>2023/10/23 23:00:58.677,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ConfigurationForm.pas=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\cfg_form.pas</Transaction>
-    <Transaction>2023/10/23 23:00:58.677,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ConfigurationForm.dfm=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\cfg_form.dfm</Transaction>
-    <Transaction>2023/10/23 23:03:12.370,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\InfoBarForm.dfm=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\bottom_form.dfm</Transaction>
-    <Transaction>2023/10/23 23:03:12.370,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\InfoBarForm.pas=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\bottom_form.pas</Transaction>
-    <Transaction>2023/10/23 23:07:51.520,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ApplicationMain.dfm=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\main.dfm</Transaction>
-    <Transaction>2023/10/23 23:07:51.520,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ApplicationMain.pas=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\main.pas</Transaction>
+    <Transaction>2023/10/23 22:59:37.000.424,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\WinBarOS.dproj=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\dTool.dproj</Transaction>
+    <Transaction>2023/10/23 23:00:58.000.677,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ConfigurationForm.pas=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\cfg_form.pas</Transaction>
+    <Transaction>2023/10/23 23:00:58.000.677,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ConfigurationForm.dfm=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\cfg_form.dfm</Transaction>
+    <Transaction>2023/10/23 23:03:12.000.370,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\InfoBarForm.dfm=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\bottom_form.dfm</Transaction>
+    <Transaction>2023/10/23 23:03:12.000.370,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\InfoBarForm.pas=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\bottom_form.pas</Transaction>
+    <Transaction>2023/10/23 23:07:51.000.520,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ApplicationMain.dfm=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\main.dfm</Transaction>
+    <Transaction>2023/10/23 23:07:51.000.520,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ApplicationMain.pas=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\main.pas</Transaction>
   </Transactions>
 </BorlandProject>

@@ -95,18 +95,17 @@ object CfgForm: TCfgForm
     OnDblClick = LabeledEdit2DblClick
   end
   object Button2: TButton
-    Left = 534
+    Left = 382
     Top = 570
-    Width = 98
-    Height = 21
-    Caption = #22270#26631#22823#23567#35774#23450
+    Width = 250
+    Height = 27
+    Caption = #33258#23450#20041#22270#26631#22823#23567
     TabOrder = 4
-    Visible = False
     OnClick = Button2Click
   end
   object Button3: TButton
-    Left = 535
-    Top = 598
+    Left = 530
+    Top = 603
     Width = 97
     Height = 20
     Caption = #22270#26631#21021#22987#21270
@@ -117,19 +116,17 @@ object CfgForm: TCfgForm
     Font.Style = []
     ParentFont = False
     TabOrder = 5
-    Visible = False
     OnClick = Button3Click
   end
   object Edit1: TSpinEdit
-    Left = 456
+    Left = 304
     Top = 570
     Width = 72
-    Height = 21
+    Height = 27
     MaxValue = 168
     MinValue = 30
     TabOrder = 6
-    Value = 64
-    Visible = False
+    Value = 36
   end
   object CheckBox1: TCheckBox
     Left = 8
