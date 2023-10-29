@@ -37,9 +37,9 @@ type
   TUtils = record
     FileMap: TDictionary<string, string>;
     ShortcutKey: string;
-  private
 
   public
+    procedure update_db;
     procedure LaunchApplication(path: string);
     // 比例因子
     function CalculateZoomFactor(w: double): double;
@@ -65,6 +65,28 @@ var
   g_core: TGblVar;
 
 implementation
+
+procedure TUtils.update_db;
+var
+  hash: string;
+  v: string;
+begin
+  g_core.DatabaseManager.itemdb.clean();
+  g_core.DatabaseManager.itemdb.clean(false);
+
+  for var key in fileMap.Keys do
+  begin
+    v := '';
+    fileMap.TryGetValue(key, v);
+
+    hash := THashMD5.GetHashString(key);
+       //k v 存储在不同表中
+    g_core.DatabaseManager.itemdb.SetVarValue(hash, key);
+    g_core.DatabaseManager.itemdb.SetVarValue(hash, v, false);
+
+  end;
+
+end;
 
 procedure TUtils.SetAutoRun(ok: Boolean);
 begin

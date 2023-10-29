@@ -61,10 +61,41 @@ end;
 // 计算和定位节点的逻辑
 procedure TForm1.CalculateAndPositionNodes();
 begin
-
   var hashKeys1 := g_core.DatabaseManager.itemdb.GetKeys();
+    g_core.NodeInformation.Count := hashKeys1.Count;
 
-  g_core.NodeInformation.Count := hashKeys1.Count;
+ if hashKeys1.Count = 0 then
+  begin
+    var sysdir: pchar;
+    var SysTemDir: string;
+
+    Getmem(sysdir, 100);
+    try
+      getsystemdirectory(sysdir, 100);
+      SysTemDir := string(sysdir);
+    finally
+      Freemem(sysdir, 100);
+    end;
+
+    g_core.utils.fileMap.TryAdd( ExtractFilePath(ParamStr(0)) + 'img\flower.png', SysTemDir + '\notepad.exe');
+    g_core.utils.fileMap.TryAdd( ExtractFilePath(ParamStr(0)) + 'img\smail.png', SysTemDir + '\calc.exe');
+    g_core.utils.fileMap.TryAdd( ExtractFilePath(ParamStr(0)) + 'img\solid.png', SysTemDir + '\mspaint.exe');
+    g_core.utils.fileMap.TryAdd( ExtractFilePath(ParamStr(0)) + 'img\11.png', SysTemDir + '\cmd.exe');
+    g_core.utils.fileMap.TryAdd( ExtractFilePath(ParamStr(0)) + 'img\06.png', SysTemDir + '\mstsc.exe');
+
+    g_core.utils.update_db;
+
+    g_core.NodeInformation.Count := g_core.DatabaseManager.itemdb.GetKeys().Count;
+    hashKeys1 := g_core.DatabaseManager.itemdb.GetKeys();
+  end;
+
+
+
+
+
+
+
+
 
   if g_core.NodeInformation.NodesArray <> nil then
   begin
