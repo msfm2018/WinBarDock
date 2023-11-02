@@ -3,7 +3,7 @@ object CfgForm: TCfgForm
   Top = 0
   Caption = #37197#32622'  '
   ClientHeight = 631
-  ClientWidth = 635
+  ClientWidth = 894
   Color = clBtnFace
   Font.Charset = GB2312_CHARSET
   Font.Color = clWindowText
@@ -16,10 +16,17 @@ object CfgForm: TCfgForm
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 12
+  object Label1: TLabel
+    Left = 440
+    Top = 328
+    Width = 36
+    Height = 12
+    Caption = 'Label1'
+  end
   object ValueListEditor1: TValueListEditor
     Left = 0
     Top = 0
-    Width = 635
+    Width = 894
     Height = 514
     Hint = #21452#20987#21024#38500
     Align = alTop
@@ -45,15 +52,16 @@ object CfgForm: TCfgForm
       #22270#29255#36335#24452
       #25991#20214#36335#24452)
     OnDblClick = ValueListEditor1DblClick
+    ExplicitWidth = 635
     ColWidths = (
       285
-      348)
+      607)
   end
   object Button1: TButton
-    Left = 546
+    Left = 795
     Top = 520
-    Width = 86
-    Height = 44
+    Width = 91
+    Height = 70
     Caption = #28155#21152
     Font.Charset = GB2312_CHARSET
     Font.Color = clWindowText
@@ -65,14 +73,15 @@ object CfgForm: TCfgForm
     OnClick = Button1Click
   end
   object LabeledEdit1: TLabeledEdit
-    Left = 88
+    Left = 73
     Top = 520
-    Width = 458
+    Width = 560
     Height = 20
     Hint = #21452#20987#28155#21152
-    EditLabel.Width = 78
+    EditLabel.Width = 60
     EditLabel.Height = 12
-    EditLabel.Caption = #22270#29255#36335#24452'(png)'
+    EditLabel.Caption = #33258#23450#20041#22270#29255
+    Enabled = False
     LabelPosition = lpLeft
     ParentShowHint = False
     ShowHint = True
@@ -80,9 +89,9 @@ object CfgForm: TCfgForm
     OnDblClick = LabeledEdit1DblClick
   end
   object LabeledEdit2: TLabeledEdit
-    Left = 88
-    Top = 544
-    Width = 458
+    Left = 73
+    Top = 570
+    Width = 560
     Height = 20
     Hint = #21452#20987#28155#21152
     EditLabel.Width = 48
@@ -95,20 +104,20 @@ object CfgForm: TCfgForm
     OnDblClick = LabeledEdit2DblClick
   end
   object Button2: TButton
-    Left = 382
-    Top = 570
-    Width = 250
+    Left = 141
+    Top = 599
+    Width = 124
     Height = 27
     Caption = #33258#23450#20041#22270#26631#22823#23567
     TabOrder = 4
     OnClick = Button2Click
   end
   object Button3: TButton
-    Left = 530
+    Left = 356
     Top = 603
-    Width = 97
+    Width = 117
     Height = 20
-    Caption = #22270#26631#21021#22987#21270
+    Caption = #36824#21407#22270#29255#23610#23544
     Font.Charset = GB2312_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
@@ -119,23 +128,65 @@ object CfgForm: TCfgForm
     OnClick = Button3Click
   end
   object Edit1: TSpinEdit
-    Left = 304
-    Top = 570
+    Left = 71
+    Top = 602
     Width = 72
-    Height = 27
+    Height = 21
     MaxValue = 168
     MinValue = 30
     TabOrder = 6
     Value = 36
   end
   object CheckBox1: TCheckBox
-    Left = 8
-    Top = 572
+    Left = -32
+    Top = 606
     Width = 97
     Height = 17
     Caption = #21435#32972#26223
     TabOrder = 7
     Visible = False
     OnClick = CheckBox1Click
+  end
+  object LabeledEdit3: TLabeledEdit
+    Left = 73
+    Top = 546
+    Width = 560
+    Height = 20
+    Hint = #21452#20987#28155#21152
+    EditLabel.Width = 48
+    EditLabel.Height = 12
+    EditLabel.Caption = #25551#36848#25991#23383
+    LabelPosition = lpLeft
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 8
+    OnDblClick = LabeledEdit2DblClick
+  end
+  object RadioGroup1: TRadioGroup
+    Left = 645
+    Top = 520
+    Width = 99
+    Height = 70
+    TabOrder = 9
+  end
+  object r1: TRadioButton
+    Left = 664
+    Top = 529
+    Width = 65
+    Height = 17
+    Caption = #33258#23450#20041#22270#29255
+    TabOrder = 10
+    OnClick = r1Click
+  end
+  object r2: TRadioButton
+    Left = 664
+    Top = 552
+    Width = 65
+    Height = 17
+    Caption = #25551#36848#25991#23383
+    Checked = True
+    TabOrder = 11
+    TabStop = True
+    OnClick = r2Click
   end
 end
