@@ -52,7 +52,6 @@ object CfgForm: TCfgForm
       #22270#29255#36335#24452
       #25991#20214#36335#24452)
     OnDblClick = ValueListEditor1DblClick
-    ExplicitWidth = 635
     ColWidths = (
       285
       607)

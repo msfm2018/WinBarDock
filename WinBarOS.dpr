@@ -5,7 +5,6 @@ uses
   windows,
   ApplicationMain in 'ApplicationMain.pas' {Form1},
   ConfigurationForm in 'ConfigurationForm.pas' {mycfg},
-  u_debug in 'u_debug.pas',
   core in 'core\core.pas',
   core_db in 'core\core_db.pas',
   event in 'core\event.pas',

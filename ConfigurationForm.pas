@@ -47,6 +47,7 @@ var
 var
   reLayout: Boolean = false;
   reStore: Boolean = false;
+  xchange: Boolean = false;
 
 implementation
 
@@ -121,12 +122,14 @@ begin
       if g_core.utils.fileMap.TryAdd(Trim(LabeledEdit1.Text), Trim(LabeledEdit2.Text)) then
       begin
         if (Trim(LabeledEdit1.Text).Contains('http')) then
-          ValueListEditor1.InsertRow((Trim(LabeledEdit1.Text)), ExtractFileName(Trim(LabeledEdit2.Text)), True)
+          ValueListEditor1.InsertRow((Trim(LabeledEdit1.Text)), Trim(LabeledEdit2.Text), True)
+//            ValueListEditor1.InsertRow((Trim(LabeledEdit1.Text)), ExtractFileName(Trim(LabeledEdit2.Text)), True)
         else
           ValueListEditor1.InsertRow(ExtractFileName(Trim(LabeledEdit1.Text)), ExtractFileName(Trim(LabeledEdit2.Text)), True);
         LabeledEdit1.Text := '';
         LabeledEdit3.Text := '';
         LabeledEdit2.Text := '';
+        xchange := True;
       end;
     end;
   end
@@ -145,12 +148,14 @@ begin
       if g_core.utils.fileMap.TryAdd(imgpath, Trim(LabeledEdit2.Text)) then
       begin
         if (Trim(imgpath).Contains('http')) then
-          ValueListEditor1.InsertRow((Trim(imgpath)), ExtractFileName(Trim(LabeledEdit2.Text)), True)
+          ValueListEditor1.InsertRow((Trim(imgpath)), Trim(LabeledEdit2.Text), True)
+//            ValueListEditor1.InsertRow((Trim(imgpath)), ExtractFileName(Trim(LabeledEdit2.Text)), True)
         else
           ValueListEditor1.InsertRow(ExtractFileName(Trim(imgpath)), ExtractFileName(Trim(LabeledEdit2.Text)), True);
         LabeledEdit1.Text := '';
         LabeledEdit3.Text := '';
         LabeledEdit2.Text := '';
+        xchange := true;
       end
       else
       begin
@@ -190,7 +195,7 @@ end;
 
 procedure TCfgForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  if (oldNum <> g_core.utils.fileMap.Count) or reLayout or (Edit1.Text <> oldValue.ToString) then
+  if (oldNum <> g_core.utils.fileMap.Count) or reLayout or (Edit1.Text <> oldValue.ToString) or xchange then
   begin
 
     update_db();
@@ -230,6 +235,8 @@ begin
     CheckBox1.Checked := True
   else
     CheckBox1.Checked := false;
+
+  xchange := false;
 end;
 
 procedure TCfgForm.LabeledEdit1DblClick(Sender: TObject);
@@ -269,14 +276,14 @@ end;
 
 procedure TCfgForm.r1Click(Sender: TObject);
 begin
-LabeledEdit3.Enabled:=false;
-LabeledEdit1.Enabled:=true;
+  LabeledEdit3.Enabled := false;
+  LabeledEdit1.Enabled := true;
 end;
 
 procedure TCfgForm.r2Click(Sender: TObject);
 begin
-LabeledEdit3.Enabled:=true;
-LabeledEdit1.Enabled:=false;
+  LabeledEdit3.Enabled := true;
+  LabeledEdit1.Enabled := false;
 end;
 
 procedure TCfgForm.ValueListEditor1DblClick(Sender: TObject);
@@ -298,7 +305,7 @@ begin
           g_core.utils.fileMap.Remove(key);
           g_core.DatabaseManager.itemdb.DeleteValue(key_);
           g_core.DatabaseManager.itemdb.DeleteValue(key_, false);
-
+          xchange := true;
         end;
       end;
 

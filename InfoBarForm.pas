@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  Vcl.StdCtrls, Vcl.ExtCtrls, Winapi.ShellAPI, u_debug, Vcl.ComCtrls, ActiveX,
+  Vcl.StdCtrls, Vcl.ExtCtrls, Winapi.ShellAPI,  Vcl.ComCtrls, ActiveX,
   shlobj, comobj, System.ImageList, Vcl.ImgList, Vcl.Menus;
 
 type
@@ -68,7 +68,7 @@ begin
     Freemem(sysdir, 100);
   end;
 
-  if LVexeinfo.Items.Count = 0 then //ÎÞÎÄ¼þ
+  if LVexeinfo.Items.Count = 0 then //ï¿½ï¿½ï¿½Ä¼ï¿½
   begin
     AddExeInfo(SysTemDir + '\notepad.exe', 'notepad');
     AddExeInfo(SysTemDir + '\calc.exe', 'calc');
@@ -87,7 +87,7 @@ var
   strFileName: string;
 begin
   pFileName := @arrFileName;
-  number := DragQueryFile(Msg.wParam, $FFFFFFFF, nil, 0); //»òµÄÎÄ¼þµÄ¸öÊý
+  number := DragQueryFile(Msg.wParam, $FFFFFFFF, nil, 0); //ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ä¸ï¿½ï¿½ï¿½
 
   for i := 0 to number - 1 do
   begin
@@ -114,7 +114,7 @@ begin
   MyPFile := aObj as IPersistFile;
   MyLink := aObj as IShellLink;
 
-  WFileName := lnkName; //½«Ò»¸öString¸³¸øWideString£¬×ª»»¹ý³ÌÓÉDelphi×Ô¶¯Íê³É
+  WFileName := lnkName; //ï¿½ï¿½Ò»ï¿½ï¿½Stringï¿½ï¿½ï¿½ï¿½WideStringï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Delphiï¿½Ô¶ï¿½ï¿½ï¿½ï¿½
   MyPFile.Load(PWChar(WFileName), 0);
 
   MyLink.GetPath(FileName, 255, pfd, SLGP_UNCPRIORITY);
@@ -162,7 +162,7 @@ begin
   Node := TListItem.Create(NIl);
 
   if LVexeinfo.SelCount > 0 then
-    if MessageBox(handle, 'È·ÈÏ', 'É¾³ý', MB_ICONQUESTION + MB_YESNO) <> IDYes then
+    if MessageBox(handle, 'È·ï¿½ï¿½', 'É¾ï¿½ï¿½', MB_ICONQUESTION + MB_YESNO) <> IDYes then
       Exit;
 
   for i := LVexeinfo.Items.Count - 1 downto 0 do
@@ -197,7 +197,7 @@ begin
     Exit;
   end;
 
-  FileName := Path;                  //Ìí¼ÓÎÄ¼þÃû
+  FileName := Path;                  //ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½
   FileName := ExtractFileName(Path);
   var va := g_core.DatabaseManager.desktopdb.GetString(ExeName);
   if (va <> '') then
@@ -206,7 +206,7 @@ begin
   FileName := ChangeFileName(FileName);
   g_core.DatabaseManager.desktopdb.SetVarValue(FileName, Path);
 
-  ShowIOO(Path, FileName); //ÏÔÊ¾Í¼±ê
+  ShowIOO(Path, FileName); //ï¿½ï¿½Ê¾Í¼ï¿½ï¿½
 end;
 
 procedure TbottomForm.LoadIco;
@@ -220,7 +220,7 @@ begin
   var keys := g_core.DatabaseManager.desktopdb.GetKeys;
   for var key in keys do
 
-    ShowIOO(g_core.DatabaseManager.desktopdb.GetString(key), key); //ÏÔÊ¾Í¼±ê
+    ShowIOO(g_core.DatabaseManager.desktopdb.GetString(key), key); //ï¿½ï¿½Ê¾Í¼ï¿½ï¿½
 
 
 end;
@@ -280,7 +280,7 @@ begin
     if pIco.Handle > 0 then
     begin
       bmpIco := TBitmap.Create;
-      bmpIco.PixelFormat := pf24bit;    //±£´æÍ¼±ê
+      bmpIco.PixelFormat := pf24bit;    //ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½
       bmpIco.Height := pIco.Height;
       bmpIco.Width := pIco.Width;
       bmpIco.Canvas.Draw(0, 0, pIco);

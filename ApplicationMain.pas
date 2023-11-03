@@ -7,7 +7,7 @@ uses
   core, Winapi.Dwmapi, Winapi.ShellAPI, Dialogs, Registry, ExtCtrls, core_db,
   System.Hash, Generics.Collections, Vcl.StdCtrls, Vcl.Imaging.pngimage,
   inifiles, FileCtrl, Vcl.Imaging.jpeg, System.Win.TaskbarCore, ShlObj, ActiveX,
-  ComObj, u_debug, System.Math, ConfigurationForm, Vcl.Menus, InfoBarForm,
+  ComObj, System.Math, ConfigurationForm, Vcl.Menus, InfoBarForm,
   System.Generics.Collections, event, GDIPAPI, GDIPOBJ, GDIPUTIL;
 
 type
@@ -62,9 +62,9 @@ end;
 procedure TForm1.CalculateAndPositionNodes();
 begin
   var hashKeys1 := g_core.DatabaseManager.itemdb.GetKeys();
-    g_core.NodeInformation.Count := hashKeys1.Count;
+  g_core.NodeInformation.Count := hashKeys1.Count;
 
- if hashKeys1.Count = 0 then
+  if hashKeys1.Count = 0 then
   begin
     var sysdir: pchar;
     var SysTemDir: string;
@@ -77,25 +77,17 @@ begin
       Freemem(sysdir, 100);
     end;
 
-    g_core.utils.fileMap.TryAdd( ExtractFilePath(ParamStr(0)) + 'img\flower.png', SysTemDir + '\notepad.exe');
-    g_core.utils.fileMap.TryAdd( ExtractFilePath(ParamStr(0)) + 'img\smail.png', SysTemDir + '\calc.exe');
-    g_core.utils.fileMap.TryAdd( ExtractFilePath(ParamStr(0)) + 'img\solid.png', SysTemDir + '\mspaint.exe');
-    g_core.utils.fileMap.TryAdd( ExtractFilePath(ParamStr(0)) + 'img\11.png', SysTemDir + '\cmd.exe');
-    g_core.utils.fileMap.TryAdd( ExtractFilePath(ParamStr(0)) + 'img\06.png', SysTemDir + '\mstsc.exe');
+    g_core.utils.fileMap.TryAdd(ExtractFilePath(ParamStr(0)) + 'img\flower.png', SysTemDir + '\notepad.exe');
+    g_core.utils.fileMap.TryAdd(ExtractFilePath(ParamStr(0)) + 'img\smail.png', SysTemDir + '\calc.exe');
+    g_core.utils.fileMap.TryAdd(ExtractFilePath(ParamStr(0)) + 'img\solid.png', SysTemDir + '\mspaint.exe');
+    g_core.utils.fileMap.TryAdd(ExtractFilePath(ParamStr(0)) + 'img\11.png', SysTemDir + '\cmd.exe');
+    g_core.utils.fileMap.TryAdd(ExtractFilePath(ParamStr(0)) + 'img\06.png', SysTemDir + '\mstsc.exe');
 
     g_core.utils.update_db;
 
     g_core.NodeInformation.Count := g_core.DatabaseManager.itemdb.GetKeys().Count;
     hashKeys1 := g_core.DatabaseManager.itemdb.GetKeys();
   end;
-
-
-
-
-
-
-
-
 
   if g_core.NodeInformation.NodesArray <> nil then
   begin
@@ -121,7 +113,7 @@ begin
     g_core.NodeInformation.NodesArray[I].Height := g_core.NodeInformation.NodeSize;
 
     if I = 0 then
-      g_core.NodeInformation.NodesArray[I].Left := g_core.NodeInformation.NodeGap+10 // g_core.NodeInformation.NodeGap
+      g_core.NodeInformation.NodesArray[I].Left := g_core.NodeInformation.NodeGap + 10 // g_core.NodeInformation.NodeGap
     else
     begin
 
@@ -287,7 +279,7 @@ procedure TForm1.CreateRoundRectRgn1(w, h: Integer);
 var
   Rgn: HRGN;
 begin
-  Rgn := CreateRoundRectRgn(0, 0, w, h, 100, 100);
+  Rgn := CreateRoundRectRgn(0, 0, w, h, 10, 10);
 
   SetWindowRgn(Handle, Rgn, true);
 end;
@@ -388,8 +380,10 @@ begin
       rate := Min(Max(rate, 0.5), 1);
 
       // 根据ZoomFactor来调整按钮的宽度和高度    *1.8
+
       NewWidth := Round(g_core.NodeInformation.NodesArray[I].OriginalWidth * 2 * rate);
       NewHeight := Round(g_core.NodeInformation.NodesArray[I].OriginalHeight * 2 * rate);
+
       var maxValue: Integer := 138;
         // 限制按钮的最大宽度和高度
       NewWidth := Min(NewWidth, maxValue);
