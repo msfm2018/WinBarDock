@@ -23,6 +23,14 @@ object CfgForm: TCfgForm
     Height = 12
     Caption = 'Label1'
   end
+  object Label2: TLabel
+    Left = 491
+    Top = 552
+    Width = 48
+    Height = 12
+    Caption = #32972#26223#39068#33394
+    Visible = False
+  end
   object ValueListEditor1: TValueListEditor
     Left = 0
     Top = 0
@@ -149,7 +157,7 @@ object CfgForm: TCfgForm
   object LabeledEdit3: TLabeledEdit
     Left = 73
     Top = 546
-    Width = 560
+    Width = 192
     Height = 20
     Hint = #21452#20987#28155#21152
     EditLabel.Width = 48
@@ -162,14 +170,14 @@ object CfgForm: TCfgForm
     OnDblClick = LabeledEdit2DblClick
   end
   object RadioGroup1: TRadioGroup
-    Left = 645
+    Left = 677
     Top = 520
     Width = 99
     Height = 70
     TabOrder = 9
   end
   object r1: TRadioButton
-    Left = 664
+    Left = 696
     Top = 529
     Width = 65
     Height = 17
@@ -178,7 +186,7 @@ object CfgForm: TCfgForm
     OnClick = r1Click
   end
   object r2: TRadioButton
-    Left = 664
+    Left = 696
     Top = 552
     Width = 65
     Height = 17
@@ -187,5 +195,32 @@ object CfgForm: TCfgForm
     TabOrder = 11
     TabStop = True
     OnClick = r2Click
+  end
+  object b1: TColorBox
+    Left = 389
+    Top = 546
+    Width = 90
+    Height = 22
+    DefaultColorColor = clWhite
+    TabOrder = 12
+    Visible = False
+    OnChange = b1Change
+  end
+  object b2: TColorBox
+    Left = 542
+    Top = 546
+    Width = 90
+    Height = 22
+    TabOrder = 13
+    Visible = False
+    OnChange = b2Change
+  end
+  object c1: TCheckBox
+    Left = 305
+    Top = 551
+    Width = 74
+    Height = 17
+    Caption = #20351#29992#39068#33394
+    TabOrder = 14
   end
 end

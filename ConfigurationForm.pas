@@ -24,6 +24,10 @@ type
     r1: TRadioButton;
     r2: TRadioButton;
     Label1: TLabel;
+    b1: TColorBox;
+    Label2: TLabel;
+    b2: TColorBox;
+    c1: TCheckBox;
     procedure Button1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
@@ -35,6 +39,8 @@ type
     procedure CheckBox1Click(Sender: TObject);
     procedure r2Click(Sender: TObject);
     procedure r1Click(Sender: TObject);
+    procedure b2Change(Sender: TObject);
+    procedure b1Change(Sender: TObject);
   private
     procedure update_db;
   public
@@ -48,15 +54,14 @@ var
   reLayout: Boolean = false;
   reStore: Boolean = false;
   xchange: Boolean = false;
-
+   m1,m2:TColor;
 implementation
-
 {$R *.dfm}
 
 uses
   ApplicationMain, core, GDIPAPI, GDIPOBJ;
 
-function text_outa(txt: string; x, y, fontsize: integer; fontname: string): string;
+function text_outa(txt: string; x, y, fontsize: integer; fontname: string;c1,c2:tcolor;b:boolean): string;
 var
   font: tgpfont;
   pt: tgppointf;
@@ -64,25 +69,35 @@ var
   brush: tgpsolidbrush;
   graphics: tgpgraphics;
 begin
+c1:=clWhite;
+c2:=clBlack;
   var vPng := TPNGObject.Create;
 
   vPng.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\template.png');
   graphics := tgpgraphics.create(vPng.canvas.handle);
+  if b then
+
+//  graphics.Clear(c2); // 使用ARGB(0, 0, 0, 0)表示黑色
+  graphics.Clear(c2);
   graphics.setsmoothingmode(smoothingmodeantialias);
   graphics.setinterpolationmode(interpolationmodehighqualitybicubic);
   //  　graphics.DrawImage(img, 0, 0, img.GetWidth, img.GetHeight);
   font := tgpfont.create(fontname, fontsize, FontStyleBold);
-  brush := tgpsolidbrush.create(makecolor(180, 255, 255, 255));
+  if b then
 
+  brush := tgpsolidbrush.create(makecolor(180, GetRed(c1),GetGreen(c1),GetBlue(c1))) else
+     brush := tgpsolidbrush.create(makecolor(180, 255, 255, 255));
+//     brush := tgpsolidbrush.create(makecolor(180, 255, 255, 255));
   stringformat := tgpstringformat.create();
 //              stringformat.SetAlignment(TStringAlignment.StringAlignmentCenter);
   pt := makepoint(x, y * 0.1 * 10);
+
   graphics.drawstring(txt, length(txt), font, pt, stringformat, brush);
   var s := FormatDateTime('yyyy_mm_dd_hh_nn_ss_zzz', Now);
   s := s.Replace('_', '');
   result := ExtractFilePath(ParamStr(0)) + 'img\' + s + '.png';
   vPng.SaveToFile(result);
-
+  result := '.\img\' + s + '.png';
   vPng.free;
   graphics.free;
   font.free;
@@ -113,6 +128,20 @@ begin
 
 end;
 
+procedure TCfgForm.b1Change(Sender: TObject);
+begin
+if b1.ItemIndex>0 then
+   m1:=b1.Selected else
+   m1:=clWhite;
+end;
+
+procedure TCfgForm.b2Change(Sender: TObject);
+begin
+if b2.ItemIndex>0 then
+   m2:=b2.Selected else
+   m2:=clBlack;
+end;
+
 procedure TCfgForm.Button1Click(Sender: TObject);
 begin
   if r1.Checked then
@@ -137,29 +166,67 @@ begin
   begin
     if (Trim(LabeledEdit2.Text) <> '') and (Trim(LabeledEdit3.Text) <> '') then
     begin
-
-      label1.Font.Size := 20;
-      var wd := Label1.Canvas.TextWidth(Trim(LabeledEdit3.Text));
-      var hg := Label1.Canvas.TextHeight(Trim(LabeledEdit3.Text));
-      var x := Round((128 - wd) div 2) - 3;
-      var y := Round((128 - hg) div 2) - 6;
-      var imgpath := text_outa(Trim(LabeledEdit3.Text), x, y, 20, '微软雅黑');
-
-      if g_core.utils.fileMap.TryAdd(imgpath, Trim(LabeledEdit2.Text)) then
+      if c1.Checked then
       begin
-        if (Trim(imgpath).Contains('http')) then
-          ValueListEditor1.InsertRow((Trim(imgpath)), Trim(LabeledEdit2.Text), True)
+
+
+
+        label1.Font.Size := 20;
+        var wd := Label1.Canvas.TextWidth(Trim(LabeledEdit3.Text));
+        var hg := Label1.Canvas.TextHeight(Trim(LabeledEdit3.Text));
+        var x := Round((128 - wd) div 2) - 3;
+        var y := Round((128 - hg) div 2) - 6;
+        var imgpath := text_outa(Trim(LabeledEdit3.Text), x, y, 20, '微软雅黑',m1,m2,true);
+
+        if g_core.utils.fileMap.TryAdd(imgpath, Trim(LabeledEdit2.Text)) then
+        begin
+          if (Trim(imgpath).Contains('http')) then
+            ValueListEditor1.InsertRow((Trim(imgpath)), Trim(LabeledEdit2.Text), True)
 //            ValueListEditor1.InsertRow((Trim(imgpath)), ExtractFileName(Trim(LabeledEdit2.Text)), True)
+          else
+            ValueListEditor1.InsertRow(ExtractFileName(Trim(imgpath)), ExtractFileName(Trim(LabeledEdit2.Text)), True);
+          LabeledEdit1.Text := '';
+          LabeledEdit3.Text := '';
+          LabeledEdit2.Text := '';
+          xchange := true;
+        end
         else
-          ValueListEditor1.InsertRow(ExtractFileName(Trim(imgpath)), ExtractFileName(Trim(LabeledEdit2.Text)), True);
-        LabeledEdit1.Text := '';
-        LabeledEdit3.Text := '';
-        LabeledEdit2.Text := '';
-        xchange := true;
+        begin
+          ShowMessage('图片已使用')
+        end;
+
+
+
+
+
       end
       else
       begin
-        ShowMessage('图片已使用')
+
+        label1.Font.Size := 20;
+        var wd := Label1.Canvas.TextWidth(Trim(LabeledEdit3.Text));
+        var hg := Label1.Canvas.TextHeight(Trim(LabeledEdit3.Text));
+        var x := Round((128 - wd) div 2) - 3;
+        var y := Round((128 - hg) div 2) - 6;
+        var imgpath := text_outa(Trim(LabeledEdit3.Text), x, y, 20, '微软雅黑',b1.Color,B2.Color,false);
+
+        if g_core.utils.fileMap.TryAdd(imgpath, Trim(LabeledEdit2.Text)) then
+        begin
+          if (Trim(imgpath).Contains('http')) then
+            ValueListEditor1.InsertRow((Trim(imgpath)), Trim(LabeledEdit2.Text), True)
+//            ValueListEditor1.InsertRow((Trim(imgpath)), ExtractFileName(Trim(LabeledEdit2.Text)), True)
+          else
+            ValueListEditor1.InsertRow(ExtractFileName(Trim(imgpath)), ExtractFileName(Trim(LabeledEdit2.Text)), True);
+          LabeledEdit1.Text := '';
+          LabeledEdit3.Text := '';
+          LabeledEdit2.Text := '';
+          xchange := true;
+        end
+        else
+        begin
+          ShowMessage('图片已使用')
+        end;
+
       end;
     end;
 
@@ -237,6 +304,10 @@ begin
     CheckBox1.Checked := false;
 
   xchange := false;
+    b1.Selected:=clWhite;
+    b2.Selected:=clBlack;
+      m1:=clWhite;
+      m2:=clBlack;
 end;
 
 procedure TCfgForm.LabeledEdit1DblClick(Sender: TObject);
