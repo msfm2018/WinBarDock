@@ -7,7 +7,7 @@ uses
   core, Winapi.Dwmapi, Winapi.ShellAPI, Dialogs, Registry, ExtCtrls, core_db,
   System.Hash, Generics.Collections, Vcl.StdCtrls, Vcl.Imaging.pngimage,
   inifiles, FileCtrl, Vcl.Imaging.jpeg, System.Win.TaskbarCore, ShlObj, ActiveX,
-  ComObj, System.Math, ConfigurationForm, Vcl.Menus, InfoBarForm,
+  u_debug, ComObj, System.Math, ConfigurationForm, Vcl.Menus, InfoBarForm,
   System.Generics.Collections, event, GDIPAPI, GDIPOBJ, GDIPUTIL;
 
 type
@@ -131,8 +131,22 @@ begin
       Transparent := true;
       Center := true;
       nodePath := g_core.DatabaseManager.itemdb.GetString(hashKeys1[I], False);
+      var t := g_core.DatabaseManager.itemdb.GetString(hashKeys1[I]);
+      var fname := '';
+      var fpath := '';
+//                     Debug.Show(t);
+      if t.Contains('.\img') then
+      begin
+//                 debug.Show('------------') ;
 
-      Picture.LoadFromFile(g_core.DatabaseManager.itemdb.GetString(hashKeys1[I]));
+        fname := ExtractFileName(t);
+        fpath := ExtractFilePath(ParamStr(0)) + 'img\' + fname;
+        Picture.LoadFromFile(fpath);
+//                      Debug.Show(fpath);
+      end
+      else
+
+        Picture.LoadFromFile(t);
 
       Stretch := true;
 
