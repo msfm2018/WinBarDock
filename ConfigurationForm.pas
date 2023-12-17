@@ -4,6 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Math,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.ComCtrls, Vcl.Grids, Vcl.ValEdit, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Buttons,
   Vcl.Imaging.pngimage, System.Generics.Collections, Vcl.Menus, Vcl.Mask,
@@ -39,67 +40,90 @@ type
     procedure CheckBox1Click(Sender: TObject);
     procedure r2Click(Sender: TObject);
     procedure r1Click(Sender: TObject);
-    procedure b2Change(Sender: TObject);
-    procedure b1Change(Sender: TObject);
   private
     procedure update_db;
   public
   end;
 
 var
-  oldNum: Integer = 0;
-  oldValue: Integer = 0;
+  OldNum: Integer = 0;
+  OldValue: Integer = 0;
 
-var
   reLayout: Boolean = false;
   reStore: Boolean = false;
   xchange: Boolean = false;
-   m1,m2:TColor;
+
 implementation
+
 {$R *.dfm}
 
 uses
   ApplicationMain, core, GDIPAPI, GDIPOBJ;
 
-function text_outa(txt: string; x, y, fontsize: integer; fontname: string;c1,c2:tcolor;b:boolean): string;
+function text_outa(txt: string; x, y, fontsize: Integer; fontname: string;
+  gc1, gc2: tcolor; b: Boolean): string;
 var
   font: tgpfont;
   pt: tgppointf;
   stringformat: tgpstringformat;
   brush: tgpsolidbrush;
-  graphics: tgpgraphics;
+  Graphics: tgpgraphics;
+  vPng: TPNGObject;
+  red, green, blue: Byte; // 用于存储颜色分量的字节变量
+  red2, green2, blue2: Byte; // 用于存储颜色分量的字节变量
+  red1, green1, blue1: Byte;
 begin
-c1:=clWhite;
-c2:=clBlack;
-  var vPng := TPNGObject.Create;
+
+  // 将 TColor 转换为 RGB 分量
+  red1 := GetRValue(ColorToRGB(gc1));
+  green1 := GetGValue(ColorToRGB(gc1));
+  blue1 := GetBValue(ColorToRGB(gc1));
+
+  red2 := GetRValue(ColorToRGB(gc2));
+  green2 := GetGValue(ColorToRGB(gc2));
+  blue2 := GetBValue(ColorToRGB(gc2));
+
+  vPng := TPNGObject.Create;
 
   vPng.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\template.png');
-  graphics := tgpgraphics.create(vPng.canvas.handle);
-  if b then
 
-//  graphics.Clear(c2); // 使用ARGB(0, 0, 0, 0)表示黑色
-  graphics.Clear(c2);
-  graphics.setsmoothingmode(smoothingmodeantialias);
-  graphics.setinterpolationmode(interpolationmodehighqualitybicubic);
-  //  　graphics.DrawImage(img, 0, 0, img.GetWidth, img.GetHeight);
-  font := tgpfont.create(fontname, fontsize, FontStyleBold);
-  if b then
+  Graphics := tgpgraphics.Create(vPng.canvas.handle);
 
-  brush := tgpsolidbrush.create(makecolor(180, GetRed(c1),GetGreen(c1),GetBlue(c1))) else
-     brush := tgpsolidbrush.create(makecolor(180, 255, 255, 255));
-//     brush := tgpsolidbrush.create(makecolor(180, 255, 255, 255));
-  stringformat := tgpstringformat.create();
-//              stringformat.SetAlignment(TStringAlignment.StringAlignmentCenter);
+  red := EnsureRange(red1, 0, 255);
+  green := EnsureRange(green1, 0, 255);
+  blue := EnsureRange(blue1, 0, 255);
+  // 填充整个画布为红色背景
+  Graphics.FillRectangle(tgpsolidbrush.Create(makecolor(255, red, green, blue)),
+    0, 0, vPng.Width, vPng.Height);
+
+  Graphics.setsmoothingmode(smoothingmodeantialias);
+  Graphics.setinterpolationmode(interpolationmodehighqualitybicubic);
+
+  font := tgpfont.Create(fontname, fontsize, FontStyleBold);
+
+  red := EnsureRange(red2, 0, 255);
+  green := EnsureRange(green2, 0, 255);
+  blue := EnsureRange(blue2, 0, 255);
+
+  if b then
+    brush := tgpsolidbrush.Create(makecolor(255, red, green, blue))
+  else
+    brush := tgpsolidbrush.Create(makecolor(255, 255, 255, 255));
+
+  stringformat := tgpstringformat.Create();
   pt := makepoint(x, y * 0.1 * 10);
 
-  graphics.drawstring(txt, length(txt), font, pt, stringformat, brush);
-  var s := FormatDateTime('yyyy_mm_dd_hh_nn_ss_zzz', Now);
+  Graphics.drawstring(txt, length(txt), font, pt, stringformat, brush);
+
+  var
+  s := FormatDateTime('yyyy_mm_dd_hh_nn_ss_zzz', Now);
   s := s.Replace('_', '');
   result := ExtractFilePath(ParamStr(0)) + 'img\' + s + '.png';
   vPng.SaveToFile(result);
   result := '.\img\' + s + '.png';
+
   vPng.free;
-  graphics.free;
+  Graphics.free;
   font.free;
   brush.free;
 end;
@@ -128,33 +152,21 @@ begin
 
 end;
 
-procedure TCfgForm.b1Change(Sender: TObject);
-begin
-if b1.ItemIndex>0 then
-   m1:=b1.Selected else
-   m1:=clWhite;
-end;
-
-procedure TCfgForm.b2Change(Sender: TObject);
-begin
-if b2.ItemIndex>0 then
-   m2:=b2.Selected else
-   m2:=clBlack;
-end;
-
 procedure TCfgForm.Button1Click(Sender: TObject);
 begin
   if r1.Checked then
   begin
     if (Trim(LabeledEdit1.Text) <> '') and (Trim(LabeledEdit2.Text) <> '') then
     begin
-      if g_core.utils.fileMap.TryAdd(Trim(LabeledEdit1.Text), Trim(LabeledEdit2.Text)) then
+      if g_core.utils.fileMap.TryAdd(Trim(LabeledEdit1.Text),
+        Trim(LabeledEdit2.Text)) then
       begin
         if (Trim(LabeledEdit1.Text).Contains('http')) then
-          ValueListEditor1.InsertRow((Trim(LabeledEdit1.Text)), Trim(LabeledEdit2.Text), True)
-//            ValueListEditor1.InsertRow((Trim(LabeledEdit1.Text)), ExtractFileName(Trim(LabeledEdit2.Text)), True)
+          ValueListEditor1.InsertRow((Trim(LabeledEdit1.Text)),
+            Trim(LabeledEdit2.Text), True)
         else
-          ValueListEditor1.InsertRow(ExtractFileName(Trim(LabeledEdit1.Text)), ExtractFileName(Trim(LabeledEdit2.Text)), True);
+          ValueListEditor1.InsertRow(ExtractFileName(Trim(LabeledEdit1.Text)),
+            ExtractFileName(Trim(LabeledEdit2.Text)), True);
         LabeledEdit1.Text := '';
         LabeledEdit3.Text := '';
         LabeledEdit2.Text := '';
@@ -169,58 +181,64 @@ begin
       if c1.Checked then
       begin
 
-
-
-        label1.Font.Size := 20;
-        var wd := Label1.Canvas.TextWidth(Trim(LabeledEdit3.Text));
-        var hg := Label1.Canvas.TextHeight(Trim(LabeledEdit3.Text));
-        var x := Round((128 - wd) div 2) - 3;
-        var y := Round((128 - hg) div 2) - 6;
-        var imgpath := text_outa(Trim(LabeledEdit3.Text), x, y, 20, '微软雅黑',m1,m2,true);
+        Label1.font.Size := 20;
+        var
+        wd := Label1.canvas.TextWidth(Trim(LabeledEdit3.Text));
+        var
+        hg := Label1.canvas.TextHeight(Trim(LabeledEdit3.Text));
+        var
+        x := Round((128 - wd) div 2) - 3;
+        var
+        y := Round((128 - hg) div 2) - 6;
+        var
+        imgpath := text_outa(Trim(LabeledEdit3.Text), x, y, 20, '微软雅黑',
+          b1.Selected, b2.Selected, True);
 
         if g_core.utils.fileMap.TryAdd(imgpath, Trim(LabeledEdit2.Text)) then
         begin
           if (Trim(imgpath).Contains('http')) then
-            ValueListEditor1.InsertRow((Trim(imgpath)), Trim(LabeledEdit2.Text), True)
-//            ValueListEditor1.InsertRow((Trim(imgpath)), ExtractFileName(Trim(LabeledEdit2.Text)), True)
+            ValueListEditor1.InsertRow((Trim(imgpath)),
+              Trim(LabeledEdit2.Text), True)
           else
-            ValueListEditor1.InsertRow(ExtractFileName(Trim(imgpath)), ExtractFileName(Trim(LabeledEdit2.Text)), True);
+            ValueListEditor1.InsertRow(ExtractFileName(Trim(imgpath)),
+              ExtractFileName(Trim(LabeledEdit2.Text)), True);
           LabeledEdit1.Text := '';
           LabeledEdit3.Text := '';
           LabeledEdit2.Text := '';
-          xchange := true;
+          xchange := True;
         end
         else
         begin
           ShowMessage('图片已使用')
         end;
-
-
-
-
-
       end
       else
       begin
 
-        label1.Font.Size := 20;
-        var wd := Label1.Canvas.TextWidth(Trim(LabeledEdit3.Text));
-        var hg := Label1.Canvas.TextHeight(Trim(LabeledEdit3.Text));
-        var x := Round((128 - wd) div 2) - 3;
-        var y := Round((128 - hg) div 2) - 6;
-        var imgpath := text_outa(Trim(LabeledEdit3.Text), x, y, 20, '微软雅黑',b1.Color,B2.Color,false);
-
+        Label1.font.Size := 20;
+        var
+        wd := Label1.canvas.TextWidth(Trim(LabeledEdit3.Text));
+        var
+        hg := Label1.canvas.TextHeight(Trim(LabeledEdit3.Text));
+        var
+        x := Round((128 - wd) div 2) - 3;
+        var
+        y := Round((128 - hg) div 2) - 6;
+        var
+        imgpath := text_outa(Trim(LabeledEdit3.Text), x, y, 20, '微软雅黑',
+          b1.Selected, b2.Selected, false);
         if g_core.utils.fileMap.TryAdd(imgpath, Trim(LabeledEdit2.Text)) then
         begin
           if (Trim(imgpath).Contains('http')) then
-            ValueListEditor1.InsertRow((Trim(imgpath)), Trim(LabeledEdit2.Text), True)
-//            ValueListEditor1.InsertRow((Trim(imgpath)), ExtractFileName(Trim(LabeledEdit2.Text)), True)
+            ValueListEditor1.InsertRow((Trim(imgpath)),
+              Trim(LabeledEdit2.Text), True)
           else
-            ValueListEditor1.InsertRow(ExtractFileName(Trim(imgpath)), ExtractFileName(Trim(LabeledEdit2.Text)), True);
+            ValueListEditor1.InsertRow(ExtractFileName(Trim(imgpath)),
+              ExtractFileName(Trim(LabeledEdit2.Text)), True);
           LabeledEdit1.Text := '';
           LabeledEdit3.Text := '';
           LabeledEdit2.Text := '';
-          xchange := true;
+          xchange := True;
         end
         else
         begin
@@ -262,7 +280,8 @@ end;
 
 procedure TCfgForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  if (oldNum <> g_core.utils.fileMap.Count) or reLayout or (Edit1.Text <> oldValue.ToString) or xchange then
+  if (OldNum <> g_core.utils.fileMap.Count) or reLayout or
+    (Edit1.Text <> OldValue.ToString) or xchange then
   begin
 
     update_db();
@@ -274,28 +293,32 @@ end;
 
 procedure TCfgForm.FormShow(Sender: TObject);
 var
-  appPath, imgPath: string;
+  appPath, imgpath: string;
 begin
   ValueListEditor1.Strings.Clear;
-  var Keys := g_core.DatabaseManager.itemdb.GetKeys;
+  var
+  Keys := g_core.DatabaseManager.itemdb.GetKeys;
   for var i := 0 to Keys.Count - 1 do
   begin
-    var key := Keys[i];
-    var value := g_core.DatabaseManager.itemdb.GetString(key);
-    var altValue := g_core.DatabaseManager.itemdb.GetString(key, false);
+    var
+    key := Keys[i];
+    var
+    value := g_core.DatabaseManager.itemdb.GetString(key);
+    var
+    altValue := g_core.DatabaseManager.itemdb.GetString(key, false);
     g_core.utils.fileMap.TryAdd(value, altValue);
-    imgPath := ExtractFileName(value);
+    imgpath := ExtractFileName(value);
     if altValue.Contains('http') then
       appPath := altValue
     else
       appPath := ExtractFileName(altValue);
-    ValueListEditor1.InsertRow(imgPath, appPath, True);
+    ValueListEditor1.InsertRow(imgpath, appPath, True);
   end;
 
   /// 后面关闭 数据是否变化作用
-  oldNum := Keys.Count;
-  oldValue := g_core.DatabaseManager.cfgDb.GetInteger('ih');
-  Edit1.Text := oldValue.ToString;
+  OldNum := Keys.Count;
+  OldValue := g_core.DatabaseManager.cfgDb.GetInteger('ih');
+  Edit1.Text := OldValue.ToString;
   reLayout := false;
 
   if g_core.DatabaseManager.cfgDb.GetInteger('bgVisible') = 1 then
@@ -304,10 +327,7 @@ begin
     CheckBox1.Checked := false;
 
   xchange := false;
-    b1.Selected:=clWhite;
-    b2.Selected:=clBlack;
-      m1:=clWhite;
-      m2:=clBlack;
+
 end;
 
 procedure TCfgForm.LabeledEdit1DblClick(Sender: TObject);
@@ -348,22 +368,24 @@ end;
 procedure TCfgForm.r1Click(Sender: TObject);
 begin
   LabeledEdit3.Enabled := false;
-  LabeledEdit1.Enabled := true;
+  LabeledEdit1.Enabled := True;
 end;
 
 procedure TCfgForm.r2Click(Sender: TObject);
 begin
-  LabeledEdit3.Enabled := true;
+  LabeledEdit3.Enabled := True;
   LabeledEdit1.Enabled := false;
 end;
 
 procedure TCfgForm.ValueListEditor1DblClick(Sender: TObject);
 begin
-  var pp := ValueListEditor1.Keys[ValueListEditor1.Row];
+  var
+  pp := ValueListEditor1.Keys[ValueListEditor1.Row];
   if pp = '' then
     Exit;
   begin
-    var inx: Integer;
+    var
+      inx: Integer;
 
     for var key in g_core.utils.fileMap.Keys do
     begin
@@ -372,11 +394,12 @@ begin
         if ValueListEditor1.FindRow(pp, inx) then
         begin
           ValueListEditor1.DeleteRow(inx);
-          var key_ := HashName(pansichar(key)).ToString;
+          var
+          key_ := HashName(pansichar(key)).ToString;
           g_core.utils.fileMap.Remove(key);
           g_core.DatabaseManager.itemdb.DeleteValue(key_);
           g_core.DatabaseManager.itemdb.DeleteValue(key_, false);
-          xchange := true;
+          xchange := True;
         end;
       end;
 
@@ -387,4 +410,3 @@ begin
 end;
 
 end.
-

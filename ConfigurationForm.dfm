@@ -10,11 +10,9 @@ object CfgForm: TCfgForm
   Font.Height = -12
   Font.Name = #23435#20307
   Font.Style = []
-  OldCreateOrder = True
   Position = poScreenCenter
   OnClose = FormClose
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 12
   object Label1: TLabel
     Left = 440
@@ -86,13 +84,14 @@ object CfgForm: TCfgForm
     Height = 20
     Hint = #21452#20987#28155#21152
     EditLabel.Width = 60
-    EditLabel.Height = 12
+    EditLabel.Height = 20
     EditLabel.Caption = #33258#23450#20041#22270#29255
     Enabled = False
     LabelPosition = lpLeft
     ParentShowHint = False
     ShowHint = True
     TabOrder = 2
+    Text = ''
     OnDblClick = LabeledEdit1DblClick
   end
   object LabeledEdit2: TLabeledEdit
@@ -102,12 +101,13 @@ object CfgForm: TCfgForm
     Height = 20
     Hint = #21452#20987#28155#21152
     EditLabel.Width = 48
-    EditLabel.Height = 12
+    EditLabel.Height = 20
     EditLabel.Caption = #25991#20214#36335#24452
     LabelPosition = lpLeft
     ParentShowHint = False
     ShowHint = True
     TabOrder = 3
+    Text = ''
     OnDblClick = LabeledEdit2DblClick
   end
   object Button2: TButton
@@ -161,12 +161,13 @@ object CfgForm: TCfgForm
     Height = 20
     Hint = #21452#20987#28155#21152
     EditLabel.Width = 48
-    EditLabel.Height = 12
+    EditLabel.Height = 20
     EditLabel.Caption = #25551#36848#25991#23383
     LabelPosition = lpLeft
     ParentShowHint = False
     ShowHint = True
     TabOrder = 8
+    Text = ''
     OnDblClick = LabeledEdit2DblClick
   end
   object RadioGroup1: TRadioGroup
@@ -202,9 +203,8 @@ object CfgForm: TCfgForm
     Width = 90
     Height = 22
     DefaultColorColor = clWhite
+    Selected = clYellow
     TabOrder = 12
-    Visible = False
-    OnChange = b1Change
   end
   object b2: TColorBox
     Left = 542
@@ -212,15 +212,15 @@ object CfgForm: TCfgForm
     Width = 90
     Height = 22
     TabOrder = 13
-    Visible = False
-    OnChange = b2Change
   end
   object c1: TCheckBox
-    Left = 305
-    Top = 551
+    Left = 271
+    Top = 547
     Width = 74
     Height = 17
     Caption = #20351#29992#39068#33394
+    Checked = True
+    State = cbChecked
     TabOrder = 14
   end
 end
