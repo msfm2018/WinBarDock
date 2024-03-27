@@ -22,6 +22,7 @@ type
     procedure action_bootom_panelClick(Sender: TObject);
     procedure N1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     FShowkeyid: Word;
     procedure hotkey(var Msg: tmsg); message WM_HOTKEY;
@@ -50,7 +51,12 @@ var
 implementation
 
 {$R *.dfm}
-
+procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+    Close;
+end;
   // 处理定时器事件的函数
 
 procedure TimerProc(hwnd: hwnd; uMsg, idEvent: UINT; dwTime: DWORD); stdcall;
