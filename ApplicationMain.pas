@@ -492,7 +492,8 @@ begin
    g_core.DatabaseManager.cfgDb.SetVarValue('ih',  i1);
   end;
 
-  loadInit();
+   layout();
+
 
 end;
 
