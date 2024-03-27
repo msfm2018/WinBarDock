@@ -117,6 +117,7 @@ object CfgForm: TCfgForm
     Height = 27
     Caption = #33258#23450#20041#22270#26631#22823#23567
     TabOrder = 4
+    Visible = False
     OnClick = Button2Click
   end
   object Button3: TButton
@@ -132,6 +133,7 @@ object CfgForm: TCfgForm
     Font.Style = []
     ParentFont = False
     TabOrder = 5
+    Visible = False
     OnClick = Button3Click
   end
   object Edit1: TSpinEdit
@@ -143,6 +145,7 @@ object CfgForm: TCfgForm
     MinValue = 30
     TabOrder = 6
     Value = 36
+    Visible = False
   end
   object CheckBox1: TCheckBox
     Left = -32

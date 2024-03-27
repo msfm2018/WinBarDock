@@ -40,6 +40,9 @@ type
     procedure img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure move_windows(h: thandle);
     procedure Image111MouseLeave(Sender: TObject);
+    procedure Image111MouseWheel(Sender: TObject; Shift: TShiftState;
+      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+    procedure loadInit;
 
   public
     procedure layout;
@@ -160,6 +163,7 @@ begin
       OnMouseLeave := Image111MouseLeave;
       OnMouseDown := FormMouseDown;
       OnClick := img_click;
+            OnMouseWheel := Image111MouseWheel;
 
       nodeLeft := g_core.NodeInformation.NodesArray[I].Left;
 
@@ -180,7 +184,6 @@ end;
 // 布局逻辑
 procedure TForm1.layout();
 begin
-
   g_core.NodeInformation.IsConfiguring := False;
 
   img_bg1.Parent := self;
@@ -303,12 +306,13 @@ begin
 
   SetWindowRgn(Handle, Rgn, true);
 end;
-
-procedure TForm1.FormShow(Sender: TObject);
-var
+     procedure tform1.loadInit();
+  var
   I: Integer;
   menuItemClickHandlers: array[0..4] of TMenuItemClickHandler;
 begin
+if img_bg1=nil then
+
   img_bg1 := timage.Create(nil);
   if not TOSVersion.Check(6, 2) then
     Application.Terminate;
@@ -322,14 +326,15 @@ begin
     FShowkeyid := GlobalAddAtom('xxyyzz_hotkey');
     RegisterHotKey(Handle, FShowkeyid, MOD_CONTROL, $42);
   end;
-
+       killtimer(Handle,10);
   SetTimer(Handle, 10, 10, @TimerProc);
 
   layout();
 
   BorderStyle := bsNone;
-//  Color := clSkyBlue;
+
   CreateRoundRectRgn1(Width + 1, height + 1);
+       if pm=nil then
 
   pm := TPopupMenu.Create(self);
   menuItemClickHandlers[0] := N1Click;
@@ -349,7 +354,13 @@ begin
   end;
 
   PopupMenu := pm;
+  form1.OnMouseWheel:=Image111MouseWheel;
 
+     end;
+procedure TForm1.FormShow(Sender: TObject);
+
+begin
+ loadInit();
 end;
 
 procedure TForm1.hotkey(var Msg: tmsg);
@@ -409,11 +420,21 @@ begin
       NewWidth := Min(NewWidth, maxValue);
       NewHeight := Min(NewHeight, maxValue);
 
-      // 计算按钮的新位置，使其保持在中心点
-      NewLeft := g_core.NodeInformation.NodesArray[I].CenterX - NewWidth div 2;
-      NewTop := g_core.NodeInformation.NodesArray[I].CenterY - NewHeight div 2;
+//      // 计算按钮的新位置，使其保持在中心点
+//      NewLeft := g_core.NodeInformation.NodesArray[I].CenterX - NewWidth div 2;
+//      NewTop := g_core.NodeInformation.NodesArray[I].CenterY - NewHeight div 2;
+//
+//      g_core.NodeInformation.NodesArray[I].SetBounds(NewLeft, NewTop, NewWidth, NewHeight);
 
-      g_core.NodeInformation.NodesArray[I].SetBounds(NewLeft, NewTop, NewWidth, NewHeight);
+
+
+
+      g_core.NodeInformation.NodesArray[I].CenterX := g_core.NodeInformation.NodesArray[I].Left + g_core.NodeInformation.NodesArray[I].Width div 2;
+      g_core.NodeInformation.NodesArray[I].CenterY := g_core.NodeInformation.NodesArray[I].Top + g_core.NodeInformation.NodesArray[I].Height div 2;
+      g_core.NodeInformation.NodesArray[I].SetBounds(
+        g_core.NodeInformation.NodesArray[I].CenterX - NewWidth div 2,
+        g_core.NodeInformation.NodesArray[I].CenterY - NewHeight div 2,
+        NewWidth, NewHeight);
 
     end;
 
@@ -444,6 +465,37 @@ begin
   EventDef.X := X;
 
 end;
+
+procedure TForm1.Image111MouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+var
+  I: Integer;
+  NewWidth, NewHeight: Integer;
+begin
+  if g_core.NodeInformation.IsConfiguring then
+    Exit;
+
+  Handled := True;
+
+  // 根据滚轮方向调整节点大小
+  if WheelDelta > 0 then
+  begin
+   var i1:=  g_core.DatabaseManager.cfgDb.GetInteger('ih');
+             i1:=round(1.1*i1);
+              g_core.NodeInformation.NodeSize := i1;
+   g_core.DatabaseManager.cfgDb.SetVarValue('ih',  i1);
+  end
+  else
+  begin
+   var i1:=  g_core.DatabaseManager.cfgDb.GetInteger('ih');
+   i1:= round(i1*0.9);
+    g_core.NodeInformation.NodeSize := i1;
+   g_core.DatabaseManager.cfgDb.SetVarValue('ih',  i1);
+  end;
+
+  loadInit();
+
+end;
+
 
 procedure TForm1.img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
