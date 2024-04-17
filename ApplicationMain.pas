@@ -492,6 +492,9 @@ begin
    g_core.DatabaseManager.cfgDb.SetVarValue('ih',  i1);
   end;
 
+  g_core.DatabaseManager.cfgDb.SetVarValue('left', Left);
+  g_core.DatabaseManager.cfgDb.SetVarValue('top', top);
+  
    layout();
 
 
