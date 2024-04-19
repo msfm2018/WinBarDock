@@ -3,9 +3,10 @@ object Form1: TForm1
   Top = 15
   AlphaBlendValue = 180
   BorderStyle = bsNone
-  ClientHeight = 104
-  ClientWidth = 795
+  ClientHeight = 80
+  ClientWidth = 444
   Color = clWhite
+  TransparentColor = True
   TransparentColorValue = clWhite
   DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET

@@ -1,4 +1,4 @@
-unit core;
+Ôªøunit core;
 
 interface
 
@@ -9,167 +9,148 @@ uses
   ConfigurationForm, InfoBarForm, vcl.ExtCtrls, math;
 
 type
-
-  // “∂Ω⁄µ„
-  TNode = class(timage)
+  TNode = class(TImage)
   public
-    nodePath: string;
-    nodeLeft: integer; // √ø∏ˆΩ⁄µ„øø◊ÛŒª÷√
-    OriginalWidth, OriginalHeight: integer;
-    CenterX, CenterY: integer;
+    node_path: string;
+    node_left: Integer; // ÊØè‰∏™ËäÇÁÇπÈù†Â∑¶‰ΩçÁΩÆ
+    original_width, original_height: Integer;
+    center_x, center_y: Integer;
   end;
 
   TNodes = record
-    Count: integer;
-    NodesArray: array of TNode;
-    IsConfiguring: Boolean;
+    size: Integer;
+    nodes_array: array of TNode;
+    Is_cfging: Boolean;
 
-    NodeSize: integer;
-    NodeGap: integer;
-
-  const
-    VisibleHeight: integer = 9; // ¥˙±Ìø…º˚∏ﬂ∂»
-    TopSnapDistance: integer = 40; // Œ¸∏Ωæ‡¿Î
-    // NodeGap = 30; // º‰∏Ù
-
+    node_size: Integer;
+    node_gap: Integer;
   end;
 
   TUtils = record
     FileMap: TDictionary<string, string>;
-    ShortcutKey: string;
+    short_key: string;
 
   public
-    procedure update_db;
-    procedure LaunchApplication(path: string);
-    // ±»¿˝“Ú◊”
-    function CalculateZoomFactor(w: double): double;
-    procedure SetAutoRun(ok: Boolean);
-
-    function CalculateFormHeight(NodeSize, windowHeight: integer): integer;
+    procedure UpdateDB;
+    procedure LaunchApplication(const Path: string);
+    function CalculateZoomFactor(const W: Double): Double;
+    procedure AutoRun;
+    function CalculateFormHeight(NodeSize, WindowHeight: Integer): Integer;
   end;
 
-  TGblVar = class
+  TCoreClass = class
   public
-    DatabaseManager: tgdb;
+    dbmgr: TGDB;
     utils: TUtils;
-    NodeInformation: TNodes;
+    nodes: TNodes;
   private
-    ObjectMap: TDictionary<string, tobject>;
+    map: TDictionary<string, TObject>;
   public
-    function FindObjectByName(name_: string): tobject;
+    function FindObjectByName(const Name_: string): TObject;
   end;
- type
-  TMenuItemClickHandler = procedure(Sender: TObject) of object;
-  const   menuItemCaptions: array[0..4] of string = ('∑≠“Î', '”¶”√', '…Ë÷√', '»»º¸', 'ÕÀ≥ˆ');
+
+type
+  TMenuClickHandler = procedure(Sender: TObject) of object;
+
+const
+  menu_name: array[0..4] of string = ('ÁøªËØë', 'Â∫îÁî®', 'ËÆæÁΩÆ', 'ÁÉ≠ÈîÆ', 'ÈÄÄÂá∫');
+  visible_height: Integer = 9;       // ‰ª£Ë°®ÂèØËßÅÈ´òÂ∫¶
+  top_snap_distance: Integer = 40;   // Âê∏ÈôÑË∑ùÁ¶ª
+
 var
-  g_core: TGblVar;
+  g_core: TCoreClass;
 
 implementation
 
-procedure TUtils.update_db;
+procedure TUtils.UpdateDB;
 var
-  hash: string;
-  v: string;
+  Hash: string;
+  Key, Value: string;
 begin
-  g_core.DatabaseManager.itemdb.clean();
-  g_core.DatabaseManager.itemdb.clean(false);
+  g_core.dbmgr.itemdb.Clean;
+  g_core.dbmgr.itemdb.Clean(False);
 
-  for var key in fileMap.Keys do
+  for Key in FileMap.Keys do
   begin
-    v := '';
-    fileMap.TryGetValue(key, v);
+    Value := FileMap[Key];
+    Hash := THashMD5.GetHashString(Key);
 
-    hash := THashMD5.GetHashString(key);
-       //k v ¥Ê¥¢‘⁄≤ªÕ¨±Ì÷–
-    g_core.DatabaseManager.itemdb.SetVarValue(hash, key);
-    g_core.DatabaseManager.itemdb.SetVarValue(hash, v, false);
-
+    g_core.dbmgr.itemdb.SetVarValue(Hash, Key);
+    g_core.dbmgr.itemdb.SetVarValue(Hash, Value, False);
   end;
-
 end;
 
-procedure TUtils.SetAutoRun(ok: Boolean);
+procedure TUtils.AutoRun;
 begin
- var reg := TRegistry.create;
   try
-    reg.RootKey := HKEY_CURRENT_USER;
-
-    if reg.OpenKey('SOFTWARE\Microsoft\Windows\CurrentVersion\Run', true) then
-      reg.WriteString('xtool', ExpandFileName(paramstr(0)));
-
-    reg.CloseKey;
-  finally
-    reg.Free;
+    var Reg := TRegistry.Create;
+    try
+      Reg.RootKey := HKEY_CURRENT_USER;
+      if Reg.OpenKey('SOFTWARE\Microsoft\Windows\CurrentVersion\Run', True) then
+        Reg.WriteString('xtool', ExpandFileName(ParamStr(0)));
+    finally
+      Reg.Free;
+    end;
+  except
+    // Handle exception if registry access fails
   end;
 end;
 
-function TUtils.CalculateFormHeight(NodeSize, windowHeight: integer): integer;
+function TUtils.CalculateFormHeight(NodeSize, WindowHeight: Integer): Integer;
 begin
-//  Result := math.Ceil(g_core.NodeInformation.NodeSize * NodeSize / 138) + g_core.DatabaseManager.cfgDb.GetInteger('ih');
-      result:=NodeSize+NodeSize div 2 +20;
+  Result := NodeSize + NodeSize div 2 + 20;
 end;
 
-
-function TUtils.CalculateZoomFactor(w: double): double;
+function TUtils.CalculateZoomFactor(const W: Double): Double;
 begin
-  // º∆À„±»¿˝“Ú◊”
-  Result := (101.82 * 5 * w) / g_core.NodeInformation.NodeSize;
+  Result := (101.82 * 5 * W) / g_core.nodes.node_size;
 end;
 
-procedure TUtils.LaunchApplication(path: string);
+procedure TUtils.LaunchApplication(const Path: string);
 begin
-  if path.trim = '' then
-    exit;
-  if path.Contains('https') or path.Contains('http') or path.Contains('.html') or path.Contains('.htm') then
-    winapi.shellapi.ShellExecute(application.Handle, nil, PChar(path), nil, nil, SW_SHOWNORMAL)
+  if Path.Trim = '' then
+    Exit;
+
+  if Path.Contains('https') or Path.Contains('http') or Path.Contains('.html') or Path.Contains('.htm') then
+    ShellExecute(Application.Handle, nil, PChar(Path), nil, nil, SW_SHOWNORMAL)
   else
-    ShellExecute(0, 'open', PChar(path), nil, nil, SW_SHOW);
+    ShellExecute(0, 'open', PChar(Path), nil, nil, SW_SHOW);
 end;
 
-{ TGblVar }
-
-function TGblVar.FindObjectByName(name_: string): tobject;
-var
-  vobj: tobject;
+function TCoreClass.FindObjectByName(const Name_: string): TObject;
 begin
-  if g_core.ObjectMap.TryGetValue(name_, vobj) then
-    Result := vobj
+  if map.TryGetValue(Name_, Result) then
+    Exit(Result)
   else
     Result := nil;
 end;
 
 initialization
+  g_core := TCoreClass.Create;
+     try
+         g_core.nodes.node_size := g_core.dbmgr.cfgDb.GetInteger('ih');
+     except
+          g_core.nodes.node_size := 64;
+     end;
 
-g_core := TGblVar.create;
+  g_core.nodes.node_gap := Round(g_core.nodes.node_size / 4); // 4 Ê†πÊçÆ rate ÊúÄÂ§öÂ¢ûÂä†ÂÆΩÂ∫¶ÁöÑ‰∏ÄÂçä
 
+  g_core.dbmgr.cfgDb := TCfgDB.Create;
+  g_core.dbmgr.itemdb := TItemsDb.Create;
+  g_core.dbmgr.desktopdb := TdesktopDb.Create;
+  g_core.utils.FileMap := TDictionary<string, string>.Create;
 
-g_core.NodeInformation.NodeSize := g_core.DatabaseManager.cfgDb.GetInteger('ih');
-                     g_core.NodeInformation.NodeGap:=Round( g_core.NodeInformation.NodeSize div 4 ); //4∏˘æ› rate ◊Ó∂‡‘ˆº”øÌ∂»µƒ“ª∞Î
-if g_core.DatabaseManager.cfgDb = nil then
-  g_core.DatabaseManager.cfgDb := TCfgDB.create;
+  g_core.map := TDictionary<string, TObject>.Create;
+  g_core.map.AddOrSetValue('cfgForm', TCfgForm.Create(nil));
+  g_core.map.AddOrSetValue('bottomForm', TbottomForm.Create(nil));
 
-if g_core.DatabaseManager.itemdb = nil then
-  g_core.DatabaseManager.itemdb := TItemsDb.create;
+  g_core.utils.AutoRun;
 
-g_core.DatabaseManager.desktopdb := TdesktopDb.create;
-
-g_core.utils.FileMap := TDictionary<string, string>.create;
-
-
-g_core.ObjectMap := TDictionary<string, tobject>.create;
-g_core.ObjectMap.AddOrSetValue('cfgForm', TCfgForm.create(nil));
-g_core.ObjectMap.AddOrSetValue('bottomForm', TbottomForm.create(nil));
-
-g_core.utils.SetAutoRun(true);
 
 finalization
-
-for var MyElem in g_core.ObjectMap.Values do
-  FreeAndNil(MyElem);
-g_core.ObjectMap.Free;
-
-g_core.utils.FileMap.Free;
-
-g_core.Free;
+  g_core.map.Free;
+  g_core.utils.FileMap.Free;
+  g_core.Free;
 
 end.
+

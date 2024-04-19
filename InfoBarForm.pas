@@ -178,7 +178,7 @@ begin
 
     FilePath := ExtractFileName(FilePath);
 
-    g_core.DatabaseManager.desktopdb.DeleteValue(FilePath);
+    g_core.dbmgr.desktopdb.DeleteValue(FilePath);
     Node.Delete;
   end;
 
@@ -199,12 +199,12 @@ begin
 
   FileName := Path;                  //�����ļ���
   FileName := ExtractFileName(Path);
-  var va := g_core.DatabaseManager.desktopdb.GetString(ExeName);
+  var va := g_core.dbmgr.desktopdb.GetString(ExeName);
   if (va <> '') then
     exit;
 
   FileName := ChangeFileName(FileName);
-  g_core.DatabaseManager.desktopdb.SetVarValue(FileName, Path);
+  g_core.dbmgr.desktopdb.SetVarValue(FileName, Path);
 
   ShowIOO(Path, FileName); //��ʾͼ��
 end;
@@ -217,10 +217,10 @@ begin
   begin
     LVexeinfo.Items.Delete(0);
   end;
-  var keys := g_core.DatabaseManager.desktopdb.GetKeys;
+  var keys := g_core.dbmgr.desktopdb.GetKeys;
   for var key in keys do
 
-    ShowIOO(g_core.DatabaseManager.desktopdb.GetString(key), key); //��ʾͼ��
+    ShowIOO(g_core.dbmgr.desktopdb.GetString(key), key); //��ʾͼ��
 
 
 end;

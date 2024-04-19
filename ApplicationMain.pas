@@ -4,11 +4,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  core, Winapi.Dwmapi, Winapi.ShellAPI, Dialogs, Registry, ExtCtrls, core_db,
-  System.Hash, Generics.Collections, Vcl.StdCtrls, Vcl.Imaging.pngimage,
-  inifiles, FileCtrl, Vcl.Imaging.jpeg, System.Win.TaskbarCore, ShlObj, ActiveX,
+  core, Dialogs, ExtCtrls, core_db,
+  Generics.Collections, Vcl.Imaging.pngimage,
+  inifiles, Vcl.Imaging.jpeg,
   u_debug, ComObj, System.Math, ConfigurationForm, Vcl.Menus, InfoBarForm,
-  System.Generics.Collections, event, GDIPAPI, GDIPOBJ, GDIPUTIL;
+  System.Generics.Collections, event;
 
 type
   TForm1 = class(TForm)
@@ -40,8 +40,7 @@ type
     procedure img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure move_windows(h: thandle);
     procedure Image111MouseLeave(Sender: TObject);
-    procedure Image111MouseWheel(Sender: TObject; Shift: TShiftState;
-      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+    procedure Image111MouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure loadInit;
 
   public
@@ -54,8 +53,8 @@ var
 implementation
 
 {$R *.dfm}
-procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+
+procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if Key = VK_ESCAPE then
     Close;
@@ -70,8 +69,8 @@ end;
 // 计算和定位节点的逻辑
 procedure TForm1.CalculateAndPositionNodes();
 begin
-  var hashKeys1 := g_core.DatabaseManager.itemdb.GetKeys();
-  g_core.NodeInformation.Count := hashKeys1.Count;
+  var hashKeys1 := g_core.dbmgr.itemdb.GetKeys();
+  g_core.nodes.size := hashKeys1.Count;
 
   if hashKeys1.Count = 0 then
   begin
@@ -92,55 +91,55 @@ begin
     g_core.utils.fileMap.TryAdd(ExtractFilePath(ParamStr(0)) + 'img\11.png', SysTemDir + '\cmd.exe');
     g_core.utils.fileMap.TryAdd(ExtractFilePath(ParamStr(0)) + 'img\06.png', SysTemDir + '\mstsc.exe');
 
-    g_core.utils.update_db;
+    g_core.utils.UpdateDB;
 
-    g_core.NodeInformation.Count := g_core.DatabaseManager.itemdb.GetKeys().Count;
-    hashKeys1 := g_core.DatabaseManager.itemdb.GetKeys();
+    g_core.nodes.size := g_core.dbmgr.itemdb.GetKeys().Count;
+    hashKeys1 := g_core.dbmgr.itemdb.GetKeys();
   end;
 
-  if g_core.NodeInformation.NodesArray <> nil then
+  if g_core.nodes.nodes_array <> nil then
   begin
-    for var I := 0 to Length(g_core.NodeInformation.NodesArray) - 1 do
+    for var I := 0 to Length(g_core.nodes.nodes_array) - 1 do
     begin
-      freeandnil(g_core.NodeInformation.NodesArray[I]);
+      freeandnil(g_core.nodes.nodes_array[I]);
     end;
   end;
 
-  Form1.Left := g_core.DatabaseManager.cfgDb.GetInteger('left');
-  Form1.top := g_core.DatabaseManager.cfgDb.GetInteger('top');
-//  Form1.Width := g_core.NodeInformation.Count * g_core.NodeInformation.NodeSize + g_core.NodeInformation.Count * g_core.NodeInformation.NodeGap * 4   ;
-//  + g_core.NodeInformation.Count * g_core.NodeInformation.NodeGap
-//  + 20;   //20      g_core.NodeInformation.NodeGap
+  Form1.Left := g_core.dbmgr.cfgDb.GetInteger('left');
+  Form1.top := g_core.dbmgr.cfgDb.GetInteger('top');
+//  Form1.Width := g_core.nodes.Count * g_core.nodes.node_size + g_core.nodes.Count * g_core.nodes.node_gap * 4   ;
+//  + g_core.nodes.Count * g_core.nodes.node_gap
+//  + 20;   //20      g_core.nodes.node_gap
 
-  Form1.height := g_core.utils.CalculateFormHeight(g_core.NodeInformation.NodeSize, Form1.height);
+  Form1.height := g_core.utils.CalculateFormHeight(g_core.nodes.node_size, Form1.height);
 
-  setlength(g_core.NodeInformation.NodesArray, g_core.NodeInformation.Count);
-  for var I := 0 to g_core.NodeInformation.Count - 1 do
+  setlength(g_core.nodes.nodes_array, g_core.nodes.size);
+  for var I := 0 to g_core.nodes.size - 1 do
   begin
-    g_core.NodeInformation.NodesArray[I] := tnode.Create(self);
-    g_core.NodeInformation.NodesArray[I].Width := g_core.NodeInformation.NodeSize;
-    g_core.NodeInformation.NodesArray[I].Height := g_core.NodeInformation.NodeSize;
+    g_core.nodes.nodes_array[I] := tnode.Create(self);
+    g_core.nodes.nodes_array[I].Width := g_core.nodes.node_size;
+    g_core.nodes.nodes_array[I].Height := g_core.nodes.node_size;
 
     if I = 0 then
-      g_core.NodeInformation.NodesArray[I].Left := g_core.NodeInformation.NodeGap + 10 // g_core.NodeInformation.NodeGap
+      g_core.nodes.nodes_array[I].Left := g_core.nodes.node_gap + 10 // g_core.nodes.node_gap
     else
     begin
 
-      g_core.NodeInformation.NodesArray[I].Left := g_core.NodeInformation.NodesArray[I - 1].Left + g_core.NodeInformation.NodesArray[I - 1].Width + g_core.NodeInformation.NodeGap * 2 + 20;  //10延展一下   g_core.NodeInformation.NodeGap
+      g_core.nodes.nodes_array[I].Left := g_core.nodes.nodes_array[I - 1].Left + g_core.nodes.nodes_array[I - 1].Width + g_core.nodes.node_gap * 2 + 20;  //10延展一下   g_core.nodes.node_gap
 
     end;
 
-    with g_core.NodeInformation.NodesArray[I] do
+    with g_core.nodes.nodes_array[I] do
     begin
       var parent1 := self.GetClientRect();
-      top := (parent1.height - g_core.NodeInformation.NodeSize) div 2;
+      top := (parent1.height - g_core.nodes.node_size) div 2;
       Parent := Form1;
-      Width := g_core.NodeInformation.NodeSize;
-      height := g_core.NodeInformation.NodeSize;
+      Width := g_core.nodes.node_size;
+      height := g_core.nodes.node_size;
       Transparent := true;
       Center := true;
-      nodePath := g_core.DatabaseManager.itemdb.GetString(hashKeys1[I], False);
-      var t := g_core.DatabaseManager.itemdb.GetString(hashKeys1[I]);
+      node_path := g_core.dbmgr.itemdb.GetString(hashKeys1[I], False);
+      var t := g_core.dbmgr.itemdb.GetString(hashKeys1[I]);
       var fname := '';
       var fpath := '';
 //                     Debug.Show(t);
@@ -163,19 +162,19 @@ begin
       OnMouseLeave := Image111MouseLeave;
       OnMouseDown := FormMouseDown;
       OnClick := img_click;
-            OnMouseWheel := Image111MouseWheel;
+      OnMouseWheel := Image111MouseWheel;
 
-      nodeLeft := g_core.NodeInformation.NodesArray[I].Left;
+      node_left := g_core.nodes.nodes_array[I].Left;
 
-      OriginalWidth := g_core.NodeInformation.NodesArray[I].Width;
-      OriginalHeight := g_core.NodeInformation.NodesArray[I].height;
-      CenterX := g_core.NodeInformation.NodesArray[I].Left + g_core.NodeInformation.NodesArray[I].Width div 2;
-      CenterY := g_core.NodeInformation.NodesArray[I].top + g_core.NodeInformation.NodesArray[I].height div 2;
+      original_width := g_core.nodes.nodes_array[I].Width;
+      original_height := g_core.nodes.nodes_array[I].height;
+      center_x := g_core.nodes.nodes_array[I].Left + g_core.nodes.nodes_array[I].Width div 2;
+      center_y := g_core.nodes.nodes_array[I].top + g_core.nodes.nodes_array[I].height div 2;
 
     end;
   end;
 
-  Form1.Width := g_core.NodeInformation.NodesArray[g_core.NodeInformation.Count - 1].Left + g_core.NodeInformation.NodesArray[g_core.NodeInformation.Count - 1].Width + g_core.NodeInformation.NodesArray[g_core.NodeInformation.Count - 1].Width div 2; // g_core.NodeInformation.NodeGap+20;
+  Form1.Width := g_core.nodes.nodes_array[g_core.nodes.size - 1].Left + g_core.nodes.nodes_array[g_core.nodes.size - 1].Width + g_core.nodes.nodes_array[g_core.nodes.size - 1].Width div 2; // g_core.nodes.node_gap+20;
 
   freeandnil(hashKeys1);
 
@@ -184,7 +183,7 @@ end;
 // 布局逻辑
 procedure TForm1.layout();
 begin
-  g_core.NodeInformation.IsConfiguring := False;
+  g_core.nodes.Is_cfging := False;
 
   img_bg1.Parent := self;
   img_bg1.Align := alClient;
@@ -215,7 +214,7 @@ begin
   if Form1.top > PrimaryMonitorHeight then
     Form1.top := 0;
 
-  g_core.utils.shortcutKey := g_core.DatabaseManager.cfgDb.GetString('shortcut');
+  g_core.utils.short_key := g_core.dbmgr.cfgDb.GetString('shortcut');
 
   restore_state();
   CreateRoundRectRgn1(Width, height);
@@ -223,8 +222,8 @@ begin
   if Form1.Width > TotalMonitorWidth then
   begin
 
-    g_core.NodeInformation.NodeSize := g_core.DatabaseManager.cfgDb.GetInteger('ih');
-    g_core.NodeInformation.NodeGap := Round(g_core.NodeInformation.NodeSize div 4);
+    g_core.nodes.node_size := g_core.dbmgr.cfgDb.GetInteger('ih');
+    g_core.nodes.node_gap := Round(g_core.nodes.node_size div 4);
 
     CalculateAndPositionNodes();
   end
@@ -233,15 +232,15 @@ end;
 
 procedure TForm1.img_click(Sender: TObject);
 begin
-  g_core.utils.LaunchApplication(tnode(Sender).nodePath);
+  g_core.utils.LaunchApplication(tnode(Sender).node_path);
   EventDef.isLeftClick := False;
 
 end;
 
 procedure TForm1.action_terminateClick(Sender: TObject);
 begin
-  g_core.DatabaseManager.cfgDb.SetVarValue('left', Left);
-  g_core.DatabaseManager.cfgDb.SetVarValue('top', top);
+  g_core.dbmgr.cfgDb.SetVarValue('left', Left);
+  g_core.dbmgr.cfgDb.SetVarValue('top', top);
   Application.Terminate;
 end;
 
@@ -272,29 +271,29 @@ var
   lp: tpoint;
   I: Integer;
 begin
-  if g_core.NodeInformation.IsConfiguring then
+  if g_core.nodes.Is_cfging then
     exit;
 
   GetCursorPos(lp);
   if not PtInRect(self.BoundsRect, lp) then
   begin
 
-    for I := 0 to g_core.NodeInformation.Count - 1 do
+    for I := 0 to g_core.nodes.size - 1 do
     begin
 
-      g_core.NodeInformation.NodesArray[I].SetBounds(g_core.NodeInformation.NodesArray[I].CenterX - g_core.NodeInformation.NodesArray[I].OriginalWidth div 2, g_core.NodeInformation.NodesArray[I].CenterY - g_core.NodeInformation.NodesArray[I].OriginalHeight div 2, g_core.NodeInformation.NodesArray[I].OriginalWidth, g_core.NodeInformation.NodesArray[I].OriginalHeight);
+      g_core.nodes.nodes_array[I].SetBounds(g_core.nodes.nodes_array[I].center_x - g_core.nodes.nodes_array[I].original_width div 2, g_core.nodes.nodes_array[I].center_y - g_core.nodes.nodes_array[I].original_height div 2, g_core.nodes.nodes_array[I].original_width, g_core.nodes.nodes_array[I].original_height);
 
     end;
 
-    if top < g_core.NodeInformation.TopSnapDistance then
+    if top < top_snap_distance then
     begin
-      top := -(height - g_core.NodeInformation.VisibleHeight) - 5;
+      top := -(height - visible_height) - 5;
       Left := Screen.Width div 2 - Width div 2;
       restore_state();
     end
 
   end
-  else if top < g_core.NodeInformation.TopSnapDistance then
+  else if top < top_snap_distance then
     top := 0;
 end;
 
@@ -306,14 +305,14 @@ begin
 
   SetWindowRgn(Handle, Rgn, true);
 end;
-     procedure tform1.loadInit();
-  var
-  I: Integer;
-  menuItemClickHandlers: array[0..4] of TMenuItemClickHandler;
-begin
-if img_bg1=nil then
 
-  img_bg1 := timage.Create(nil);
+procedure tform1.loadInit();
+var
+  I: Integer;
+  menuItemClickHandlers: array[0..4] of TMenuClickHandler;
+begin
+  if img_bg1 = nil then
+    img_bg1 := timage.Create(nil);
   if not TOSVersion.Check(6, 2) then
     Application.Terminate;
 
@@ -326,7 +325,7 @@ if img_bg1=nil then
     FShowkeyid := GlobalAddAtom('xxyyzz_hotkey');
     RegisterHotKey(Handle, FShowkeyid, MOD_CONTROL, $42);
   end;
-       killtimer(Handle,10);
+  killtimer(Handle, 10);
   SetTimer(Handle, 10, 10, @TimerProc);
 
   layout();
@@ -334,39 +333,38 @@ if img_bg1=nil then
   BorderStyle := bsNone;
 
   CreateRoundRectRgn1(Width + 1, height + 1);
-       if pm=nil then
-
-  pm := TPopupMenu.Create(self);
+  if pm = nil then
+    pm := TPopupMenu.Create(self);
   menuItemClickHandlers[0] := N1Click;
   menuItemClickHandlers[1] := action_bootom_panelClick;
   menuItemClickHandlers[2] := action_setClick;
   menuItemClickHandlers[3] := action_set_acceClick;
   menuItemClickHandlers[4] := action_terminateClick;
 
-  setlength(menuItems, Length(menuItemCaptions));
+  setlength(menuItems, Length(menu_name));
 
   for I := 0 to High(menuItems) do
   begin
     menuItems[I] := TMenuItem.Create(self);
-    menuItems[I].Caption := menuItemCaptions[I];
+    menuItems[I].Caption := menu_name[I];
     menuItems[I].OnClick := menuItemClickHandlers[I];
     pm.Items.Add(menuItems[I]);
   end;
 
   PopupMenu := pm;
-  form1.OnMouseWheel:=Image111MouseWheel;
+  form1.OnMouseWheel := Image111MouseWheel;
 
-     end;
+end;
+
 procedure TForm1.FormShow(Sender: TObject);
-
 begin
- loadInit();
+  loadInit();
 end;
 
 procedure TForm1.hotkey(var Msg: tmsg);
 begin
-  if (Msg.message = FShowkeyid) and (g_core.utils.shortcutKey.Trim <> '') then
-    g_core.utils.LaunchApplication(g_core.utils.shortcutKey);
+  if (Msg.message = FShowkeyid) and (g_core.utils.short_key.Trim <> '') then
+    g_core.utils.LaunchApplication(g_core.utils.short_key);
 
 end;
 
@@ -386,7 +384,7 @@ var
   Distance, ZoomFactor: double;
   NewWidth, NewHeight, NewLeft, NewTop: Integer;
 begin
-  if g_core.NodeInformation.IsConfiguring then
+  if g_core.nodes.Is_cfging then
     exit;
   if (EventDef.isLeftClick) then
   begin
@@ -403,17 +401,17 @@ begin
   begin
     var lp: tpoint;
     GetCursorPos(lp);
-    for I := 0 to g_core.NodeInformation.Count - 1 do
+    for I := 0 to g_core.nodes.size - 1 do
     begin
-      a := g_core.NodeInformation.NodesArray[I].Left - ScreenToClient(lp).X + g_core.NodeInformation.NodesArray[I].Width / 2;
-      b := g_core.NodeInformation.NodesArray[I].top - ScreenToClient(lp).Y + g_core.NodeInformation.NodesArray[I].height / 4;
-      rate := Exp(-sqrt(a * a + b * b) / g_core.utils.CalculateZoomFactor(g_core.NodeInformation.NodeSize));
+      a := g_core.nodes.nodes_array[I].Left - ScreenToClient(lp).X + g_core.nodes.nodes_array[I].Width / 2;
+      b := g_core.nodes.nodes_array[I].top - ScreenToClient(lp).Y + g_core.nodes.nodes_array[I].height / 4;
+      rate := Exp(-sqrt(a * a + b * b) / g_core.utils.CalculateZoomFactor(g_core.nodes.node_size));
       rate := Min(Max(rate, 0.5), 1);
 
       // 根据ZoomFactor来调整按钮的宽度和高度    *1.8
 
-      NewWidth := Round(g_core.NodeInformation.NodesArray[I].OriginalWidth * 2 * rate);
-      NewHeight := Round(g_core.NodeInformation.NodesArray[I].OriginalHeight * 2 * rate);
+      NewWidth := Round(g_core.nodes.nodes_array[I].original_width * 2 * rate);
+      NewHeight := Round(g_core.nodes.nodes_array[I].original_height * 2 * rate);
 
       var maxValue: Integer := 138;
         // 限制按钮的最大宽度和高度
@@ -421,20 +419,15 @@ begin
       NewHeight := Min(NewHeight, maxValue);
 
 //      // 计算按钮的新位置，使其保持在中心点
-//      NewLeft := g_core.NodeInformation.NodesArray[I].CenterX - NewWidth div 2;
-//      NewTop := g_core.NodeInformation.NodesArray[I].CenterY - NewHeight div 2;
+//      NewLeft := g_core.nodes.nodes_array[I].center_x - NewWidth div 2;
+//      NewTop := g_core.nodes.nodes_array[I].center_y - NewHeight div 2;
 //
-//      g_core.NodeInformation.NodesArray[I].SetBounds(NewLeft, NewTop, NewWidth, NewHeight);
+//      g_core.nodes.nodes_array[I].SetBounds(NewLeft, NewTop, NewWidth, NewHeight);
 
 
-
-
-      g_core.NodeInformation.NodesArray[I].CenterX := g_core.NodeInformation.NodesArray[I].Left + g_core.NodeInformation.NodesArray[I].Width div 2;
-      g_core.NodeInformation.NodesArray[I].CenterY := g_core.NodeInformation.NodesArray[I].Top + g_core.NodeInformation.NodesArray[I].Height div 2;
-      g_core.NodeInformation.NodesArray[I].SetBounds(
-        g_core.NodeInformation.NodesArray[I].CenterX - NewWidth div 2,
-        g_core.NodeInformation.NodesArray[I].CenterY - NewHeight div 2,
-        NewWidth, NewHeight);
+      g_core.nodes.nodes_array[I].center_x := g_core.nodes.nodes_array[I].Left + g_core.nodes.nodes_array[I].Width div 2;
+      g_core.nodes.nodes_array[I].center_y := g_core.nodes.nodes_array[I].Top + g_core.nodes.nodes_array[I].Height div 2;
+      g_core.nodes.nodes_array[I].SetBounds(g_core.nodes.nodes_array[I].center_x - NewWidth div 2, g_core.nodes.nodes_array[I].center_y - NewHeight div 2, NewWidth, NewHeight);
 
     end;
 
@@ -457,7 +450,7 @@ end;
 
 procedure TForm1.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  if g_core.NodeInformation.IsConfiguring then
+  if g_core.nodes.Is_cfging then
     exit;
 
   EventDef.isLeftClick := true;
@@ -471,7 +464,7 @@ var
   I: Integer;
   NewWidth, NewHeight: Integer;
 begin
-  if g_core.NodeInformation.IsConfiguring then
+  if g_core.nodes.Is_cfging then
     Exit;
 
   Handled := True;
@@ -479,27 +472,25 @@ begin
   // 根据滚轮方向调整节点大小
   if WheelDelta > 0 then
   begin
-   var i1:=  g_core.DatabaseManager.cfgDb.GetInteger('ih');
-             i1:=round(1.1*i1);
-              g_core.NodeInformation.NodeSize := i1;
-   g_core.DatabaseManager.cfgDb.SetVarValue('ih',  i1);
+    var i1 := g_core.dbmgr.cfgDb.GetInteger('ih');
+    i1 := round(1.1 * i1);
+    g_core.nodes.node_size := i1;
+    g_core.dbmgr.cfgDb.SetVarValue('ih', i1);
   end
   else
   begin
-   var i1:=  g_core.DatabaseManager.cfgDb.GetInteger('ih');
-   i1:= round(i1*0.9);
-    g_core.NodeInformation.NodeSize := i1;
-   g_core.DatabaseManager.cfgDb.SetVarValue('ih',  i1);
+    var i1 := g_core.dbmgr.cfgDb.GetInteger('ih');
+    i1 := round(i1 * 0.9);
+    g_core.nodes.node_size := i1;
+    g_core.dbmgr.cfgDb.SetVarValue('ih', i1);
   end;
 
-  g_core.DatabaseManager.cfgDb.SetVarValue('left', Left);
-  g_core.DatabaseManager.cfgDb.SetVarValue('top', top);
-  
-   layout();
+  g_core.dbmgr.cfgDb.SetVarValue('left', Left);
+  g_core.dbmgr.cfgDb.SetVarValue('top', top);
 
+  layout();
 
 end;
-
 
 procedure TForm1.img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
@@ -528,7 +519,7 @@ begin
   vobj := g_core.FindObjectByName('cfgForm');
   TCfgForm(vobj).Show;
 
-  g_core.NodeInformation.IsConfiguring := true;
+  g_core.nodes.Is_cfging := true;
   SetWindowPos(TCfgForm(vobj).Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
 end;
 
@@ -544,8 +535,8 @@ begin
 
     if Execute then
     begin
-      g_core.utils.shortcutKey := filename;
-      g_core.DatabaseManager.cfgDb.SetVarValue('shortcut', g_core.utils.shortcutKey.Trim);
+      g_core.utils.short_key := filename;
+      g_core.dbmgr.cfgDb.SetVarValue('shortcut', g_core.utils.short_key.Trim);
     end;
   end;
   OpenDlg.Free;
