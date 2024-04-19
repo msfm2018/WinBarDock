@@ -22,8 +22,8 @@ object CfgForm: TCfgForm
     Caption = 'Label1'
   end
   object Label2: TLabel
-    Left = 292
-    Top = 552
+    Left = 204
+    Top = 554
     Width = 84
     Height = 14
     Caption = #32972#26223#28176#21464#39068#33394
@@ -100,8 +100,8 @@ object CfgForm: TCfgForm
     OnDblClick = imgEdit1DblClick
   end
   object LabeledEdit2: TLabeledEdit
-    Left = 73
-    Top = 586
+    Left = 72
+    Top = 602
     Width = 560
     Height = 22
     Hint = #21452#20987#28155#21152
@@ -136,7 +136,7 @@ object CfgForm: TCfgForm
     Font.Name = #23435#20307
     Font.Style = []
     LabelPosition = lpLeft
-    MaxLength = 2
+    MaxLength = 16
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
@@ -171,21 +171,32 @@ object CfgForm: TCfgForm
     TabStop = True
     OnClick = rbtxtClick
   end
-  object b1: TColorBox
-    Left = 495
-    Top = 546
-    Width = 90
-    Height = 22
-    DefaultColorColor = clWhite
-    Selected = clYellow
+  object ColorGrid1: TColorGrid
+    Left = 294
+    Top = 545
+    Width = 144
+    Height = 52
+    Ctl3D = False
+    ParentCtl3D = False
     TabOrder = 8
+    OnChange = ColorGrid1Change
   end
-  object b2: TColorBox
-    Left = 386
-    Top = 546
-    Width = 90
-    Height = 22
-    Selected = clAqua
+  object ColorGrid2: TColorGrid
+    Left = 462
+    Top = 545
+    Width = 144
+    Height = 52
+    Ctl3D = False
+    ParentCtl3D = False
     TabOrder = 9
+    OnChange = ColorGrid2Change
+  end
+  object CheckBox1: TCheckBox
+    Left = 73
+    Top = 579
+    Width = 97
+    Height = 17
+    Caption = #25991#23383#39640#20142
+    TabOrder = 10
   end
 end

@@ -301,9 +301,9 @@ procedure TForm1.CreateRoundRectRgn1(w, h: Integer);
 var
   Rgn: HRGN;
 begin
-  Rgn := CreateRoundRectRgn(0, 0, w, h, 10, 10);
-
-  SetWindowRgn(Handle, Rgn, true);
+//  Rgn := CreateRoundRectRgn(0, 0, w, h, 80, 80);
+//
+//  SetWindowRgn(Handle, Rgn, true);
 end;
 
 procedure tform1.loadInit();
