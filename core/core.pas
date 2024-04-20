@@ -54,7 +54,7 @@ type
 
 const
   menu_name: array[0..4] of string = ('翻译', '应用', '设置', '热键', '退出');
-  visible_height: Integer = 9;       // 代表可见高度
+  visible_height: Integer = 19;       // 代表可见高度
   top_snap_distance: Integer = 40;   // 吸附距离
 
 var
