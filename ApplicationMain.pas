@@ -4,16 +4,13 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  core, Dialogs, ExtCtrls, core_db,
-  Generics.Collections, Vcl.Imaging.pngimage,
-  inifiles, Vcl.Imaging.jpeg,
-  u_debug, ComObj, System.Math, ConfigurationForm, Vcl.Menus, InfoBarForm,
-  System.Generics.Collections, event;
+  core, Dialogs, ExtCtrls, core_db, Generics.Collections, Vcl.Imaging.pngimage,
+  inifiles, Vcl.Imaging.jpeg, u_debug, ComObj, System.Math, ConfigurationForm,
+  Vcl.Menus, InfoBarForm, System.Generics.Collections, event;
 
 type
   TForm1 = class(TForm)
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure Image111MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure action_setClick(Sender: TObject);
@@ -35,12 +32,13 @@ type
       img_bg1: timage;
       pm: TPopupMenu;
       menuItems: array of TMenuItem;
+    procedure imgMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure CreateRoundRectRgn1(w, h: Integer);
     procedure CalculateAndPositionNodes;
     procedure img_bgMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure move_windows(h: thandle);
-    procedure Image111MouseLeave(Sender: TObject);
-    procedure Image111MouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+    procedure imgMouseLeave(Sender: TObject);
+    procedure imgMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure loadInit;
 
   public
@@ -72,46 +70,13 @@ begin
   var hashKeys1 := g_core.dbmgr.itemdb.GetKeys();
   g_core.nodes.size := hashKeys1.Count;
 
-  if hashKeys1.Count = 0 then
-  begin
-    var sysdir: pchar;
-    var SysTemDir: string;
-
-    Getmem(sysdir, 100);
-    try
-      getsystemdirectory(sysdir, 100);
-      SysTemDir := string(sysdir);
-    finally
-      Freemem(sysdir, 100);
-    end;
-
-    g_core.utils.fileMap.TryAdd(ExtractFilePath(ParamStr(0)) + 'img\flower.png', SysTemDir + '\notepad.exe');
-    g_core.utils.fileMap.TryAdd(ExtractFilePath(ParamStr(0)) + 'img\smail.png', SysTemDir + '\calc.exe');
-    g_core.utils.fileMap.TryAdd(ExtractFilePath(ParamStr(0)) + 'img\solid.png', SysTemDir + '\mspaint.exe');
-    g_core.utils.fileMap.TryAdd(ExtractFilePath(ParamStr(0)) + 'img\11.png', SysTemDir + '\cmd.exe');
-    g_core.utils.fileMap.TryAdd(ExtractFilePath(ParamStr(0)) + 'img\06.png', SysTemDir + '\mstsc.exe');
-
-    g_core.utils.UpdateDB;
-
-    g_core.nodes.size := g_core.dbmgr.itemdb.GetKeys().Count;
-    hashKeys1 := g_core.dbmgr.itemdb.GetKeys();
-  end;
-
   if g_core.nodes.nodes_array <> nil then
   begin
-    for var I := 0 to Length(g_core.nodes.nodes_array) - 1 do
-    begin
-      freeandnil(g_core.nodes.nodes_array[I]);
-    end;
+    for var Node in g_core.nodes.nodes_array do
+      FreeAndNil(Node);
   end;
 
-  Form1.Left := g_core.dbmgr.cfgDb.GetInteger('left');
-  Form1.top := g_core.dbmgr.cfgDb.GetInteger('top');
-//  Form1.Width := g_core.nodes.Count * g_core.nodes.node_size + g_core.nodes.Count * g_core.nodes.node_gap * 4   ;
-//  + g_core.nodes.Count * g_core.nodes.node_gap
-//  + 20;   //20      g_core.nodes.node_gap
-
-  Form1.height := g_core.utils.CalculateFormHeight(g_core.nodes.node_size, Form1.height);
+  Form1.height := g_core.nodes.node_size + g_core.nodes.node_size div 2 + 28;
 
   setlength(g_core.nodes.nodes_array, g_core.nodes.size);
   for var I := 0 to g_core.nodes.size - 1 do
@@ -121,7 +86,7 @@ begin
     g_core.nodes.nodes_array[I].Height := g_core.nodes.node_size;
 
     if I = 0 then
-      g_core.nodes.nodes_array[I].Left := g_core.nodes.node_gap + 10 // g_core.nodes.node_gap
+      g_core.nodes.nodes_array[I].Left := g_core.nodes.node_gap + 16
     else
     begin
 
@@ -131,8 +96,8 @@ begin
 
     with g_core.nodes.nodes_array[I] do
     begin
-      var parent1 := self.GetClientRect();
-      top := (parent1.height - g_core.nodes.node_size) div 2;
+
+      top := (self.GetClientRect().height - g_core.nodes.node_size) div 2;
       Parent := Form1;
       Width := g_core.nodes.node_size;
       height := g_core.nodes.node_size;
@@ -140,29 +105,20 @@ begin
       Center := true;
       node_path := g_core.dbmgr.itemdb.GetString(hashKeys1[I], False);
       var t := g_core.dbmgr.itemdb.GetString(hashKeys1[I]);
-      var fname := '';
-      var fpath := '';
-//                     Debug.Show(t);
-      if t.Contains('.\img') then
-      begin
-//                 debug.Show('------------') ;
 
-        fname := ExtractFileName(t);
-        fpath := ExtractFilePath(ParamStr(0)) + 'img\' + fname;
-        Picture.LoadFromFile(fpath);
-//                      Debug.Show(fpath);
-      end
+      if t.Contains('.\img') then
+        Picture.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\' + ExtractFileName(t))
       else
 
         Picture.LoadFromFile(t);
 
       Stretch := true;
 
-      OnMouseMove := Image111MouseMove;
-      OnMouseLeave := Image111MouseLeave;
+      OnMouseMove := imgMouseMove;
+      OnMouseLeave := imgMouseLeave;
       OnMouseDown := FormMouseDown;
       OnClick := img_click;
-      OnMouseWheel := Image111MouseWheel;
+      OnMouseWheel := imgMouseWheel;
 
       node_left := g_core.nodes.nodes_array[I].Left;
 
@@ -232,7 +188,7 @@ end;
 
 procedure TForm1.img_click(Sender: TObject);
 begin
-  g_core.utils.LaunchApplication(tnode(Sender).node_path);
+  g_core.utils.launch_app(tnode(Sender).node_path);
   EventDef.isLeftClick := False;
 
 end;
@@ -301,9 +257,9 @@ procedure TForm1.CreateRoundRectRgn1(w, h: Integer);
 var
   Rgn: HRGN;
 begin
-//  Rgn := CreateRoundRectRgn(0, 0, w, h, 80, 80);
-//
-//  SetWindowRgn(Handle, Rgn, true);
+  Rgn := CreateRoundRectRgn(0, 0, w, h, 8, 8);
+
+  SetWindowRgn(Handle, Rgn, true);
 end;
 
 procedure tform1.loadInit();
@@ -315,6 +271,9 @@ begin
     img_bg1 := timage.Create(nil);
   if not TOSVersion.Check(6, 2) then
     Application.Terminate;
+
+  Form1.Left := g_core.dbmgr.cfgDb.GetInteger('left');
+  Form1.top := g_core.dbmgr.cfgDb.GetInteger('top');
 
   SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) and (not WS_EX_APPWINDOW));
   ShowWindow(Application.Handle, SW_HIDE);
@@ -333,6 +292,7 @@ begin
   BorderStyle := bsNone;
 
   CreateRoundRectRgn1(Width + 1, height + 1);
+
   if pm = nil then
     pm := TPopupMenu.Create(self);
   menuItemClickHandlers[0] := N1Click;
@@ -352,7 +312,7 @@ begin
   end;
 
   PopupMenu := pm;
-  form1.OnMouseWheel := Image111MouseWheel;
+  form1.OnMouseWheel := imgMouseWheel;
 
 end;
 
@@ -364,18 +324,18 @@ end;
 procedure TForm1.hotkey(var Msg: tmsg);
 begin
   if (Msg.message = FShowkeyid) and (g_core.utils.short_key.Trim <> '') then
-    g_core.utils.LaunchApplication(g_core.utils.short_key);
+    g_core.utils.launch_app(g_core.utils.short_key);
 
 end;
 
 // 处理鼠标离开事件
-procedure TForm1.Image111MouseLeave(Sender: TObject);
+procedure TForm1.imgMouseLeave(Sender: TObject);
 begin
 
 end;
 
 // 移动窗口逻辑
-procedure TForm1.Image111MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+procedure TForm1.imgMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 var
   a, rate: double;
   b: double;
@@ -405,24 +365,18 @@ begin
     begin
       a := g_core.nodes.nodes_array[I].Left - ScreenToClient(lp).X + g_core.nodes.nodes_array[I].Width / 2;
       b := g_core.nodes.nodes_array[I].top - ScreenToClient(lp).Y + g_core.nodes.nodes_array[I].height / 4;
-      rate := Exp(-sqrt(a * a + b * b) / g_core.utils.CalculateZoomFactor(g_core.nodes.node_size));
+      rate := Exp(-sqrt(a * a + b * b) / (103.82 * 5));
       rate := Min(Max(rate, 0.5), 1);
-
-      // 根据ZoomFactor来调整按钮的宽度和高度    *1.8
 
       NewWidth := Round(g_core.nodes.nodes_array[I].original_width * 2 * rate);
       NewHeight := Round(g_core.nodes.nodes_array[I].original_height * 2 * rate);
 
-      var maxValue: Integer := 138;
+      var maxValue: Integer := 128;
         // 限制按钮的最大宽度和高度
       NewWidth := Min(NewWidth, maxValue);
       NewHeight := Min(NewHeight, maxValue);
 
-//      // 计算按钮的新位置，使其保持在中心点
-//      NewLeft := g_core.nodes.nodes_array[I].center_x - NewWidth div 2;
-//      NewTop := g_core.nodes.nodes_array[I].center_y - NewHeight div 2;
-//
-//      g_core.nodes.nodes_array[I].SetBounds(NewLeft, NewTop, NewWidth, NewHeight);
+      // 计算按钮的新位置，使其保持在中心点
 
 
       g_core.nodes.nodes_array[I].center_x := g_core.nodes.nodes_array[I].Left + g_core.nodes.nodes_array[I].Width div 2;
@@ -459,7 +413,7 @@ begin
 
 end;
 
-procedure TForm1.Image111MouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+procedure TForm1.imgMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 var
   I: Integer;
   NewWidth, NewHeight: Integer;
@@ -485,9 +439,6 @@ begin
     g_core.dbmgr.cfgDb.SetVarValue('ih', i1);
   end;
 
-  g_core.dbmgr.cfgDb.SetVarValue('left', Left);
-  g_core.dbmgr.cfgDb.SetVarValue('top', top);
-
   layout();
 
 end;
@@ -509,7 +460,7 @@ end;
 
 procedure TForm1.N1Click(Sender: TObject);
 begin
-  g_core.utils.LaunchApplication('https://fanyi.baidu.com/');
+  g_core.utils.launch_app('https://fanyi.baidu.com/');
 end;
 
 procedure TForm1.action_setClick(Sender: TObject);

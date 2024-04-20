@@ -32,10 +32,9 @@ type
 
   public
     procedure UpdateDB;
-    procedure LaunchApplication(const Path: string);
-    function CalculateZoomFactor(const W: Double): Double;
+    procedure launch_app(const Path: string);
+
     procedure AutoRun;
-    function CalculateFormHeight(NodeSize, WindowHeight: Integer): Integer;
   end;
 
   TCoreClass = class
@@ -96,17 +95,7 @@ begin
   end;
 end;
 
-function TUtils.CalculateFormHeight(NodeSize, WindowHeight: Integer): Integer;
-begin
-  Result := NodeSize + NodeSize div 2 + 20;
-end;
-
-function TUtils.CalculateZoomFactor(const W: Double): Double;
-begin
-  Result := (101.82 * 5 * W) / g_core.nodes.node_size;
-end;
-
-procedure TUtils.LaunchApplication(const Path: string);
+procedure TUtils.launch_app(const Path: string);
 begin
   if Path.Trim = '' then
     Exit;
@@ -127,11 +116,11 @@ end;
 
 initialization
   g_core := TCoreClass.Create;
-     try
-         g_core.nodes.node_size := g_core.dbmgr.cfgDb.GetInteger('ih');
-     except
-          g_core.nodes.node_size := 64;
-     end;
+  try
+    g_core.nodes.node_size := g_core.dbmgr.cfgDb.GetInteger('ih');
+  except
+    g_core.nodes.node_size := 64;
+  end;
 
   g_core.nodes.node_gap := Round(g_core.nodes.node_size / 4); // 4 根据 rate 最多增加宽度的一半
 
