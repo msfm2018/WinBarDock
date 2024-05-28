@@ -104,8 +104,8 @@ begin
 //  graphics.DrawPath(pen,path);    //初步绘制GraphicsPath
 
 
-
-  Result := '.\img\' + FormatDateTime('yyyymmddhhnnsszzz', Now) + '.png';
+  Result:=ExtractFilePath(ParamStr(0)) +'\img\' + FormatDateTime('yyyymmddhhnnsszzz', Now) + '.png';
+ // Result := '.\img\' + FormatDateTime('yyyymmddhhnnsszzz', Now) + '.png';
   vPng.SaveToFile(Result);
   vPng.Free;
   Graphics.Free;
