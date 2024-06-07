@@ -11,3 +11,8 @@ mac 工具条 win实现，比较粗糙 做了一下升级 方便使用
 
 ![image](https://github.com/msfm2018/win_mac_tool/blob/v4.0/image/i1.png)
 ![image](https://github.com/msfm2018/win_mac_tool/blob/v4.0/image/i2.png)
+
+成了  已经可以和mac dock差不多了
+
+![image](https://github.com/msfm2018/win_mac_tool/blob/v4.1/image/1.png)
+![image](https://github.com/msfm2018/win_mac_tool/blob/v4.1/image/2.png)
