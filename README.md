@@ -6,7 +6,7 @@ tag中下载 可执行
 
 
 #### 应用截图
-[![Watch the video](https://github.com/msfm2018/win_mac_tool/blob/v4.1/image/ok.png)]([(https://github.com/msfm2018/win_mac_tool/blob/v4.1/image/record.mp4)])
+
 
 ![image](https://github.com/msfm2018/win_mac_tool/blob/v4.1/image/ok.png)
 ![image](https://github.com/msfm2018/win_mac_tool/blob/v2.2/b.png)
