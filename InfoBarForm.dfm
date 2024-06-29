@@ -1,34 +1,38 @@
 object bottomForm: TbottomForm
   Left = 0
   Top = 0
-  BorderStyle = bsSingle
+  BorderStyle = bsNone
   Caption = #24555#25463#24212#29992#38754#26495'---'#40736#26631#25302#20837#24212#29992
-  ClientHeight = 457
-  ClientWidth = 658
+  ClientHeight = 83
+  ClientWidth = 674
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = True
+  OnClose = FormClose
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 14
   object LVexeinfo: TListView
     Left = 0
     Top = 0
-    Width = 658
-    Height = 457
+    Width = 674
+    Height = 83
     Hint = #25302#20837#24212#29992
     Align = alClient
+    BevelInner = bvNone
+    BevelOuter = bvNone
+    BorderStyle = bsNone
     Columns = <>
+    Ctl3D = False
     LargeImages = ImgList
     ParentShowHint = False
     PopupMenu = PopupMenu1
     ShowHint = True
     TabOrder = 0
     OnDblClick = LVexeinfoDblClick
+    OnMouseDown = LVexeinfoMouseDown
   end
   object ImgList: TImageList
     Height = 32
@@ -576,7 +580,7 @@ object bottomForm: TbottomForm
     Top = 232
     object N1: TMenuItem
       Caption = #21024#38500
-      OnClick = N1Click
+      OnClick = action_translator
     end
   end
 end

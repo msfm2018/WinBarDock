@@ -1,7 +1,7 @@
 unit event;
 
 interface
-
+    uses    winapi.Windows;
 type
   TMouseEvent  = record
     isLeftClick: Boolean;
@@ -13,7 +13,7 @@ procedure restore_state();
 
 var
   EventDef: TMouseEvent ;
-
+    cs: TRTLCriticalSection;
 implementation
 
 procedure restore_state();

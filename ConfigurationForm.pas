@@ -6,8 +6,9 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Math,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.ComCtrls, Vcl.Grids, Vcl.ValEdit, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Buttons,
-  u_debug, Vcl.Imaging.pngimage, System.Generics.Collections, Vcl.Menus,
-  Vcl.Mask, System.Hash, Vcl.Samples.Spin, Vcl.ColorGrd;
+  u_json, System.IniFiles, u_debug, Vcl.Imaging.pngimage,
+  System.Generics.Collections, Vcl.Menus, Vcl.Mask, System.Hash,
+  Vcl.Samples.Spin, Vcl.ColorGrd;
 
 type
   TCfgForm = class(TForm)
@@ -15,16 +16,12 @@ type
     Button1: TButton;
     imgEdit1: TLabeledEdit;
     LabeledEdit2: TLabeledEdit;
-    LabeledEdit3: TLabeledEdit;
+    text_edit: TLabeledEdit;
     RadioGroup1: TRadioGroup;
     rbimg: TRadioButton;
     rbtxt: TRadioButton;
-    Label1: TLabel;
-    Label2: TLabel;
-    ColorGrid1: TColorGrid;
-    ColorGrid2: TColorGrid;
-    CheckBox1: TCheckBox;
-    procedure Button1Click(Sender: TObject);
+    tip: TLabeledEdit;
+    procedure Buttoaction_translator(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure imgEdit1DblClick(Sender: TObject);
@@ -32,18 +29,15 @@ type
     procedure ve1DblClick(Sender: TObject);
     procedure rbtxtClick(Sender: TObject);
     procedure rbimgClick(Sender: TObject);
-    procedure ColorGrid1Change(Sender: TObject);
-    procedure ColorGrid2Change(Sender: TObject);
   private
-    procedure update_db;
+    file_map: TDictionary<string, string>;
+
   public
   end;
 
 var
-  OldNum: Integer = 0;
-  OldValue: Integer = 0;
   xchange: Boolean = false;
-  line_bg1,line_bg2:tcolor;
+
 implementation
 
 {$R *.dfm}
@@ -51,133 +45,160 @@ implementation
 uses
   ApplicationMain, core, GDIPAPI, GDIPOBJ, System.UITypes;
 
-function text_outa(txt: string; y, gc1, gc2: TColor;light:boolean): string;
+function GenerateTextImage(txt: string; y: Integer): string;
 var
   vPng: TPngImage;
-  aclStartColor, aclEndColor: TAlphaColor;
   font: TGPFont;
   sf: TGPStringFormat;
-  b2: TGPLinearGradientBrush;
+  whiteBrush: TGPSolidBrush;
   Graphics: TGPGraphics;
+  textLength: Integer;
+  middleX, middleY: Single;
 begin
 
   vPng := TPngImage.Create;
-  vPng.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\template.png');
+  try
+    vPng.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\template.png');
 
-  Graphics := TGPGraphics.Create(vPng.Canvas.Handle);
-  Graphics.SetSmoothingMode(SmoothingModeHighQuality);
-  graphics.SetInterpolationMode(InterpolationModeHighQualityBicubic);//指定的高品质，双三次插值
-  Graphics.TranslateTransform(0, 0);
-  sf := TGPStringFormat.Create();
+    Graphics := TGPGraphics.Create(vPng.Canvas.Handle);
+    try
+      Graphics.SetSmoothingMode(SmoothingModeHighQuality);
+      Graphics.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+      Graphics.TranslateTransform(0, 0);
+      sf := TGPStringFormat.Create();
 
-  aclStartColor := TAlphaColorF.Create(GetRValue(gc1), GetGValue(gc1), GetBValue(gc1)).ToAlphaColor;
+      try
+        Graphics.Clear(TAlphaColorRec.Black);
 
-  aclEndColor := TAlphaColorF.Create(GetRValue(gc2), GetGValue(gc2), GetBValue(gc2)).ToAlphaColor;
+        whiteBrush := TGPSolidBrush.Create(MakeColor(255, 245, 245, 245)); // White
 
-//  b2 := TGPLinearGradientBrush.Create(MakePoint(0, 0), MakePoint(vPng.Width, vPng.Height), MakeColor(255,255,255,255), MakeColor(255,30,120,195));
-    b2 := TGPLinearGradientBrush.Create(MakePoint(0, 0), MakePoint(vPng.Width, vPng.Height), aclStartColor, aclEndColor);
+        try
+          font := TGPFont.Create('黑体', 35);
 
-  Graphics.FillRectangle(b2, 0, 0, vPng.Width, vPng.Height);
+          try
+            textLength := Length(txt);
+            middleX := vPng.Width / 2;
+            middleY := y;
 
-  var b3 := TGPLinearGradientBrush.Create(MakePoint(0, 0), MakePoint(vPng.Width, vPng.Height), MakeColor(255,255,255,255),   MakeColor(15,1,1,1));
-  if light then
+            case textLength of
+              4:
+                begin
 
-   b3 := TGPLinearGradientBrush.Create(MakePoint(0, 0), MakePoint(vPng.Width, vPng.Height), MakeColor(255,255,255,255), MakeColor(255,30,120,195));
+                  Graphics.DrawString(txt[2] + txt[3], -1, font, MakePoint(0, middleY * 0.6), sf, whiteBrush);
 
+                  Graphics.DrawString(txt[1], 1, font, MakePoint(middleX - 40, middleY - 60), sf, whiteBrush);
 
-  font := TGPFont.Create('黑体', 40);
-  Graphics.DrawString(txt, -1, font, MakePoint(0, y * 0.6), sf, b3);
-  Graphics.DrawString(txt, -1, font, MakePoint(1, y * 0.65), sf, b3);
+                  Graphics.DrawString(txt[4], 1, font, MakePoint(middleX - 40, middleY + 20), sf, whiteBrush);
+                end;
+              3:
+                begin
+                  Graphics.DrawString(txt[2], 1, font, MakePoint(middleX - 20, middleY), sf, whiteBrush);
+                  Graphics.DrawString(txt[3], 1, font, MakePoint(middleX + 20, middleY), sf, whiteBrush);
 
+                  Graphics.DrawString(txt[1], 1, font, MakePoint(middleX - 40, middleY - 40), sf, whiteBrush);
+                end;
+              2:
+                begin
 
-//  var  fontFamily := TGPFontFamily.Create('黑体'); //△字体，效果图为'微软雅黑'字体
-//var  strFormat := TGPStringFormat.Create();
-// var path := TGPGraphicsPath.Create();
-//  //---------------------结束：初始化操作--------------------------------------
-//  path.AddString('你好', -1,         //要添加的 String
-//                fontFamily,       //表示绘制文本所用字体的名称
-//                0,                //指定应用到文本的字形信息,这里为普通文本
-//                40,               //限定字符的 Em（字体大小）方框的高度
-//                MakePoint(0, y * 0.65), //一个 Point，它表示文本从其起始的点
-//                sf);       //指定文本格式设置信息
-// var pen := TGPPen.Create(MakeColor(155,215,215,215),3);  //颜色、宽度
-//  graphics.DrawPath(pen,path);    //初步绘制GraphicsPath
+                  Graphics.DrawString(txt, -1, font, MakePoint(0, middleY * 0.6), sf, whiteBrush);
+                end;
+              1:
+                begin
+                  var font1 := TGPFont.Create('黑体', 40);
+                  Graphics.DrawString(txt, -1, font1, MakePoint(middleX - 40, y * 0.65), sf, whiteBrush);
+                  Graphics.DrawString(txt, 1, font1, MakePoint(middleX - 40, middleY * 0.6), sf, whiteBrush);
+                  font1.Free;
+                end
+            else
+              begin
+                var font1 := TGPFont.Create('黑体', 20);
+                Graphics.DrawString(txt, -1, font1, MakePoint(0, y * 0.6), sf, whiteBrush);
+                Graphics.DrawString(txt, -1, font1, MakePoint(1, y * 0.65), sf, whiteBrush);
+                font1.Free;
+              end;
+            end;
 
+            Result := ExtractFilePath(ParamStr(0)) + 'img\' + FormatDateTime('yyyymmddhhnnsszzz', Now) + '.png';
+            vPng.SaveToFile(Result);
 
-  Result:=ExtractFilePath(ParamStr(0)) +'\img\' + FormatDateTime('yyyymmddhhnnsszzz', Now) + '.png';
- // Result := '.\img\' + FormatDateTime('yyyymmddhhnnsszzz', Now) + '.png';
-  vPng.SaveToFile(Result);
-  vPng.Free;
-  Graphics.Free;
-  font.Free;
-  sf.free;
-  b3.free;
-  b2.free;
-end;
+          finally
+            font.Free;
+          end;
+        finally
+          whiteBrush.Free;
+        end;
+      finally
+        sf.Free;
+      end;
 
-procedure TCfgForm.update_db();
-var
-  Hash: string;
-  v: string;
-begin
-  g_core.dbmgr.itemdb.clean();
-  g_core.dbmgr.itemdb.clean(false);
-
-  for var key in g_core.utils.fileMap.Keys do
-  begin
-    v := '';
-    if g_core.utils.fileMap.TryGetValue(key, v) then
-    begin
-
-      Hash := THashMD5.GetHashString(key);
-      // k v 存储在不同表中
-      g_core.dbmgr.itemdb.SetVarValue(Hash, key);
-      g_core.dbmgr.itemdb.SetVarValue(Hash, v, false);
+    finally
+      Graphics.Free;
     end;
-
+  finally
+    vPng.Free;
   end;
-
 end;
 
-procedure TCfgForm.Button1Click(Sender: TObject);
+procedure TCfgForm.Buttoaction_translator(Sender: TObject);
+var
+  hdc1: hdc;
+  hg, y: Integer;
+  imgpath, key1, Hash: string;
+  tmps: string;
 begin
+  tmps := LabeledEdit2.Text;
+  LabeledEdit2.Text := tmps.Replace('=', '');
+  //图片
   if rbimg.Checked then
   begin
     if (Trim(imgEdit1.Text) <> '') and (Trim(LabeledEdit2.Text) <> '') then
     begin
-      if g_core.utils.fileMap.TryAdd(Trim(imgEdit1.Text), Trim(LabeledEdit2.Text)) then
+
+      g_core.utils.CopyFileToFolder(Trim(imgEdit1.Text), ExtractFilePath(ParamStr(0)) + 'img');
+
+      key1 := ExtractFileName(Trim(imgEdit1.Text));
+
+      Hash := THashMD5.GetHashString(key1);
+
+      if file_map.TryAdd(Hash, key1 + ',' + Trim(LabeledEdit2.Text) + ',' + Trim(tip.text)) then
       begin
-        if (Trim(imgEdit1.Text).Contains('http')) then
-          ve1.InsertRow((Trim(imgEdit1.Text)), Trim(LabeledEdit2.Text), True)
-        else
-          ve1.InsertRow(ExtractFileName(Trim(imgEdit1.Text)), ExtractFileName(Trim(LabeledEdit2.Text)), True);
+        add_json(Hash, key1, Trim(LabeledEdit2.Text), Trim(tip.text), True, nil);
+
+        ve1.InsertRow(key1, Trim(tip.Text), True);
         imgEdit1.Text := '';
-        LabeledEdit3.Text := '';
+        text_edit.Text := '';
         LabeledEdit2.Text := '';
+        tip.Text := '';
         xchange := True;
       end;
     end;
   end
+  //文字
   else if rbtxt.Checked then
   begin
-    if (Trim(LabeledEdit2.Text) <> '') and (Trim(LabeledEdit3.Text) <> '') then
+    if (Trim(LabeledEdit2.Text) <> '') and (Trim(text_edit.Text) <> '') then
     begin
 
-      var hg := Label1.canvas.TextHeight(Trim(LabeledEdit3.Text));
+      hdc1 := GetDC(text_edit.Handle);
+      hg := GetFontHeight(hdc1);
+      ReleaseDC(Handle, hdc1);
+      y := Round((128 - hg) div 2);
 
-      var y := Round((128 - hg) div 2);
+      imgpath := GenerateTextImage(Trim(text_edit.Text), y);
+      g_core.utils.CopyFileToFolder(Trim(imgpath), ExtractFilePath(ParamStr(0)) + 'img');
 
-      var imgpath := text_outa(Trim(LabeledEdit3.Text), y, line_bg1, line_bg2,CheckBox1.Checked);
+      key1 := ExtractFileName(Trim(imgpath));
 
-      if g_core.utils.fileMap.TryAdd(imgpath, Trim(LabeledEdit2.Text)) then
+      Hash := THashMD5.GetHashString(key1);
+
+      if file_map.TryAdd(Hash, key1 + ',' + Trim(LabeledEdit2.Text) + ',' + Trim(tip.Text)) then
       begin
-        if (Trim(imgpath).Contains('http')) then
-          ve1.InsertRow((Trim(imgpath)), Trim(LabeledEdit2.Text), True)
-        else
-          ve1.InsertRow(ExtractFileName(Trim(imgpath)), ExtractFileName(Trim(LabeledEdit2.Text)), True);
+        add_json(Hash, key1, Trim(LabeledEdit2.Text), Trim(tip.text), True, nil);
+        ve1.InsertRow(key1, Trim(tip.Text), True);
         imgEdit1.Text := '';
-        LabeledEdit3.Text := '';
+        text_edit.Text := '';
         LabeledEdit2.Text := '';
+        tip.Text := '';
         xchange := True;
       end
 
@@ -187,55 +208,49 @@ begin
 
 end;
 
-procedure TCfgForm.ColorGrid1Change(Sender: TObject);
-begin
-line_bg1:= ColorGrid1.ForegroundColor;
-end;
-
-procedure TCfgForm.ColorGrid2Change(Sender: TObject);
-begin
-line_bg2:= ColorGrid2.ForegroundColor;
-end;
-
 procedure TCfgForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  if (OldNum <> g_core.utils.fileMap.Count) or xchange then
+  if xchange then
   begin
-
-    update_db();
-    Form1.layout;
+    Form1.ConfigureLayout;
   end;
-  g_core.nodes.Is_cfging := false;
-
+  g_core.nodes.is_configuring := false;
+  file_map.Free;
 end;
 
 procedure TCfgForm.FormShow(Sender: TObject);
 var
-  appPath, imgpath: string;
+  values: TArray<string>;
+  v: TSettingItem;
+  tmp_key: string;
 begin
+  Form1.Font.Name := Screen.Fonts.Text;
+  Form1.Font.Size := 9;
+  file_map := TDictionary<string, string>.Create;
+
   ve1.Strings.Clear;
-  var Keys := g_core.dbmgr.itemdb.GetKeys;
-  for var i := 0 to Keys.Count - 1 do
+
+  for tmp_key in g_core.json.Settings.keys do
   begin
-    var key := Keys[i];
-    var value := g_core.dbmgr.itemdb.GetString(key);
-    var altValue := g_core.dbmgr.itemdb.GetString(key, false);
-    g_core.utils.fileMap.TryAdd(value, altValue);
-    imgpath := ExtractFileName(value);
-    if altValue.Contains('http') then
-      appPath := altValue
-    else
-      appPath := ExtractFileName(altValue);
-    ve1.InsertRow(imgpath, appPath, True);
+
+    if g_core.json.Settings.TryGetValue(tmp_key, v) then
+      if (v.Is_path_valid) then
+      begin
+        file_map.TryAdd(tmp_key, v.image_file_name + ',' + v.FilePath + ',' + v.tool_tip);
+
+        ve1.InsertRow(v.image_file_name, v.tool_tip, True);
+
+
+
+      end;
   end;
 
-  /// 后面关闭 数据是否变化作用
-  OldNum := Keys.Count;
-  OldValue := g_core.dbmgr.cfgDb.GetInteger('ih');
-
   xchange := false;
-   line_bg2:=clRed;
-   line_bg1:=clYellow;
+
+  text_edit.Text := '';
+  tip.Text := '无';
+  imgEdit1.Text := '';
+  LabeledEdit2.Text := '';
 end;
 
 procedure TCfgForm.imgEdit1DblClick(Sender: TObject);
@@ -243,17 +258,19 @@ var
   OpenDlg: TOpenDialog;
 begin
   OpenDlg := TOpenDialog.Create(nil);
-  with OpenDlg do
-  begin
-    Filter := '文件(*.png)|*.png';
-    DefaultExt := '*.png';
 
-    if Execute then
+  try
+    OpenDlg.Filter := '文件(*.png)|*.png';
+    OpenDlg.DefaultExt := '*.png';
+
+    if OpenDlg.Execute then
     begin
-      imgEdit1.Text := FileName;
+      imgEdit1.Text := OpenDlg.FileName;
     end;
+
+  finally
+    OpenDlg.Free;
   end;
-  OpenDlg.free;
 end;
 
 procedure TCfgForm.LabeledEdit2DblClick(Sender: TObject);
@@ -261,53 +278,58 @@ var
   OpenDlg: TOpenDialog;
 begin
   OpenDlg := TOpenDialog.Create(nil);
-  with OpenDlg do
-  begin
-    Filter := '文件(*.EXE)|*.EXE';
-    DefaultExt := '*.EXE';
+  try
+    OpenDlg.Filter := '文件(*.EXE)|*.EXE';
+    OpenDlg.DefaultExt := '*.EXE';
 
-    if Execute then
+    if OpenDlg.Execute then
     begin
-      LabeledEdit2.Text := FileName;
+      LabeledEdit2.Text := OpenDlg.FileName;
     end;
+  finally
+    OpenDlg.Free;
   end;
 end;
 
 procedure TCfgForm.rbimgClick(Sender: TObject);
 begin
-  LabeledEdit3.Enabled := false;
+  text_edit.Enabled := false;
   imgEdit1.Enabled := True;
+
 end;
 
 procedure TCfgForm.rbtxtClick(Sender: TObject);
 begin
-  LabeledEdit3.Enabled := True;
+  text_edit.Enabled := True;
   imgEdit1.Enabled := false;
+
 end;
 
 procedure TCfgForm.ve1DblClick(Sender: TObject);
+var
+  pp, key1, Hash: string;
+  inx: Integer;
 begin
-  var pp := ve1.Keys[ve1.Row];
+  pp := ve1.Keys[ve1.Row];
   if pp = '' then
     Exit;
+
+  key1 := pp;
+
+  Hash := THashMD5.GetHashString(key1);
+
+  for var Key in file_map.Keys do
   begin
-    var inx: Integer;
-
-    for var key in g_core.utils.fileMap.Keys do
+    if Key = Hash then
     begin
-      if ExtractFileName(key) = pp then
+      if ve1.FindRow(pp, inx) then
       begin
-        if ve1.FindRow(pp, inx) then
-        begin
-          ve1.DeleteRow(inx);
-          var key_ := HashName(pansichar(key)).ToString;
-          g_core.utils.fileMap.Remove(key);
-          g_core.dbmgr.itemdb.DeleteValue(key_);
-          g_core.dbmgr.itemdb.DeleteValue(key_, false);
-          xchange := True;
-        end;
-      end;
+        ve1.DeleteRow(inx);
+        file_map.Remove(Key);
 
+        remove_json(Key);
+        del_json_value('settings',Key);
+      end;
     end;
 
   end;

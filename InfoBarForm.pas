@@ -1,12 +1,12 @@
-unit InfoBarForm;
+﻿unit InfoBarForm;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  Vcl.StdCtrls, Vcl.ExtCtrls, Winapi.ShellAPI,  Vcl.ComCtrls, ActiveX,
-  shlobj, comobj, System.ImageList, Vcl.ImgList, Vcl.Menus;
+  Vcl.StdCtrls, Vcl.ExtCtrls, Winapi.ShellAPI, Vcl.ComCtrls, ActiveX, shlobj,
+  u_json, System.JSON, u_debug, comobj, System.ImageList, Vcl.ImgList, Vcl.Menus;
 
 type
   TbottomForm = class(TForm)
@@ -16,34 +16,81 @@ type
     N1: TMenuItem;
     procedure FormShow(Sender: TObject);
     procedure LVexeinfoDblClick(Sender: TObject);
-    procedure N1Click(Sender: TObject);
+    procedure action_translator(Sender: TObject);
+    procedure LVexeinfoMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
+    into_snap_windows: Boolean;
     procedure WndProc(var Msg: TMessage); override;
     procedure DragFileInfo(Msg: TMessage);
     procedure AddExeInfo(Path, ExeName: string);
-    function ShowIOO(Path, FileName: string): Boolean;
+    function Show_app(Path, FileName: string): Boolean;
     function GetExeName(FileName: string): string;
     function ExeFromLink(lnkName: string): string;
     function ChangeFileName(FileName: string): string;
     procedure LoadIco;
     procedure CreateDefaultFile;
-    { Private declarations }
-  public
-    { Public declarations }
+    procedure snap_top_windows;
+
   end;
+
+var
+  bottomForm: TbottomForm;
 
 implementation
 
 {$R *.dfm}
+
 uses
   core;
 
+procedure sort_layout(hwnd: hwnd; uMsg, idEvent: UINT; dwTime: DWORD); stdcall;
+begin
+  bottomForm.snap_top_windows();
+end;
+
+procedure TbottomForm.snap_top_windows();
+var
+  lp: tpoint;
+begin
+  if g_core.nodes.is_configuring then
+    exit;
+
+  GetCursorPos(lp);
+  if not PtInRect(self.BoundsRect, lp) and not into_snap_windows then
+  begin
+    into_snap_windows := true;
+
+    Left := Screen.Width div 2 - Width div 2;
+
+    if top < top_snap_distance then
+    begin
+      top := -(height - visible_height) - 5;
+      Left := Screen.Width div 2 - Width div 2;
+
+    end;
+    into_snap_windows := false;
+
+  end
+  else if top < top_snap_distance then
+    top := 0;
+end;
+
+procedure TbottomForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  KillTimer(Handle, 10);
+end;
+
 procedure TbottomForm.FormShow(Sender: TObject);
 begin
+  g_core.utils.round_rect(width, height, Handle);
+  into_snap_windows := false;
+  SetTimer(Handle, 10, 10, @sort_layout);
   DragAcceptFiles(Handle, True);
 
   CreateDefaultFile();
   LoadIco();
+
 end;
 
 procedure TbottomForm.WndProc(var Msg: TMessage);
@@ -68,7 +115,7 @@ begin
     Freemem(sysdir, 100);
   end;
 
-  if LVexeinfo.Items.Count = 0 then //���ļ�
+  if LVexeinfo.Items.Count = 0 then
   begin
     AddExeInfo(SysTemDir + '\notepad.exe', 'notepad');
     AddExeInfo(SysTemDir + '\calc.exe', 'calc');
@@ -87,7 +134,7 @@ var
   strFileName: string;
 begin
   pFileName := @arrFileName;
-  number := DragQueryFile(Msg.wParam, $FFFFFFFF, nil, 0); //����ļ��ĸ���
+  number := DragQueryFile(Msg.wParam, $FFFFFFFF, nil, 0);
 
   for i := 0 to number - 1 do
   begin
@@ -114,7 +161,7 @@ begin
   MyPFile := aObj as IPersistFile;
   MyLink := aObj as IShellLink;
 
-  WFileName := lnkName; //��һ��String����WideString��ת��������Delphi�Զ����
+  WFileName := lnkName;
   MyPFile.Load(PWChar(WFileName), 0);
 
   MyLink.GetPath(FileName, 255, pfd, SLGP_UNCPRIORITY);
@@ -149,7 +196,13 @@ begin
 
 end;
 
-procedure TbottomForm.N1Click(Sender: TObject);
+procedure TbottomForm.LVexeinfoMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  ReleaseCapture;
+  SendMessage(handle, WM_SYSCOMMAND, SC_MOVE + HTCaption, 0);
+end;
+
+procedure TbottomForm.action_translator(Sender: TObject);
 var
   IP: Integer;
   FilePath: string;
@@ -162,7 +215,7 @@ begin
   Node := TListItem.Create(NIl);
 
   if LVexeinfo.SelCount > 0 then
-    if MessageBox(handle, 'ȷ��', 'ɾ��', MB_ICONQUESTION + MB_YESNO) <> IDYes then
+    if MessageBox(handle, 'delete', 'ok', MB_ICONQUESTION + MB_YESNO) <> IDYes then
       Exit;
 
   for i := LVexeinfo.Items.Count - 1 downto 0 do
@@ -178,7 +231,7 @@ begin
 
     FilePath := ExtractFileName(FilePath);
 
-    g_core.dbmgr.desktopdb.DeleteValue(FilePath);
+    del_json_value('ini', FilePath.ToUpper);
     Node.Delete;
   end;
 
@@ -188,80 +241,68 @@ procedure TbottomForm.AddExeInfo(Path, ExeName: string);
 var
   FileName: string;
 begin
-  if Path = '' then
+
+  if (Path = '') or (not (FileExists(Path)) or DirectoryExists(Path)) then
     Exit;
 
-  if not (FileExists(Path) or DirectoryExists(Path)) then
-  begin
-
-    Exit;
-  end;
-
-  FileName := Path;                  //�����ļ���
   FileName := ExtractFileName(Path);
-  var va := g_core.dbmgr.desktopdb.GetString(ExeName);
+
+  var c := FileName.Split(['.'])[0].ToUpper;
+  var va := get_json_value('ini', c);
+
   if (va <> '') then
     exit;
 
   FileName := ChangeFileName(FileName);
-  g_core.dbmgr.desktopdb.SetVarValue(FileName, Path);
 
-  ShowIOO(Path, FileName); //��ʾͼ��
+  set_json_value('ini', FileName.ToUpper, Path);
+  Show_app(Path, FileName);
 end;
 
 procedure TbottomForm.LoadIco;
 var
   i: Integer;
+  Pair: TJSONPair;
 begin
   for i := 0 to LVexeinfo.Items.Count - 1 do
   begin
     LVexeinfo.Items.Delete(0);
   end;
-  var keys := g_core.dbmgr.desktopdb.GetKeys;
-  for var key in keys do
 
-    ShowIOO(g_core.dbmgr.desktopdb.GetString(key), key); //��ʾͼ��
+  var iniObj := g_jsonobj.GetValue('ini') as TJSONObject;
+  if Assigned(iniObj) then
+  begin
+    try
+      for Pair in iniObj do
+      begin
+        var Key := Pair.JsonString.Value;
 
+        Show_app(iniObj.GetValue(Key).GetValue<string>, Key);
+      end;
+    finally
+
+    end;
+  end;
 
 end;
 
 function TbottomForm.ChangeFileName(FileName: string): string;
 begin
   if UpperCase(FileName) = 'NOTEPAD.EXE' then
-  begin
-
-    Result := 'NOTEPAD';
-    Exit;
-  end;
-
-  if UpperCase(FileName) = 'CALC.EXE' then
-  begin
-    Result := 'CALC';
-    Exit;
-  end;
-
-  if UpperCase(FileName) = 'MSPAINT.EXE' then
-  begin
-    Result := 'MSPAINT';
-    Exit;
-  end;
-
-  if UpperCase(FileName) = 'CMD.EXE' then
-  begin
-    Result := 'CMD';
-    Exit;
-  end;
-
-  if UpperCase(FileName) = 'MSTSC.EXE' then
-  begin
-    Result := 'MSTSC';
-    Exit;
-  end;
-  Result := FileName;
+    Result := 'NOTEPAD'
+  else if UpperCase(FileName) = 'CALC.EXE' then
+    Result := 'CALC'
+  else if UpperCase(FileName) = 'MSPAINT.EXE' then
+    Result := 'MSPAINT'
+  else if UpperCase(FileName) = 'CMD.EXE' then
+    Result := 'CMD'
+  else if UpperCase(FileName) = 'MSTSC.EXE' then
+    Result := 'MSTSC'
+  else
+    Result := FileName;
 end;
 
-
-function TbottomForm.ShowIOO(Path, FileName: string): Boolean;
+function TbottomForm.Show_app(Path, FileName: string): Boolean;
 var
   pIco: TIcon;
   bmpIco: TBitmap;
@@ -280,7 +321,7 @@ begin
     if pIco.Handle > 0 then
     begin
       bmpIco := TBitmap.Create;
-      bmpIco.PixelFormat := pf24bit;    //����ͼ��
+      bmpIco.PixelFormat := pf32bit;
       bmpIco.Height := pIco.Height;
       bmpIco.Width := pIco.Width;
       bmpIco.Canvas.Draw(0, 0, pIco);
@@ -291,13 +332,8 @@ begin
       item.SubItems.Add(Path);
       item.ImageIndex := ImgList.Add(bmpIco, bmpIco);
 
-    //  AddExeInfo(Path,FileName);
     end;
   end
-  else
-  begin
-  //  DestTopDB.DeleteRecord(LoginID,EID,Path);
-  end;
 end;
 
 end.

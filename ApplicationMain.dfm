@@ -1,12 +1,11 @@
 object Form1: TForm1
-  Left = 270
-  Top = 15
+  Left = 123
+  Top = 125
   AlphaBlendValue = 180
   BorderStyle = bsNone
   ClientHeight = 80
   ClientWidth = 444
-  Color = clWhite
-  TransparentColor = True
+  Color = 962030
   TransparentColorValue = clWhite
   DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
@@ -17,10 +16,16 @@ object Form1: TForm1
   GlassFrame.SheetOfGlass = True
   Position = poDesigned
   Scaled = False
-  OnClose = FormClose
+  OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnMouseDown = FormMouseDown
+  OnPaint = FormPaint
   OnShow = FormShow
   TextHeight = 12
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    Left = 144
+    Top = 24
+  end
 end
