@@ -799,6 +799,7 @@ begin
   else if t_node(Sender).tool_tip = '' then
     g_core.utils.launch_app(t_node(Sender).file_path)
   else if not BringWindowToFront(t_node(Sender).tool_tip) then
+    g_core.utils.launch_app(t_node(Sender).file_path)  else
     g_core.utils.launch_app(t_node(Sender).file_path);
 
   EventDef.isLeftClick := False;
