@@ -379,7 +379,8 @@ procedure TForm1.node_mouse_leave(Sender: TObject);
 begin
   hoverLabel.Visible := false;
   if hoverLabel <> nil then
-    FreeAndNil(hoverLabel)
+    FreeAndNil(hoverLabel);
+     restore_state
 end;
 
 procedure TForm1.wndproc(var Msg: tmessage);
