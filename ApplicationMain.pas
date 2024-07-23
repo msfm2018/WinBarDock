@@ -112,7 +112,7 @@ begin
         FreeAndNil(Node);
       end;
 
-    Form1.height := g_core.nodes.node_size + g_core.nodes.node_size div 2 + 100;
+    Form1.height := g_core.nodes.node_size + g_core.nodes.node_size div 2 + 140;
 
     setlength(g_core.nodes.Nodes, g_core.nodes.count);
     I := 0;
@@ -203,6 +203,12 @@ begin
   end
   else if top < top_snap_distance then
     top := 0;
+
+//  if top < top_snap_distance + 100 then
+//    g_core.utils.init_background(main_background, self, 'bg_top.png')
+//  else
+//
+//    g_core.utils.init_background(main_background, self, 'bg.png');
 end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);
@@ -260,7 +266,7 @@ begin
     main_background := timage.Create(self);
   main_background.OnMouseDown := img_bgMouseDown;
   main_background.Width := Width;
-  g_core.utils.init_background(main_background, self);
+  g_core.utils.init_background(main_background, self, 'bg.png');
 
   cs := TCriticalSection.Create;
   into_snap_windows := false;
@@ -303,44 +309,6 @@ begin
 
 end;
 
-
-// 布局逻辑
-
-procedure TForm1.handle_animation_tick(Sender: TObject; lp: TPoint);
-var
-  NewFormWidth: Integer;
-  j: Integer;
-  Delta: Integer;
-  ExpDelta: Double;
-  rate: Double;
-begin
-
-  NewFormWidth := g_core.nodes.Nodes[g_core.nodes.count - 1].Left + g_core.nodes.Nodes[g_core.nodes.count - 1].Width + g_core.nodes.node_gap + exptend;
-    // 计算移动的增量
-  Delta := NewFormWidth - Width;
-
-  if node_at_cursor <> nil then
-  begin
-
-    rate := 1;
-
-    ExpDelta := Delta * rate;
-
-    SetBounds(Left - Round(ExpDelta) div 2, Top, Width + Round(ExpDelta), Height);
-
-    for j := 0 to g_core.nodes.count - 1 do
-    begin
-      var inner_node := g_core.nodes.Nodes[j];
-      if j = 0 then
-        inner_node.Left := g_core.nodes.node_gap + exptend
-      else
-        inner_node.Left := g_core.nodes.Nodes[j - 1].Left + g_core.nodes.Nodes[j - 1].Width + g_core.nodes.node_gap;
-    end;
-
-  end;
-
-end;
-
 procedure TForm1.hotkey(var Msg: tmsg);
 begin
   if (Msg.message = FShowkeyid) then
@@ -379,7 +347,8 @@ procedure TForm1.node_mouse_leave(Sender: TObject);
 begin
   hoverLabel.Visible := false;
   if hoverLabel <> nil then
-    FreeAndNil(hoverLabel)
+    FreeAndNil(hoverLabel);
+  restore_state
 end;
 
 procedure TForm1.wndproc(var Msg: tmessage);
@@ -435,9 +404,38 @@ begin
   end;
 end;
 
+procedure TForm1.handle_animation_tick(Sender: TObject; lp: TPoint);
+var
+  NewFormWidth: Integer;
+  j: Integer;
+  Delta: Integer;
+  ExpDelta: Double;
+  rate: Double;
+begin
+  NewFormWidth := g_core.nodes.Nodes[g_core.nodes.count - 1].Left + g_core.nodes.Nodes[g_core.nodes.count - 1].Width + g_core.nodes.node_gap + exptend;
+  // 计算移动的增量
+  Delta := NewFormWidth - Width;
+
+  if node_at_cursor <> nil then
+  begin
+    rate := 1;
+
+    ExpDelta := Delta * rate;
+
+    SetBounds(Left - Round(ExpDelta) div 2, Top, Width + Round(ExpDelta), Height);
+
+    for j := 0 to g_core.nodes.count - 1 do
+    begin
+      var inner_node := g_core.nodes.Nodes[j];
+      if j = 0 then
+        inner_node.Left := g_core.nodes.node_gap + exptend
+      else
+        inner_node.Left := g_core.nodes.Nodes[j - 1].Left + g_core.nodes.Nodes[j - 1].Width + g_core.nodes.node_gap;
+    end;
+  end;
+end;
 
 // 移动窗口逻辑
-
 procedure TForm1.node_mouse_move(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 var
   rate: double;
@@ -496,7 +494,25 @@ begin
       Current_node.center_x := Current_node.Left + Current_node.Width div 2;
       Current_node.center_y := Current_node.Top + Current_node.Height div 2;
 
-      Current_node.SetBounds(Current_node.center_x - NewWidth div 2, Current_node.center_y - NewHeight div 2, NewWidth, NewHeight);
+      if top < top_snap_distance + 100 then
+      begin
+
+        Current_node.Width := Floor(Current_node.original_width * 2 * rate);
+        Current_node.height := Floor(Current_node.original_width * 2 * rate);
+        Current_node.Left := Current_node.Left - Floor((Current_node.Width - Current_node.original_width) * rate) - 6;
+      end
+      else
+      begin
+
+      // 调整顶部位置而不改变底部位置
+        var newTop := Current_node.Top - (NewHeight - Current_node.Height);
+
+        Current_node.SetBounds(Current_node.center_x - NewWidth div 2, newTop, NewWidth, NewHeight);
+      end;
+
+
+//    中间往外凸显
+//       Current_node.SetBounds(Current_node.center_x - NewWidth div 2, Current_node.center_y - NewHeight div 2, NewWidth, NewHeight);
 
     end;
 
@@ -799,6 +815,8 @@ begin
   else if t_node(Sender).tool_tip = '' then
     g_core.utils.launch_app(t_node(Sender).file_path)
   else if not BringWindowToFront(t_node(Sender).tool_tip) then
+    g_core.utils.launch_app(t_node(Sender).file_path)
+  else
     g_core.utils.launch_app(t_node(Sender).file_path);
 
   EventDef.isLeftClick := False;

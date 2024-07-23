@@ -41,7 +41,7 @@ type
     procedure launch_app(const Path: string);
 
     procedure auto_run;
-    procedure init_background(img: TImage; obj: tform);
+    procedure init_background(img: TImage; obj: tform;src:string);
     function rate(a, b: double): Double;
 
   end;
@@ -576,7 +576,7 @@ begin
   end;
 end;
 
-procedure t_utils.init_background(img: TImage; obj: tform);
+procedure t_utils.init_background(img: TImage; obj: tform;src:string);
 begin
   img.Parent := obj;
   img.Align := alClient;
@@ -584,7 +584,7 @@ begin
   img.Stretch := true;
 //  img.Anchors:=[akleft,akright];
 
-  img.Picture.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\bg.png');
+  img.Picture.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\'+src);
 end;
 
 procedure t_utils.round_rect(w, h: Integer; hdl: thandle);
