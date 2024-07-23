@@ -23,9 +23,4 @@ object Form1: TForm1
   OnPaint = FormPaint
   OnShow = FormShow
   TextHeight = 12
-  object Timer1: TTimer
-    OnTimer = Timer1Timer
-    Left = 144
-    Top = 24
-  end
 end

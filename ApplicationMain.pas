@@ -13,8 +13,6 @@ uses
 
 type
   TForm1 = class(TForm)
-    Timer1: TTimer;
-
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -24,7 +22,6 @@ type
     procedure action_bootom_panel(Sender: TObject);
     procedure action_translator(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure Timer1Timer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormPaint(Sender: TObject);
   private
@@ -64,16 +61,6 @@ type
     procedure FreeDictionary;
     procedure action_hide_desk(Sender: TObject);
 
-  end;
-
-  TMyThread = class(TThread)
-  private
-    FOnUpdateUI: TThreadProcedure;
-  protected
-    procedure Execute; override;
-    procedure UpdateUI;
-  public
-    constructor Create(OnUpdateUI: TThreadProcedure);
   end;
 
 var
@@ -211,28 +198,28 @@ begin
 //    g_core.utils.init_background(main_background, self, 'bg.png');
 end;
 
-procedure TForm1.Timer1Timer(Sender: TObject);
-var
-  differences: TStringList;
-  i: Integer;
-  pIco: TIcon;
-  bmpIco: TBitmap;
-  IconIndex: Word;
-  png: TPNGImage;
-  SettingItem: TSettingItem;
-  tmp_key: string;
-  SettingsObj: TJSONObject;
-  bcontinue: boolean;
-begin
-  Timer1.Enabled := False;
-  TMyThread.Create(
-    procedure
-    begin
-      Timer1.Interval := 2000;
-      Timer1.Enabled := True;
-    end);
-
-end;
+//procedure TForm1.Timer1Timer(Sender: TObject);
+//var
+//  differences: TStringList;
+//  i: Integer;
+//  pIco: TIcon;
+//  bmpIco: TBitmap;
+//  IconIndex: Word;
+//  png: TPNGImage;
+//  SettingItem: TSettingItem;
+//  tmp_key: string;
+//  SettingsObj: TJSONObject;
+//  bcontinue: boolean;
+//begin
+//  Timer1.Enabled := False;
+//  TMyThread.Create(
+//    procedure
+//    begin
+//      Timer1.Interval := 2000;
+//      Timer1.Enabled := True;
+//    end);
+//
+//end;
 
 procedure tform1.FreeDictionary;
 var
@@ -678,13 +665,12 @@ procedure TForm1.action_config(Sender: TObject);
 var
   vobj: TObject;
 begin
-  Timer1.Enabled := false;
+
   vobj := g_core.find_object_by_name('cfgForm');
   g_core.nodes.is_configuring := true;
   SetWindowPos(TCfgForm(vobj).Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
   TCfgForm(vobj).ShowModal;
 
-  Timer1.Enabled := true;
 end;
 
 procedure TForm1.action_set_acce(Sender: TObject);
@@ -713,12 +699,7 @@ end;
 
 procedure TForm1.action_bootom_panel(Sender: TObject);
 begin
-//  if bottomForm = nil then
-//    bottomForm := TbottomForm.Create(self);
-//
-//  bottomForm.show;
-//  bottomForm.top := 0;
-//  bottomForm.Left := (Screen.WorkAreaWidth - bottomForm.Width) div 2;
+
 
 
   if TMenuItem(Sender).Checked then
@@ -829,144 +810,6 @@ begin
   set_json_value('config', 'left', left.ToString);
   set_json_value('config', 'top', top.ToString);
   Application.Terminate;
-end;
-
-{ TMyThread }
-
-constructor TMyThread.Create(OnUpdateUI: TThreadProcedure);
-begin
-  inherited Create(True); // Create suspended
-  FreeOnTerminate := True;
-  FOnUpdateUI := OnUpdateUI;
-  Resume; // Start the thread
-end;
-
-procedure TMyThread.Execute;
-var
-  differences: TStringList;
-  i: Integer;
-  pIco: TIcon;
-  bmpIco: TBitmap;
-  IconIndex: Word;
-  png: TPNGImage;
-  SettingItem: TSettingItem;
-  tmp_key: string;
-  SettingsObj: TJSONObject;
-  bcontinue: Boolean;
-begin
-  bcontinue := False;
-  try
-    differences := TStringList.Create;
-    try
-      // This method should not directly interact with the UI
-      GetRunningApplications(differences);
-
-      cs.Enter;
-      try
-        tmp_json.Clear;
-        for i := 0 to differences.Count - 1 do
-        begin
-          var arr := differences[i].Split([',']);
-          IconIndex := 0;
-
-          if g_core.json.Config.debug = 'true' then
-            Debug.Show(ExtractFileName(arr[0]) + '----' + arr[1]);
-
-          if exclusion_app.Contains(ExtractFileName(arr[0])) then
-            Continue;
-
-          for var Key in g_core.json.Settings.Keys do
-          begin
-            var Value := g_core.json.Settings.Items[Key];
-            if Value.Is_path_valid and (Value.FilePath = arr[0]) then
-            begin
-              bcontinue := True;
-              Break;
-            end;
-          end;
-
-          if bcontinue then
-          begin
-            bcontinue := False;
-            Continue;
-          end;
-
-          tmp_key := THashMD5.GetHashString(ExtractFileName(arr[0]));
-
-          if tmp_json.ContainsKey(tmp_key) then
-            Continue;
-
-          var up := ChangeFileExt(ExtractFileName(arr[0]), '').ToUpper;
-          var img_path := get_json_value('icons', up);
-
-          if img_path = '' then
-          begin
-            pIco := TIcon.Create;
-            try
-              pIco.Handle := ExtractAssociatedIcon(Application.Handle, PChar(arr[0]), IconIndex);
-              if pIco.Handle > 0 then
-              begin
-                bmpIco := TBitmap.Create;
-                try
-                  bmpIco.PixelFormat := pf32bit;
-                  bmpIco.Height := pIco.Height;
-                  bmpIco.Width := pIco.Width;
-                  bmpIco.Canvas.Draw(0, 0, pIco);
-
-                  SettingItem.memory_image := TMemoryStream.Create;
-                  try
-                    png := BmpToPngObj(bmpIco);
-                    png.SaveToStream(SettingItem.memory_image);
-
-                    SettingItem.Is_path_valid := False;
-                    SettingItem.FilePath := arr[0];
-                    SettingItem.tool_tip := arr[1];
-
-                    tmp_json.AddOrSetValue(tmp_key, SettingItem);
-                  except
-                    SettingItem.memory_image.Free;
-                    raise; // Re-raise the exception after cleaning up
-                  end;
-                finally
-                  bmpIco.Free;
-                  png.Free;
-                end;
-              end;
-            finally
-              pIco.Free;
-            end;
-          end
-          else
-          begin
-            SettingItem.memory_image := TMemoryStream.Create;
-            SettingItem.memory_image.LoadFromFile(app_path + 'img\tmp\' + img_path);
-            SettingItem.Is_path_valid := False;
-            SettingItem.FilePath := arr[0];
-            SettingItem.tool_tip := arr[1];
-
-            tmp_json.AddOrSetValue(tmp_key, SettingItem);
-          end;
-        end;
-
-        UpdateCoreSettingsFromTmpJson(tmp_json, g_core.json.Settings, cs);
-      finally
-        cs.Leave;
-      end;
-    finally
-      differences.Free;
-    end;
-  except
-    // Handle exceptions here if needed
-  end;
-
-  // Update the UI, if necessary
-  Synchronize(UpdateUI);
-end;
-
-procedure TMyThread.UpdateUI;
-begin
-  if Assigned(FOnUpdateUI) then
-    FOnUpdateUI();
 end;
 
 end.
