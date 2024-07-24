@@ -61,19 +61,18 @@ begin
   begin
     into_snap_windows := true;
 
-    Left := Screen.Width div 2 - Width div 2;
+    Left :=Screen.WorkAreaWidth - bottomForm.Width+80;// Screen.Width div 2 - Width div 2;
 
-    if top < top_snap_distance then
+    if left < Screen.WorkAreaWidth - bottomForm.Width then
     begin
-      top := -(height - visible_height) - 5;
-      Left := Screen.Width div 2 - Width div 2;
+      top :=0;
+      Left := Screen.WorkAreaWidth - bottomForm.Width+40;
 
     end;
     into_snap_windows := false;
 
   end
-  else if top < top_snap_distance then
-    top := 0;
+  else Left := Screen.WorkAreaWidth - bottomForm.Width
 end;
 
 procedure TbottomForm.FormClose(Sender: TObject; var Action: TCloseAction);

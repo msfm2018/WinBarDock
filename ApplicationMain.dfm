@@ -3,6 +3,7 @@ object Form1: TForm1
   Top = 125
   AlphaBlendValue = 180
   BorderStyle = bsNone
+  Caption = '$000EADEE'
   ClientHeight = 80
   ClientWidth = 444
   Color = 962030

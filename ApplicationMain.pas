@@ -24,6 +24,7 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormCreate(Sender: TObject);
     procedure FormPaint(Sender: TObject);
+
   private
     node_at_cursor: t_node;
 
@@ -33,7 +34,7 @@ type
     procedure snap_top_windows;
   private
     main_background: timage;
-    into_snap_windows: Boolean;
+
     pm: TPopupMenu;
     menuItems: array of TMenuItem;
     procedure node_mouse_enter(Sender: TObject);
@@ -67,6 +68,7 @@ var
   Form1: TForm1;
   tmp_json: TDictionary<string, TSettingItem>;
   cs: TCriticalSection;
+  inOnce: integer = 0;
 
 implementation
 
@@ -164,62 +166,53 @@ end;
 
 procedure TForm1.snap_top_windows();
 var
-  lp: tpoint;
+  lp: TPoint;
+  screenHeight: Integer;
 begin
-
   if g_core.nodes.is_configuring then
-    exit;
+    Exit;
 
   GetCursorPos(lp);
-  if not PtInRect(self.BoundsRect, lp) and not into_snap_windows then
+  screenHeight := Screen.WorkAreaHeight;
+
+  // 检查光标是否在窗体范围内且当前没有在捕捉窗口
+  if not PtInRect(Self.BoundsRect, lp) then
   begin
-    into_snap_windows := true;
+    inc(inOnce);
+    if inOnce > 10000 then
+      inOnce := 20;
 
-    CalculateAndPositionNodes();
-
-    Left := Screen.Width div 2 - Width div 2;
-
-    if top < top_snap_distance then
+    if (inOnce < 20) then
     begin
-      top := -(height - visible_height) - 5;
+    // 计算和定位节点
+      CalculateAndPositionNodes();
+
+    // 窗体水平居中屏幕
       Left := Screen.Width div 2 - Width div 2;
-      restore_state();
+
+    // 检查窗体顶部是否在距离屏幕顶部一定距离内
+      if Top < top_snap_distance then
+      begin
+        Top := -(Height - visible_height) + 56;
+        Left := Screen.Width div 2 - Width div 2;
+        restore_state();
+      end
+      else if top + height > screenHeight then
+      begin
+
+        Top := screenHeight - Height + 140;
+        Left := Screen.Width div 2 - Width div 2;
+//        SendToBack();
+      end;
+
     end;
-    into_snap_windows := false;
-
   end
-  else if top < top_snap_distance then
-    top := 0;
-
-//  if top < top_snap_distance + 100 then
-//    g_core.utils.init_background(main_background, self, 'bg_top.png')
-//  else
-//
-//    g_core.utils.init_background(main_background, self, 'bg.png');
+  else
+  begin
+    if Top < top_snap_distance then
+      Top := -60;
+  end
 end;
-
-//procedure TForm1.Timer1Timer(Sender: TObject);
-//var
-//  differences: TStringList;
-//  i: Integer;
-//  pIco: TIcon;
-//  bmpIco: TBitmap;
-//  IconIndex: Word;
-//  png: TPNGImage;
-//  SettingItem: TSettingItem;
-//  tmp_key: string;
-//  SettingsObj: TJSONObject;
-//  bcontinue: boolean;
-//begin
-//  Timer1.Enabled := False;
-//  TMyThread.Create(
-//    procedure
-//    begin
-//      Timer1.Interval := 2000;
-//      Timer1.Enabled := True;
-//    end);
-//
-//end;
 
 procedure tform1.FreeDictionary;
 var
@@ -256,7 +249,6 @@ begin
   g_core.utils.init_background(main_background, self, 'bg.png');
 
   cs := TCriticalSection.Create;
-  into_snap_windows := false;
 
   form1.left := g_core.json.Config.Left;
   Form1.top := g_core.json.Config.Top;
@@ -328,6 +320,7 @@ begin
   hoverLabel.Top := Node.Top - hoverLabel.Height - 5;
   hoverLabel.Visible := True;
 
+  inOnce := 0;
 end;
 
 procedure TForm1.node_mouse_leave(Sender: TObject);
@@ -335,7 +328,8 @@ begin
   hoverLabel.Visible := false;
   if hoverLabel <> nil then
     FreeAndNil(hoverLabel);
-  restore_state
+  restore_state;
+  inOnce := 0;
 end;
 
 procedure TForm1.wndproc(var Msg: tmessage);
@@ -360,13 +354,24 @@ begin
   add_json('startx', 'Start Button.png', 'startx', '开始菜单', True, nil);
   add_json('recycle', 'recycle.png', 'recycle', '回收站', True, nil);
 
+//  if bottomForm = nil then
+//    bottomForm := TbottomForm.Create(self);
+//
+//  bottomForm.show;
+//  bottomForm.top := 0;
+//  bottomForm.Left := (Screen.WorkAreaWidth - bottomForm.Width) div 2;
+
+
   if bottomForm = nil then
     bottomForm := TbottomForm.Create(self);
 
-  bottomForm.show;
   bottomForm.top := 0;
-  bottomForm.Left := (Screen.WorkAreaWidth - bottomForm.Width) div 2;
 
+// 计算使 bottomForm 在屏幕右侧居中显示的位置
+  bottomForm.Left := Screen.WorkAreaWidth - bottomForm.Width;
+
+  bottomForm.Height := Screen.WorkAreaHeight;
+  bottomForm.show;
 end;
 
 function TForm1.get_node_at_point(ScreenPoint: TPoint): t_node;
@@ -700,8 +705,6 @@ end;
 procedure TForm1.action_bootom_panel(Sender: TObject);
 begin
 
-
-
   if TMenuItem(Sender).Checked then
   begin
     TMenuItem(Sender).Checked := false;
@@ -709,8 +712,13 @@ begin
       bottomForm := TbottomForm.Create(self);
 
     bottomForm.Visible := true;
+
     bottomForm.top := 0;
-    bottomForm.Left := (Screen.WorkAreaWidth - bottomForm.Width) div 2;
+
+// 计算使 bottomForm 在屏幕右侧居中显示的位置
+    bottomForm.Left := Screen.WorkAreaWidth - bottomForm.Width;
+
+    bottomForm.Height := Screen.WorkAreaHeight;
   end
   else
   begin
@@ -719,8 +727,7 @@ begin
       bottomForm := TbottomForm.Create(self);
 
     bottomForm.Visible := false;
-    bottomForm.top := 0;
-    bottomForm.Left := (Screen.WorkAreaWidth - bottomForm.Width) div 2;
+
   end;
 
   restore_state();

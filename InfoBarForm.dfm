@@ -3,8 +3,8 @@ object bottomForm: TbottomForm
   Top = 0
   BorderStyle = bsNone
   Caption = #24555#25463#24212#29992#38754#26495'---'#40736#26631#25302#20837#24212#29992
-  ClientHeight = 83
-  ClientWidth = 674
+  ClientHeight = 571
+  ClientWidth = 86
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,8 +17,8 @@ object bottomForm: TbottomForm
   object LVexeinfo: TListView
     Left = 0
     Top = 0
-    Width = 674
-    Height = 83
+    Width = 86
+    Height = 571
     Hint = #25302#20837#24212#29992
     Align = alClient
     BevelInner = bvNone
@@ -33,12 +33,14 @@ object bottomForm: TbottomForm
     TabOrder = 0
     OnDblClick = LVexeinfoDblClick
     OnMouseDown = LVexeinfoMouseDown
+    ExplicitWidth = 674
+    ExplicitHeight = 83
   end
   object ImgList: TImageList
     Height = 32
     Width = 32
-    Left = 176
-    Top = 120
+    Left = 32
+    Top = 48
     Bitmap = {
       494C010101000800040020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000800000002000000001002000000000000040
@@ -576,8 +578,8 @@ object bottomForm: TbottomForm
       000000000000}
   end
   object PopupMenu1: TPopupMenu
-    Left = 320
-    Top = 232
+    Left = 32
+    Top = 112
     object N1: TMenuItem
       Caption = #21024#38500
       OnClick = action_translator
