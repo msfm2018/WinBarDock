@@ -101,7 +101,7 @@ begin
         FreeAndNil(Node);
       end;
 
-    Form1.height := g_core.nodes.node_size + g_core.nodes.node_size div 2 + 140;
+    Form1.height := g_core.nodes.node_size + g_core.nodes.node_size div 2 + 130;
 
     setlength(g_core.nodes.Nodes, g_core.nodes.count);
     I := 0;
@@ -193,7 +193,7 @@ begin
     // 检查窗体顶部是否在距离屏幕顶部一定距离内
       if Top < top_snap_distance then
       begin
-        Top := -(Height - visible_height) + 56;
+        Top := -(Height - visible_height)-16 ;
         Left := Screen.Width div 2 - Width div 2;
         restore_state();
       end
@@ -210,7 +210,7 @@ begin
   else
   begin
     if Top < top_snap_distance then
-      Top := -60;
+      Top := -56;
   end
 end;
 
@@ -349,17 +349,12 @@ begin
   ConfigureLayout();
   SetTimer(Handle, 10, 10, @sort_layout);
 
-//  action_bootom_panel(Self);
+
 
   add_json('startx', 'Start Button.png', 'startx', '开始菜单', True, nil);
   add_json('recycle', 'recycle.png', 'recycle', '回收站', True, nil);
 
-//  if bottomForm = nil then
-//    bottomForm := TbottomForm.Create(self);
-//
-//  bottomForm.show;
-//  bottomForm.top := 0;
-//  bottomForm.Left := (Screen.WorkAreaWidth - bottomForm.Width) div 2;
+
 
 
   if bottomForm = nil then
@@ -367,7 +362,7 @@ begin
 
   bottomForm.top := 0;
 
-// 计算使 bottomForm 在屏幕右侧居中显示的位置
+
   bottomForm.Left := Screen.WorkAreaWidth - bottomForm.Width;
 
   bottomForm.Height := Screen.WorkAreaHeight;

@@ -7,7 +7,6 @@ object Form1: TForm1
   ClientHeight = 80
   ClientWidth = 444
   Color = 962030
-  TransparentColorValue = clWhite
   DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
