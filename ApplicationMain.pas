@@ -19,7 +19,7 @@ type
     procedure action_config(Sender: TObject);
     procedure action_terminate(Sender: TObject);
     procedure action_set_acce(Sender: TObject);
-    procedure action_bootom_panel(Sender: TObject);
+
     procedure action_translator(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormCreate(Sender: TObject);
@@ -260,12 +260,12 @@ begin
   if pm = nil then
     pm := TPopupMenu.Create(self);
   menuItemClickHandlers[0] := action_translator;
-  menuItemClickHandlers[1] := action_bootom_panel;
-  menuItemClickHandlers[2] := action_config;
-  menuItemClickHandlers[3] := action_set_acce;
-  menuItemClickHandlers[4] := action_terminate;
-  menuItemClickHandlers[5] := action_hide_task;
-  menuItemClickHandlers[6] := action_hide_desk;
+
+  menuItemClickHandlers[1] := action_config;
+  menuItemClickHandlers[2] := action_set_acce;
+  menuItemClickHandlers[3] := action_terminate;
+  menuItemClickHandlers[4] := action_hide_task;
+  menuItemClickHandlers[5] := action_hide_desk;
   setlength(menuItems, Length(menu_labels));
 
   for var I := 0 to High(menuItems) do
@@ -362,7 +362,10 @@ begin
 
   bottomForm.top := 0;
 
-
+   if g_core.json.Config.layout='left' then
+   begin
+       bottomForm.Left :=  - bottomForm.Width+4 ;
+   end else
   bottomForm.Left := Screen.WorkAreaWidth - bottomForm.Width;
 
   bottomForm.Height := Screen.WorkAreaHeight;
@@ -697,36 +700,7 @@ begin
 
 end;
 
-procedure TForm1.action_bootom_panel(Sender: TObject);
-begin
 
-  if TMenuItem(Sender).Checked then
-  begin
-    TMenuItem(Sender).Checked := false;
-    if bottomForm = nil then
-      bottomForm := TbottomForm.Create(self);
-
-    bottomForm.Visible := true;
-
-    bottomForm.top := 0;
-
-// 计算使 bottomForm 在屏幕右侧居中显示的位置
-    bottomForm.Left := Screen.WorkAreaWidth - bottomForm.Width;
-
-    bottomForm.Height := Screen.WorkAreaHeight;
-  end
-  else
-  begin
-    TMenuItem(Sender).Checked := true;
-    if bottomForm = nil then
-      bottomForm := TbottomForm.Create(self);
-
-    bottomForm.Visible := false;
-
-  end;
-
-  restore_state();
-end;
 
 procedure TForm1.action_hide_task(Sender: TObject);
 begin

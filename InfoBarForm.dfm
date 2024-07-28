@@ -17,7 +17,7 @@ object bottomForm: TbottomForm
   object LVexeinfo: TListView
     Left = 0
     Top = 0
-    Width = 86
+    Width = 82
     Height = 571
     Hint = #25302#20837#24212#29992
     Align = alClient
@@ -33,8 +33,19 @@ object bottomForm: TbottomForm
     TabOrder = 0
     OnDblClick = LVexeinfoDblClick
     OnMouseDown = LVexeinfoMouseDown
-    ExplicitWidth = 674
-    ExplicitHeight = 83
+    ExplicitWidth = 86
+  end
+  object Panel1: TPanel
+    Left = 82
+    Top = 0
+    Width = 4
+    Height = 571
+    Align = alRight
+    Caption = 'Panel1'
+    Color = clRed
+    ParentBackground = False
+    TabOrder = 1
+    ExplicitLeft = 81
   end
   object ImgList: TImageList
     Height = 32

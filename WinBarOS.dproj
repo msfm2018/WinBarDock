@@ -3,7 +3,7 @@
         <ProjectGuid>{43E7F1A5-6A37-4C34-8382-A1714837048E}</ProjectGuid>
         <MainSource>WinBarOS.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Release</Config>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Application</AppType>
         <FrameworkType>VCL</FrameworkType>

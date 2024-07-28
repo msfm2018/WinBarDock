@@ -14,6 +14,7 @@ type
     ImgList: TImageList;
     PopupMenu1: TPopupMenu;
     N1: TMenuItem;
+    Panel1: TPanel;
     procedure FormShow(Sender: TObject);
     procedure LVexeinfoDblClick(Sender: TObject);
     procedure action_translator(Sender: TObject);
@@ -61,18 +62,32 @@ begin
   begin
     into_snap_windows := true;
 
-    Left :=Screen.WorkAreaWidth - bottomForm.Width+80;// Screen.Width div 2 - Width div 2;
 
-    if left < Screen.WorkAreaWidth - bottomForm.Width then
+
+    if g_core.json.Config.layout = 'left' then
     begin
-      top :=0;
-      Left := Screen.WorkAreaWidth - bottomForm.Width+40;
+      bottomForm.Left := -bottomForm.Width + 4;
+    end
+    else
+    begin
 
+      if left < Screen.WorkAreaWidth - bottomForm.Width then
+      begin
+        top := 0;
+        Left := Screen.WorkAreaWidth - bottomForm.Width + 40;
+
+      end;
     end;
+
     into_snap_windows := false;
 
   end
-  else Left := Screen.WorkAreaWidth - bottomForm.Width
+  else if g_core.json.Config.layout = 'left' then
+  begin
+    bottomForm.Left :=0;
+  end
+  else
+    Left := Screen.WorkAreaWidth - bottomForm.Width
 end;
 
 procedure TbottomForm.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -84,7 +99,7 @@ procedure TbottomForm.FormShow(Sender: TObject);
 begin
   g_core.utils.round_rect(width, height, Handle);
   into_snap_windows := false;
-  SetTimer(Handle, 10, 10, @sort_layout);
+  SetTimer(Handle, 10, 100, @sort_layout);
   DragAcceptFiles(Handle, True);
 
   CreateDefaultFile();

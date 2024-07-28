@@ -61,7 +61,7 @@ type
   t_menu_click_handler = procedure(Sender: TObject) of object;
 
 const
-  menu_labels: array[0..6] of string = ('翻译', '应用', '设置', '热键', '退出', '隐藏任务栏', '隐藏桌面图标');
+  menu_labels: array[0..5] of string = ('翻译',  '设置', '热键', '退出', '隐藏任务栏', '隐藏桌面图标');
   visible_height = 19;       // 代表可见高度
   top_snap_distance = 40;   // 吸附距离
   exptend = 60;
