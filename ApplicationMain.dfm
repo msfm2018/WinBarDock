@@ -16,6 +16,7 @@ object Form1: TForm1
   GlassFrame.SheetOfGlass = True
   Position = poDesigned
   Scaled = False
+  StyleElements = [seFont, seBorder]
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown

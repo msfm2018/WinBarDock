@@ -44,6 +44,7 @@ object bottomForm: TbottomForm
     Color = clRed
     ParentBackground = False
     TabOrder = 1
+    StyleElements = [seFont]
   end
   object ImgList: TImageList
     Height = 32
