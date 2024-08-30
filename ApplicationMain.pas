@@ -160,10 +160,11 @@ begin
   cs.Leave;
 end;
 
+
 procedure TForm1.snap_top_windows();
 var
   lp: TPoint;
-  screenHeight: Integer;
+  screenHeight: Integer;      reducedRect: TRect;
 begin
   if g_core.nodes.is_configuring then
     Exit;
@@ -172,7 +173,14 @@ begin
   screenHeight := Screen.WorkAreaHeight;
 
   // 检查光标是否在窗体范围内且当前没有在捕捉窗口
-  if not PtInRect(Self.BoundsRect, lp) then
+//  if not PtInRect(Self.BoundsRect, lp) then
+
+ reducedRect := Rect(Self.BoundsRect.Left ,
+                      Self.BoundsRect.Top ,
+                      Self.BoundsRect.Right ,
+                      Self.BoundsRect.Bottom - 64);
+
+    if not PtInRect(reducedRect, lp) then
   begin
 
     inc(inOnce);
@@ -190,7 +198,7 @@ begin
     //顶部
       if Top < top_snap_distance then
       begin
-        Top := -(Height - visible_height) - 16;
+        Top := -(Height - visible_height) + 50;
 
         Left := Screen.Width div 2 - Width div 2;
         restore_state();
@@ -234,6 +242,7 @@ begin
 
   end
 end;
+
 
 procedure tform1.FreeDictionary;
 var
