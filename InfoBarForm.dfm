@@ -33,7 +33,6 @@ object bottomForm: TbottomForm
     TabOrder = 0
     OnDblClick = LVexeinfoDblClick
     OnMouseDown = LVexeinfoMouseDown
-    ExplicitWidth = 86
   end
   object Panel1: TPanel
     Left = 82
@@ -45,7 +44,6 @@ object bottomForm: TbottomForm
     Color = clRed
     ParentBackground = False
     TabOrder = 1
-    ExplicitLeft = 81
   end
   object ImgList: TImageList
     Height = 32

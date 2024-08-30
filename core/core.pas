@@ -4,10 +4,10 @@ interface
 
 uses
   shellapi, classes, winapi.windows, Graphics, SysUtils, messages,
-  Vcl.Imaging.pngimage, Vcl.VirtualImage, System.IniFiles, Registry, forms,    GDIPAPI, GDIPOBJ,
-  u_json, vcl.controls, ComObj, System.Generics.Collections, System.Hash,
-  ConfigurationForm, InfoBarForm, TlHelp32, Winapi.PsAPI, System.SyncObjs,
-  vcl.ExtCtrls, math;
+  Vcl.Imaging.pngimage, System.IniFiles, Registry, forms,
+  GDIPAPI, GDIPOBJ, u_json, vcl.controls, ComObj, System.Generics.Collections,
+  ConfigurationForm, TlHelp32, Winapi.PsAPI,
+  System.SyncObjs, vcl.ExtCtrls, math;
 
 type
   t_node = class(TImage)
@@ -41,7 +41,7 @@ type
     procedure launch_app(const Path: string);
 
     procedure auto_run;
-    procedure init_background(img: TImage; obj: tform;src:string);
+    procedure init_background(img: TImage; obj: tform; src: string);
     function rate(a, b: double): Double;
 
   end;
@@ -60,8 +60,13 @@ type
 type
   t_menu_click_handler = procedure(Sender: TObject) of object;
 
+type
+  TFormPosition = (fpTop, fpBottom); // 定义枚举类型，包含顶部和底部
+
+  TFormPositions = set of TFormPosition; // 定义一个集合类型，表示可以包含顶部、底部或二者
+
 const
-  menu_labels: array[0..5] of string = ('翻译',  '设置', '热键', '退出', '隐藏任务栏', '隐藏桌面图标');
+  menu_labels: array[0..4] of string = ('翻译', '设置', '热键', '退出', '隐藏桌面图标');
   visible_height = 19;       // 代表可见高度
   top_snap_distance = 40;   // 吸附距离
   exptend = 60;
@@ -289,8 +294,6 @@ begin
   end;
 end;
 
-
-
 function BmpToPngObj(const Bmp: TBitmap): TPNGImage;
 var
   GdiBitmap: TGPBitmap;
@@ -400,7 +403,6 @@ begin
     {$R+}
   end;
 end;
-
 
 function GetProcessIcon(PID: DWORD; ab: Boolean): TIcon;
 var
@@ -576,7 +578,7 @@ begin
   end;
 end;
 
-procedure t_utils.init_background(img: TImage; obj: tform;src:string);
+procedure t_utils.init_background(img: TImage; obj: tform; src: string);
 begin
   img.Parent := obj;
   img.Align := alClient;
@@ -584,7 +586,7 @@ begin
   img.Stretch := true;
 //  img.Anchors:=[akleft,akright];
 
-  img.Picture.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\'+src);
+  img.Picture.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\' + src);
 end;
 
 procedure t_utils.round_rect(w, h: Integer; hdl: thandle);
@@ -609,7 +611,6 @@ end;
 function t_utils.rate(a, b: double): Double;
 begin
   result := Exp(-sqrt(a * a + b * b) / (63.82 * 5));
-//    result := Exp(-sqrt(a * a + b * b) / (203.82 * 5));
 end;
 
 function t_core_class.find_object_by_name(const Name_: string): TObject;

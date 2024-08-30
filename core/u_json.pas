@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, u_debug,
   System.Classes, Vcl.Graphics, generics.collections, System.JSON, Vcl.Controls,
-  System.IOUtils, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+  System.IOUtils, Vcl.Forms, Vcl.Dialogs;
 
 type
   TSettingItem = record

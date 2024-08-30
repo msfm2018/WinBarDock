@@ -4,12 +4,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  core, Dialogs, ExtCtrls, Generics.Collections, Vcl.Imaging.pngimage, TlHelp32,
-  System.IOUtils, Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug, ComObj,
-  PsAPI, Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs, System.Hash,
-  System.Math, System.JSON, u_json, ConfigurationForm, Vcl.Menus, Winapi.ActiveX,
-  InfoBarForm, System.Generics.Collections, event, Vcl.StdCtrls,
-  Vcl.VirtualImage;
+  core, Dialogs, ExtCtrls, Generics.Collections, Vcl.Imaging.pngimage,
+  Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug, ComObj,
+  PsAPI, Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs,
+  System.Math, System.JSON, u_json, ConfigurationForm, Vcl.Menus,
+  InfoBarForm, System.Generics.Collections, event, Vcl.StdCtrls;
 
 type
   TForm1 = class(TForm)
@@ -58,7 +57,6 @@ type
     procedure form_mouse_wheel(WheelMsg: TWMMouseWheel);
     procedure CleanupPopupMenu;
 
-    procedure action_hide_task(Sender: TObject);
     procedure FreeDictionary;
     procedure action_hide_desk(Sender: TObject);
 
@@ -70,18 +68,16 @@ var
   cs: TCriticalSection;
   inOnce: integer = 0;
 
+var
+  FormPosition: TFormPositions;
+
 implementation
 
 {$R *.dfm}
 
-procedure sort_layout(hwnd: hwnd; uMsg, idEvent: UINT; dwTime: DWORD); stdcall;
-begin
-  Form1.snap_top_windows();
-end;
-
-
 
 // 计算和定位节点的逻辑
+
 procedure TForm1.CalculateAndPositionNodes();
 var
   Node: t_node;
@@ -178,6 +174,7 @@ begin
   // 检查光标是否在窗体范围内且当前没有在捕捉窗口
   if not PtInRect(Self.BoundsRect, lp) then
   begin
+
     inc(inOnce);
     if inOnce > 10000 then
       inOnce := 20;
@@ -190,27 +187,51 @@ begin
     // 窗体水平居中屏幕
       Left := Screen.Width div 2 - Width div 2;
 
-    // 检查窗体顶部是否在距离屏幕顶部一定距离内
+    //顶部
       if Top < top_snap_distance then
       begin
-        Top := -(Height - visible_height)-16 ;
+        Top := -(Height - visible_height) + 45;
+
         Left := Screen.Width div 2 - Width div 2;
         restore_state();
+        FormPosition := [fpTop];
+        g_core.utils.SetTaskbarAutoHide(false);
       end
+    //底部
       else if top + height > screenHeight then
       begin
-
-        Top := screenHeight - Height + 140;
+        g_core.utils.SetTaskbarAutoHide(true);
+        Top := screenHeight - Height + 130;
         Left := Screen.Width div 2 - Width div 2;
-//        SendToBack();
+        FormPosition := [fpBottom]; // 设置位置为底部
+      end
+      //中间
+      else
+      begin
+        FormPosition := [];
+
+        g_core.utils.SetTaskbarAutoHide(false);              //隐藏任务栏
       end;
 
     end;
   end
   else
   begin
-    if Top < top_snap_distance then
-      Top := -56;
+
+    if FormPosition = [] then
+    begin
+
+    end
+    else if fpTop in FormPosition then
+    begin
+      if Top < top_snap_distance then
+        Top := -56;
+    end
+    else if fpBottom in FormPosition then
+    begin
+      Top := screenHeight - Height + 80;
+    end;
+
   end
 end;
 
@@ -233,7 +254,7 @@ end;
 
 procedure tform1.Initialize_form();
 var
-  menuItemClickHandlers: array[0..6] of t_menu_click_handler;
+  menuItemClickHandlers: array[0..5] of t_menu_click_handler;
 begin
   Form1.Font.Name := Screen.Fonts.Text;
   Form1.Font.Size := 9;
@@ -264,8 +285,8 @@ begin
   menuItemClickHandlers[1] := action_config;
   menuItemClickHandlers[2] := action_set_acce;
   menuItemClickHandlers[3] := action_terminate;
-  menuItemClickHandlers[4] := action_hide_task;
-  menuItemClickHandlers[5] := action_hide_desk;
+
+  menuItemClickHandlers[4] := action_hide_desk;
   setlength(menuItems, Length(menu_labels));
 
   for var I := 0 to High(menuItems) do
@@ -336,8 +357,24 @@ procedure TForm1.wndproc(var Msg: tmessage);
 begin
   inherited;
   case Msg.Msg of
+    WM_TIMER:
+      begin
+        snap_top_windows();
+      end;
     WM_MOUSEWHEEL:
       form_mouse_wheel(TWMMouseWheel(Msg));
+    WM_MOVE:
+      begin
+
+        FormPosition := [];
+
+      end;
+//      WM_ENTERSIZEMOVE:begin
+//
+//      end;
+//      WM_EXITSIZEMOVE:begin
+
+//      end;
   end;
 end;
 
@@ -347,26 +384,23 @@ begin
   Initialize_form();
 
   ConfigureLayout();
-  SetTimer(Handle, 10, 10, @sort_layout);
-
+  SetTimer(Handle, 10, 10, nil);
 
 
   add_json('startx', 'Start Button.png', 'startx', '开始菜单', True, nil);
   add_json('recycle', 'recycle.png', 'recycle', '回收站', True, nil);
-
-
-
 
   if bottomForm = nil then
     bottomForm := TbottomForm.Create(self);
 
   bottomForm.top := 0;
 
-   if g_core.json.Config.layout='left' then
-   begin
-       bottomForm.Left :=  - bottomForm.Width+4 ;
-   end else
-  bottomForm.Left := Screen.WorkAreaWidth - bottomForm.Width;
+  if g_core.json.Config.layout = 'left' then
+  begin
+    bottomForm.Left := -bottomForm.Width + 4;
+  end
+  else
+    bottomForm.Left := Screen.WorkAreaWidth - bottomForm.Width;
 
   bottomForm.Height := Screen.WorkAreaHeight;
   bottomForm.show;
@@ -444,6 +478,7 @@ begin
     begin
       EventDef.X := X;
       EventDef.Y := Y;
+
       move_windows(Handle);
     end
     else
@@ -697,23 +732,6 @@ begin
     end;
   end;
   OpenDlg.Free;
-
-end;
-
-
-
-procedure TForm1.action_hide_task(Sender: TObject);
-begin
-  if TMenuItem(Sender).Checked then
-  begin
-    TMenuItem(Sender).Checked := false;
-    g_core.utils.SetTaskbarAutoHide(false);
-  end
-  else
-  begin
-    TMenuItem(Sender).Checked := true;
-    g_core.utils.SetTaskbarAutoHide(true);
-  end;
 
 end;
 

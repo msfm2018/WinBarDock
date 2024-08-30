@@ -7,8 +7,7 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.ComCtrls, Vcl.Grids, Vcl.ValEdit, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Buttons,
   u_json, System.IniFiles, u_debug, Vcl.Imaging.pngimage,
-  System.Generics.Collections, Vcl.Menus, Vcl.Mask, System.Hash,
-  Vcl.Samples.Spin, Vcl.ColorGrd;
+  System.Generics.Collections, Vcl.Menus, Vcl.Mask, System.Hash;
 
 type
   TCfgForm = class(TForm)

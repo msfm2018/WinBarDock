@@ -13,7 +13,7 @@ procedure restore_state();
 
 var
   EventDef: TMouseEvent ;
-    cs: TRTLCriticalSection;
+
 implementation
 
 procedure restore_state();
