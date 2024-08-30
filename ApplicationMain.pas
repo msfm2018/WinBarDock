@@ -190,7 +190,7 @@ begin
     //顶部
       if Top < top_snap_distance then
       begin
-        Top := -(Height - visible_height) + 45;
+        Top := -(Height - visible_height) - 16;
 
         Left := Screen.Width div 2 - Width div 2;
         restore_state();
