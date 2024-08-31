@@ -5,10 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   core, Dialogs, ExtCtrls, Generics.Collections, Vcl.Imaging.pngimage,
-  Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug, ComObj,
-  PsAPI, Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs,
-  System.Math, System.JSON, u_json, ConfigurationForm, Vcl.Menus,
-  InfoBarForm, System.Generics.Collections, event, Vcl.StdCtrls;
+  Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug, ComObj, PsAPI,
+  Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs, System.Math, System.JSON,
+  u_json, ConfigurationForm, Vcl.Menus, InfoBarForm, System.Generics.Collections,
+  event, Vcl.StdCtrls;
 
 type
   TForm1 = class(TForm)
@@ -52,6 +52,8 @@ type
     hoverLabel: TLabel;
     procedure ConfigureLayout;
   private
+    FCurrentNode: t_node;
+
     procedure handle_animation_tick(Sender: TObject; lp: TPoint);
     function get_node_at_point(ScreenPoint: TPoint): t_node;
     procedure form_mouse_wheel(WheelMsg: TWMMouseWheel);
@@ -59,6 +61,7 @@ type
 
     procedure FreeDictionary;
     procedure action_hide_desk(Sender: TObject);
+    procedure AdjustNodeSize(Node: t_node; Rate: Double);
 
   end;
 
@@ -142,10 +145,10 @@ begin
 
         OnMouseEnter := node_mouse_enter;
 
-        original_width := g_core.nodes.Nodes[I].Width;
-        original_height := g_core.nodes.Nodes[I].height;
-        center_x := g_core.nodes.Nodes[I].Left + g_core.nodes.Nodes[I].Width div 2;
-        center_y := g_core.nodes.Nodes[I].top + g_core.nodes.Nodes[I].height div 2;
+        original_size.cx := g_core.nodes.Nodes[I].Width;
+        original_size.cy := g_core.nodes.Nodes[I].height;
+        center_point.x := g_core.nodes.Nodes[I].Left + g_core.nodes.Nodes[I].Width div 2;
+        center_point.y := g_core.nodes.Nodes[I].top + g_core.nodes.Nodes[I].height div 2;
 
       end;
       Inc(I)
@@ -160,11 +163,11 @@ begin
   cs.Leave;
 end;
 
-
 procedure TForm1.snap_top_windows();
 var
   lp: TPoint;
-  screenHeight: Integer;      reducedRect: TRect;
+  screenHeight: Integer;
+  reducedRect: TRect;
 begin
   if g_core.nodes.is_configuring then
     Exit;
@@ -175,12 +178,9 @@ begin
   // 检查光标是否在窗体范围内且当前没有在捕捉窗口
 //  if not PtInRect(Self.BoundsRect, lp) then
 
- reducedRect := Rect(Self.BoundsRect.Left ,
-                      Self.BoundsRect.Top ,
-                      Self.BoundsRect.Right ,
-                      Self.BoundsRect.Bottom - 64);
+  reducedRect := Rect(Self.BoundsRect.Left, Self.BoundsRect.Top, Self.BoundsRect.Right, Self.BoundsRect.Bottom - 64);
 
-    if not PtInRect(reducedRect, lp) then
+  if not PtInRect(reducedRect, lp) then
   begin
 
     inc(inOnce);
@@ -242,7 +242,6 @@ begin
 
   end
 end;
-
 
 procedure tform1.FreeDictionary;
 var
@@ -395,7 +394,6 @@ begin
   ConfigureLayout();
   SetTimer(Handle, 10, 10, nil);
 
-
   add_json('startx', 'Start Button.png', 'startx', '开始菜单', True, nil);
   add_json('recycle', 'recycle.png', 'recycle', '回收站', True, nil);
 
@@ -437,6 +435,42 @@ begin
   end;
 end;
 
+//procedure TForm1.handle_animation_tick(Sender: TObject; lp: TPoint);
+//var
+//  NewFormWidth: Integer;
+//  j: Integer;
+//  Delta: Integer;
+//  ExpDelta: Double;
+//  rate: Double;
+//begin
+//  NewFormWidth := g_core.nodes.Nodes[g_core.nodes.count - 1].Left + g_core.nodes.Nodes[g_core.nodes.count - 1].Width + g_core.nodes.node_gap + exptend;
+//  // 计算移动的增量
+//  Delta := NewFormWidth - Width;
+//
+//  if node_at_cursor <> nil then
+//  begin
+//      // 调整 rate 的值以控制缓动效果的强度
+//    rate := 0.03;  // 值越小，缓动越慢
+//
+//    // 使用指数函数计算 ExpDelta
+//    ExpDelta := Delta * (1 - Exp(-rate));
+//
+//    // 调整窗口的大小和位置
+//    SetBounds(Left - Round(ExpDelta) div 2, Top, Width + Round(ExpDelta), Height);
+//
+//    for j := 0 to g_core.nodes.count - 1 do
+//    begin
+//      var inner_node := g_core.nodes.Nodes[j];
+//      if j = 0 then
+//        inner_node.Left := g_core.nodes.node_gap + exptend
+//      else
+//        inner_node.Left := g_core.nodes.Nodes[j - 1].Left + g_core.nodes.Nodes[j - 1].Width + g_core.nodes.node_gap;
+//    end;
+//
+//
+//  end;
+//end;
+
 procedure TForm1.handle_animation_tick(Sender: TObject; lp: TPoint);
 var
   NewFormWidth: Integer;
@@ -468,6 +502,29 @@ begin
   end;
 end;
 
+procedure TForm1.AdjustNodeSize(Node: t_node; Rate: Double);
+var
+  NewWidth, NewHeight: Integer;
+  SmoothRate: Double;
+begin
+  if Node = nil then
+    exit;
+
+  // 使用指数函数计算平滑的 Rate
+//  SmoothRate := 1 - Exp(-1.6* Rate);
+  SmoothRate := 1 - Power(2, -10 * Rate);
+  NewWidth := Round(Node.Original_Size.cx * (1 + SmoothRate));
+  NewHeight := Round(Node.Original_Size.cy * (1 + SmoothRate));
+
+  Node.center_point.x := Node.Left + Node.Width div 2;
+  Node.center_point.y := Node.Top + Node.Height div 2;
+
+  // 设置当前节点的新尺寸和位置，保持中心点不变
+  Node.SetBounds(Node.center_point.x - NewWidth div 2, Node.center_point.y - NewHeight div 2, NewWidth, NewHeight);
+end;
+
+
+
 // 移动窗口逻辑
 procedure TForm1.node_mouse_move(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 var
@@ -475,6 +532,7 @@ var
   a, b: integer;
   I: Integer;
   NewWidth, NewHeight: Integer;
+  Rate11: double;
   Current_node: t_node;
   lp: tpoint;
 begin
@@ -505,35 +563,74 @@ begin
 
     GetCursorPos(lp);
 
-    node_at_cursor := get_node_at_point(lp);
+//    node_at_cursor := get_node_at_point(lp);
+    node_at_cursor := t_node(Sender);
+
+
+
+//    另一种处理方式
+
+        // 调整当前节点
+    Current_node := node_at_cursor;
+    FCurrentNode := node_at_cursor;
+//    var GC := (X mod (Current_node.original_size.cx * 2)) / (Current_node.original_size.cx * 2);
+//
+//  // 使用 Sin 函数生成 0-1-0 的变化率
+//    var Rate11 := Sin(GC * Pi);
+
+
+    if X > Current_node.original_size.cx div 2 then
+    begin
+
+      var NodeCenterX := Current_node.original_size.cx;
+      var SymmetricX := Abs(X - NodeCenterX);
+      var GC := (SymmetricX mod (Current_node.original_size.cx * 2)) / (Current_node.original_size.cx * 2);
+      Rate11 := Sin(GC * Pi);
+    end
+    else
+    begin
+      var GC := (X mod (Current_node.original_size.cx * 2)) / (Current_node.original_size.cx * 2);
+
+      Rate11 := Sin(GC * Pi);
+    end;
+
+//    AdjustNodeSize(Current_node, Rate11);
+
+
+  // 其他种类处理法师
 
     for I := 0 to g_core.nodes.count - 1 do
     begin
       Current_node := g_core.nodes.Nodes[I];
+//           if Node= Current_node then
+//             Continue;
+
 
       a := Current_node.Left - ScreenToClient(lp).X + Current_node.Width div 2;
       b := Current_node.Top - ScreenToClient(lp).Y + Current_node.Height div 4;
 
       rate := g_core.utils.rate(a, b);
       rate := Min(Max(rate, 0.5), 1);
+          if Node= Current_node then
+                  rate:=rate-0.1;
 
-      NewWidth := Round(Current_node.original_width * 2 * rate);
-      NewHeight := Round(Current_node.original_height * 2 * rate);
+      NewWidth := Round(Current_node.original_size.cx * 2 * rate);
+      NewHeight := Round(Current_node.original_size.cy * 2 * rate);
 
       var maxValue: Integer := 128;
 
       NewWidth := Min(NewWidth, maxValue);
       NewHeight := Min(NewHeight, maxValue);
 
-      Current_node.center_x := Current_node.Left + Current_node.Width div 2;
-      Current_node.center_y := Current_node.Top + Current_node.Height div 2;
+      Current_node.center_point.x := Current_node.Left + Current_node.Width div 2;
+      Current_node.center_point.y := Current_node.Top + Current_node.Height div 2;
 
       if top < top_snap_distance + 100 then
       begin
 
-        Current_node.Width := Floor(Current_node.original_width * 2 * rate);
-        Current_node.height := Floor(Current_node.original_width * 2 * rate);
-        Current_node.Left := Current_node.Left - Floor((Current_node.Width - Current_node.original_width) * rate) - 6;
+        Current_node.Width := Floor(Current_node.original_size.cx * 2 * rate);
+        Current_node.height := Floor(Current_node.original_size.cx * 2 * rate);
+        Current_node.Left := Current_node.Left - Floor((Current_node.Width - Current_node.original_size.cx) * rate) - 6;
       end
       else
       begin
@@ -541,7 +638,7 @@ begin
       // 调整顶部位置而不改变底部位置
         var newTop := Current_node.Top - (NewHeight - Current_node.Height);
 
-        Current_node.SetBounds(Current_node.center_x - NewWidth div 2, newTop, NewWidth, NewHeight);
+        Current_node.SetBounds(Current_node.center_point.x - NewWidth div 2, newTop, NewWidth, NewHeight);
       end;
 
 

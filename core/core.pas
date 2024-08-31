@@ -4,10 +4,9 @@ interface
 
 uses
   shellapi, classes, winapi.windows, Graphics, SysUtils, messages,
-  Vcl.Imaging.pngimage, System.IniFiles, Registry, forms,
-  GDIPAPI, GDIPOBJ, u_json, vcl.controls, ComObj, System.Generics.Collections,
-  ConfigurationForm, TlHelp32, Winapi.PsAPI,
-  System.SyncObjs, vcl.ExtCtrls, math;
+  Vcl.Imaging.pngimage, System.IniFiles, Registry, forms, GDIPAPI, GDIPOBJ,
+  u_json, vcl.controls, ComObj, System.Generics.Collections, ConfigurationForm,
+  TlHelp32, Winapi.PsAPI, System.SyncObjs, vcl.ExtCtrls, math;
 
 type
   t_node = class(TImage)
@@ -17,8 +16,8 @@ type
     tool_tip: string;
     file_path: string;
 
-    original_width, original_height: Integer;
-    center_x, center_y: Integer;
+    original_size: TSize;
+    center_point: TPoint;
   end;
 
   t_node_container = record
