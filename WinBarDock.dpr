@@ -10,7 +10,8 @@ uses
   InfoBarForm in 'InfoBarForm.pas' {bottomForm},
   u_json in 'core\u_json.pas',
   Vcl.Themes,
-  Vcl.Styles;
+  Vcl.Styles,
+  PopupMenuManager in 'core\PopupMenuManager.pas';
 
 {$R *.res}
 

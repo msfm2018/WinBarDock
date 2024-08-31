@@ -8,18 +8,22 @@ uses
   Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug, ComObj, PsAPI,
   Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs, System.Math, System.JSON,
   u_json, ConfigurationForm, Vcl.Menus, InfoBarForm, System.Generics.Collections,
-  event, Vcl.StdCtrls;
+  PopupMenuManager, event, Vcl.StdCtrls;
 
 type
   TForm1 = class(TForm)
+
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+
     procedure action_config(Sender: TObject);
     procedure action_terminate(Sender: TObject);
     procedure action_set_acce(Sender: TObject);
-
+    procedure action_style_1(Sender: TObject);
+    procedure action_style_2(Sender: TObject);
     procedure action_translator(Sender: TObject);
+
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormCreate(Sender: TObject);
     procedure FormPaint(Sender: TObject);
@@ -52,16 +56,17 @@ type
     hoverLabel: TLabel;
     procedure ConfigureLayout;
   private
-    FCurrentNode: t_node;
-
-    procedure handle_animation_tick(Sender: TObject; lp: TPoint);
+    TrayIcon1: TTrayIcon;
+    TrayPopupMenu: TPopupMenu;
+    procedure handle_ayout(Sender: TObject; lp: TPoint);
     function get_node_at_point(ScreenPoint: TPoint): t_node;
     procedure form_mouse_wheel(WheelMsg: TWMMouseWheel);
     procedure CleanupPopupMenu;
 
     procedure FreeDictionary;
-    procedure action_hide_desk(Sender: TObject);
     procedure AdjustNodeSize(Node: t_node; Rate: Double);
+
+    procedure menuMgr;
 
   end;
 
@@ -73,6 +78,9 @@ var
 
 var
   FormPosition: TFormPositions;
+
+var
+  PopupMenuMgr: TPopupMenuManager;
 
 implementation
 
@@ -260,9 +268,34 @@ begin
   tmp_json.Free;
 end;
 
-procedure tform1.Initialize_form();
+//delphi 工具太落后了 语法都不支持
+procedure tform1.menuMgr();
+const
+  MenuLabels: array[0..5] of string = ('Translator', 'Config', 'Set Acce', 'Terminate', 'Style 1', 'Style 2');
 var
-  menuItemClickHandlers: array[0..5] of t_menu_click_handler;
+  MenuHandlers: array[0..5] of TNotifyEvent;
+begin
+
+  MenuHandlers[0] := action_translator;
+  MenuHandlers[1] := action_config;
+  MenuHandlers[2] := action_set_acce;
+  MenuHandlers[3] := action_terminate;
+  MenuHandlers[4] := action_style_1;
+  MenuHandlers[5] := action_style_2;
+
+  PopupMenuMgr := TPopupMenuManager.Create(Self, MenuLabels, MenuHandlers);
+  PopupMenuMgr.InitializePopupMenu;
+  PopupMenuMgr.SetChecked(4, True);  // 设置 style-1 为选中
+
+  TrayIcon1 := TTrayIcon.Create(Self);
+  TrayIcon1.Icon := Application.Icon;  // 设置托盘图标
+  TrayIcon1.Visible := True;           // 显示托盘图标
+  TrayIcon1.Hint := 'WinBarDock';    // 设置提示文本
+
+  TrayIcon1.PopupMenu := PopupMenuMgr.GetPopupMenu;
+end;
+
+procedure tform1.Initialize_form();
 begin
   Form1.Font.Name := Screen.Fonts.Text;
   Form1.Font.Size := 9;
@@ -286,27 +319,6 @@ begin
   SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
   ShowWindow(Application.Handle, SW_HIDE);
 
-  if pm = nil then
-    pm := TPopupMenu.Create(self);
-  menuItemClickHandlers[0] := action_translator;
-
-  menuItemClickHandlers[1] := action_config;
-  menuItemClickHandlers[2] := action_set_acce;
-  menuItemClickHandlers[3] := action_terminate;
-
-  menuItemClickHandlers[4] := action_hide_desk;
-  setlength(menuItems, Length(menu_labels));
-
-  for var I := 0 to High(menuItems) do
-  begin
-    menuItems[I] := TMenuItem.Create(self);
-    menuItems[I].Caption := menu_labels[I];
-    menuItems[I].OnClick := menuItemClickHandlers[I];
-    pm.Items.Add(menuItems[I]);
-  end;
-
-  PopupMenu := pm;
-
   exclusion_app := g_core.json.Exclusion.Value;
 
   if FindAtom('ZWXhoaabbtKey') = 0 then
@@ -315,6 +327,27 @@ begin
     RegisterHotKey(Handle, FShowkeyid, MOD_CONTROL, $42);
   end;
 
+  menuMgr();
+end;
+
+procedure TForm1.action_style_1(Sender: TObject);
+begin
+  if not TMenuItem(Sender).Checked then
+  begin
+    PopupMenuMgr.SetChecked(4, true);  // 设置 style-1 为选中
+    PopupMenuMgr.SetChecked(5, false);  // 设置 style-1 为选中
+    g_core.json.Config.style := 'style-1';
+  end;
+end;
+
+procedure TForm1.action_style_2(Sender: TObject);
+begin
+  if not TMenuItem(Sender).Checked then
+  begin
+    PopupMenuMgr.SetChecked(5, true);  // 设置 style-1 为选中
+    PopupMenuMgr.SetChecked(4, false);  // 设置 style-1 为选中
+    g_core.json.Config.style := 'style-2';
+  end;
 end;
 
 procedure TForm1.hotkey(var Msg: tmsg);
@@ -435,43 +468,7 @@ begin
   end;
 end;
 
-//procedure TForm1.handle_animation_tick(Sender: TObject; lp: TPoint);
-//var
-//  NewFormWidth: Integer;
-//  j: Integer;
-//  Delta: Integer;
-//  ExpDelta: Double;
-//  rate: Double;
-//begin
-//  NewFormWidth := g_core.nodes.Nodes[g_core.nodes.count - 1].Left + g_core.nodes.Nodes[g_core.nodes.count - 1].Width + g_core.nodes.node_gap + exptend;
-//  // 计算移动的增量
-//  Delta := NewFormWidth - Width;
-//
-//  if node_at_cursor <> nil then
-//  begin
-//      // 调整 rate 的值以控制缓动效果的强度
-//    rate := 0.03;  // 值越小，缓动越慢
-//
-//    // 使用指数函数计算 ExpDelta
-//    ExpDelta := Delta * (1 - Exp(-rate));
-//
-//    // 调整窗口的大小和位置
-//    SetBounds(Left - Round(ExpDelta) div 2, Top, Width + Round(ExpDelta), Height);
-//
-//    for j := 0 to g_core.nodes.count - 1 do
-//    begin
-//      var inner_node := g_core.nodes.Nodes[j];
-//      if j = 0 then
-//        inner_node.Left := g_core.nodes.node_gap + exptend
-//      else
-//        inner_node.Left := g_core.nodes.Nodes[j - 1].Left + g_core.nodes.Nodes[j - 1].Width + g_core.nodes.node_gap;
-//    end;
-//
-//
-//  end;
-//end;
-
-procedure TForm1.handle_animation_tick(Sender: TObject; lp: TPoint);
+procedure TForm1.handle_ayout(Sender: TObject; lp: TPoint);
 var
   NewFormWidth: Integer;
   j: Integer;
@@ -485,9 +482,15 @@ begin
 
   if node_at_cursor <> nil then
   begin
-    rate := 1;
+//    rate := 1;
+//
+//    ExpDelta := Delta * rate;
 
-    ExpDelta := Delta * rate;
+     // 调整 rate 的值以控制缓动效果的强度
+    rate := 0.1;  // 值越小，缓动越慢
+
+    // 使用指数函数计算 ExpDelta
+    ExpDelta := Delta * (1 - Exp(-rate));
 
     SetBounds(Left - Round(ExpDelta) div 2, Top, Width + Round(ExpDelta), Height);
 
@@ -505,24 +508,38 @@ end;
 procedure TForm1.AdjustNodeSize(Node: t_node; Rate: Double);
 var
   NewWidth, NewHeight: Integer;
-  SmoothRate: Double;
 begin
   if Node = nil then
     exit;
-
-  // 使用指数函数计算平滑的 Rate
-//  SmoothRate := 1 - Exp(-1.6* Rate);
-  SmoothRate := 1 - Power(2, -10 * Rate);
-  NewWidth := Round(Node.Original_Size.cx * (1 + SmoothRate));
-  NewHeight := Round(Node.Original_Size.cy * (1 + SmoothRate));
+//        Rate := 0.5 * (1 - Cos(Pi * Rate));
+  NewWidth := Round(Node.Original_Size.cx * (1 + Rate));
+  NewHeight := Round(Node.Original_Size.cy * (1 + Rate));
 
   Node.center_point.x := Node.Left + Node.Width div 2;
   Node.center_point.y := Node.Top + Node.Height div 2;
+//
+//// 设置当前节点的新尺寸和位置，保持中心点不变
+//  Node.SetBounds(Node.center_point.x - NewWidth div 2, Node.center_point.y - NewHeight div 2, NewWidth, NewHeight);
 
-  // 设置当前节点的新尺寸和位置，保持中心点不变
-  Node.SetBounds(Node.center_point.x - NewWidth div 2, Node.center_point.y - NewHeight div 2, NewWidth, NewHeight);
+
+  if top < top_snap_distance + 100 then
+  begin
+
+    Node.Width := NewWidth; // Floor(Node.original_size.cx * 1 );
+    Node.height := NewHeight; // Floor(Node.original_size.cx * 1 );
+    Node.Left := Node.Left - Floor((Node.Width - Node.original_size.cx) * Rate) - 6; //:= Node.Left ;
+
+  end
+  else
+  begin
+
+      // 调整顶部位置而不改变底部位置
+    var newTop := Node.Top - (NewHeight - Node.Height);
+
+    Node.SetBounds(Node.center_point.x - NewWidth div 2, newTop, NewWidth, NewHeight);
+  end;
+
 end;
-
 
 
 // 移动窗口逻辑
@@ -566,88 +583,87 @@ begin
 //    node_at_cursor := get_node_at_point(lp);
     node_at_cursor := t_node(Sender);
 
-
-
-//    另一种处理方式
+    if g_core.json.Config.style = 'style-2' then
+    begin
 
         // 调整当前节点
-    Current_node := node_at_cursor;
-    FCurrentNode := node_at_cursor;
+      Current_node := node_at_cursor;
+
 //    var GC := (X mod (Current_node.original_size.cx * 2)) / (Current_node.original_size.cx * 2);
 //
 //  // 使用 Sin 函数生成 0-1-0 的变化率
 //    var Rate11 := Sin(GC * Pi);
 
 
-    if X > Current_node.original_size.cx div 2 then
-    begin
+      if X > Current_node.original_size.cx div 2 then
+      begin
 
-      var NodeCenterX := Current_node.original_size.cx;
-      var SymmetricX := Abs(X - NodeCenterX);
-      var GC := (SymmetricX mod (Current_node.original_size.cx * 2)) / (Current_node.original_size.cx * 2);
-      Rate11 := Sin(GC * Pi);
+        var NodeCenterX := Current_node.original_size.cx;
+        var SymmetricX := Abs(X - NodeCenterX);
+        var GC := (SymmetricX mod (Current_node.original_size.cx * 2)) / (Current_node.original_size.cx * 2);
+        Rate11 := Sin(GC * Pi);
+      end
+      else
+      begin
+        var GC := (X mod (Current_node.original_size.cx * 2)) / (Current_node.original_size.cx * 2);
+
+        Rate11 := Sin(GC * Pi);
+      end;
+//        Rate11  := 0.5 * (1 - Cos(Pi * Rate11));
+      AdjustNodeSize(Current_node, Rate11);
     end
-    else
+    else if g_core.json.Config.style = 'style-1' then
     begin
-      var GC := (X mod (Current_node.original_size.cx * 2)) / (Current_node.original_size.cx * 2);
 
-      Rate11 := Sin(GC * Pi);
-    end;
-
-//    AdjustNodeSize(Current_node, Rate11);
-
-
-  // 其他种类处理法师
-
-    for I := 0 to g_core.nodes.count - 1 do
-    begin
-      Current_node := g_core.nodes.Nodes[I];
+      for I := 0 to g_core.nodes.count - 1 do
+      begin
+        Current_node := g_core.nodes.Nodes[I];
 //           if Node= Current_node then
 //             Continue;
 
 
-      a := Current_node.Left - ScreenToClient(lp).X + Current_node.Width div 2;
-      b := Current_node.Top - ScreenToClient(lp).Y + Current_node.Height div 4;
+        a := Current_node.Left - ScreenToClient(lp).X + Current_node.Width div 2;
+        b := Current_node.Top - ScreenToClient(lp).Y + Current_node.Height div 4;
 
-      rate := g_core.utils.rate(a, b);
-      rate := Min(Max(rate, 0.5), 1);
-          if Node= Current_node then
-                  rate:=rate-0.1;
+        rate := g_core.utils.rate(a, b);
+        rate := Min(Max(rate, 0.5), 1);
+        if Node = Current_node then
+          rate := rate - 0.1;
 
-      NewWidth := Round(Current_node.original_size.cx * 2 * rate);
-      NewHeight := Round(Current_node.original_size.cy * 2 * rate);
+        NewWidth := Round(Current_node.original_size.cx * 2 * rate);
+        NewHeight := Round(Current_node.original_size.cy * 2 * rate);
 
-      var maxValue: Integer := 128;
+        var maxValue: Integer := 128;
 
-      NewWidth := Min(NewWidth, maxValue);
-      NewHeight := Min(NewHeight, maxValue);
+        NewWidth := Min(NewWidth, maxValue);
+        NewHeight := Min(NewHeight, maxValue);
 
-      Current_node.center_point.x := Current_node.Left + Current_node.Width div 2;
-      Current_node.center_point.y := Current_node.Top + Current_node.Height div 2;
+        Current_node.center_point.x := Current_node.Left + Current_node.Width div 2;
+        Current_node.center_point.y := Current_node.Top + Current_node.Height div 2;
 
-      if top < top_snap_distance + 100 then
-      begin
+        if top < top_snap_distance + 100 then
+        begin
 
-        Current_node.Width := Floor(Current_node.original_size.cx * 2 * rate);
-        Current_node.height := Floor(Current_node.original_size.cx * 2 * rate);
-        Current_node.Left := Current_node.Left - Floor((Current_node.Width - Current_node.original_size.cx) * rate) - 6;
-      end
-      else
-      begin
+          Current_node.Width := Floor(Current_node.original_size.cx * 2 * rate);
+          Current_node.height := Floor(Current_node.original_size.cx * 2 * rate);
+          Current_node.Left := Current_node.Left - Floor((Current_node.Width - Current_node.original_size.cx) * rate) - 6;
+        end
+        else
+        begin
 
       // 调整顶部位置而不改变底部位置
-        var newTop := Current_node.Top - (NewHeight - Current_node.Height);
+          var newTop := Current_node.Top - (NewHeight - Current_node.Height);
 
-        Current_node.SetBounds(Current_node.center_point.x - NewWidth div 2, newTop, NewWidth, NewHeight);
-      end;
+          Current_node.SetBounds(Current_node.center_point.x - NewWidth div 2, newTop, NewWidth, NewHeight);
+        end;
 
 
 //    中间往外凸显
 //       Current_node.SetBounds(Current_node.center_x - NewWidth div 2, Current_node.center_y - NewHeight div 2, NewWidth, NewHeight);
 
+      end;
     end;
-
-    handle_animation_tick(Self, lp);
+    handle_ayout(Self, lp);
 
   end;
 end;
@@ -674,6 +690,7 @@ var
   v: TSettingItem;
   SettingsObj: TJSONObject;
 begin
+  TrayIcon1.free;
   SettingsObj := g_jsonobj.GetValue('settings') as TJSONObject;
   if SettingsObj = nil then
     Exit;
@@ -838,21 +855,6 @@ begin
     end;
   end;
   OpenDlg.Free;
-
-end;
-
-procedure TForm1.action_hide_desk(Sender: TObject);
-begin
-  if TMenuItem(Sender).Checked then
-  begin
-    TMenuItem(Sender).Checked := false;
-    ShowDesktopIcons();
-  end
-  else
-  begin
-    TMenuItem(Sender).Checked := true;
-    HideDesktopIcons()
-  end;
 
 end;
 

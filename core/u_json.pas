@@ -23,7 +23,8 @@ type
     Shortcut: string;
     translator: string;
     debug: string;
-    layout:string;
+    layout: string;
+    style: string;
   end;
 
   TExclusion = record
@@ -205,7 +206,8 @@ begin
       Shortcut := ConfigObj.GetValue('shortcut').Value;
       translator := ConfigObj.GetValue('translator').Value;
       debug := ConfigObj.GetValue('debug').Value;
-          layout := ConfigObj.GetValue('layout').Value;
+      layout := ConfigObj.GetValue('layout').Value;
+      style := ConfigObj.GetValue('style').Value;
     end;
   end;
 

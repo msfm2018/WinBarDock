@@ -57,15 +57,11 @@ type
   end;
 
 type
-  t_menu_click_handler = procedure(Sender: TObject) of object;
-
-type
   TFormPosition = (fpTop, fpBottom); // 定义枚举类型，包含顶部和底部
 
   TFormPositions = set of TFormPosition; // 定义一个集合类型，表示可以包含顶部、底部或二者
 
 const
-  menu_labels: array[0..4] of string = ('翻译', '设置', '热键', '退出', '隐藏桌面图标');
   visible_height = 19;       // 代表可见高度
   top_snap_distance = 40;   // 吸附距离
   exptend = 60;
@@ -87,11 +83,6 @@ procedure add_json(Key, image_file_name, FilePath, tool_tip: string; Is_path_val
 procedure SimulateCtrlEsc;
 
 procedure EmptyRecycleBin;
-
-procedure ShowDesktopIcons;
- //隐藏桌面图标
-
-procedure HideDesktopIcons;
 
 procedure UpdateCoreSettingsFromTmpJson(const tmp_json: TDictionary<string, TSettingItem>; var core_settings: TDictionary<string, TSettingItem>; cs: TCriticalSection);
 
@@ -156,25 +147,6 @@ begin
   end;
 end;
 
-procedure HideDesktopIcons;
-var
-  hDesktopListView: HWND;
-begin
-  hDesktopListView := FindWindowEx(FindWindow('Progman', 'Program Manager'), 0, 'SHELLDLL_DefView', nil);
-  hDesktopListView := FindWindowEx(hDesktopListView, 0, 'SysListView32', nil);
-  if hDesktopListView <> 0 then
-    ShowWindow(hDesktopListView, SW_HIDE);
-end;
-
-procedure ShowDesktopIcons;
-var
-  hDesktopListView: HWND;
-begin
-  hDesktopListView := FindWindowEx(FindWindow('Progman', 'Program Manager'), 0, 'SHELLDLL_DefView', nil);
-  hDesktopListView := FindWindowEx(hDesktopListView, 0, 'SysListView32', nil);
-  if hDesktopListView <> 0 then
-    ShowWindow(hDesktopListView, SW_SHOW);
-end;
 
 
 //清空回收站

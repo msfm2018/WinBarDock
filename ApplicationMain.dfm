@@ -4,8 +4,8 @@ object Form1: TForm1
   AlphaBlendValue = 180
   BorderStyle = bsNone
   Caption = 'tl'
-  ClientHeight = 49
-  ClientWidth = 144
+  ClientHeight = 90
+  ClientWidth = 922
   Color = 962030
   DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
