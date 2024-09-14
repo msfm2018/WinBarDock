@@ -1,33 +1,36 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
 	<Transactions>
-    <Transaction>1899-12-30 00:00:00.000.749,=C:\Users\Administrator\Desktop\git\win_mac_tool\core\CoreDB.pas</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.520,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ApplicationMain.pas=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\main.pas</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.929,=C:\Users\Administrator\Desktop\git\win_mac_tool\sqlite\SQLiteTable3.pas</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.677,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ConfigurationForm.dfm=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\cfg_form.dfm</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.800,=C:\Users\Administrator\Desktop\git\win_mac_tool\bottom_form.pas</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.987,C:\Users\Administrator\Desktop\git\win_mac_tool\tsForm.pas=C:\Users\Administrator\Desktop\git\win_mac_tool\main.pas</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.677,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ConfigurationForm.pas=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\cfg_form.pas</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.600,C:\Users\Administrator\Desktop\生产2\core\Blur.pas=</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.424,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\WinBarOS.dproj=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\dTool.dproj</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.055,C:\Users\Administrator\Desktop\xx11\20240621\core\u_json.pas=C:\Users\Administrator\Desktop\xx11\20240621\Unit1.pas</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.520,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ApplicationMain.dfm=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\main.dfm</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.370,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\InfoBarForm.dfm=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\bottom_form.dfm</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.315,=C:\Users\Administrator\Desktop\生产2\core\Blur.pas</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.200,C:\Users\Administrator\Desktop\11\WinBarDock\WinBarDock.dproj=C:\Users\Administrator\Desktop\11\WinBarDock\WinBarOS.dproj</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.370,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\InfoBarForm.pas=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\bottom_form.pas</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.328,=C:\Users\Administrator\Desktop\xx11\20240621\Unit1.pas</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.877,C:\Users\Administrator\Desktop\git\win_mac_tool\cfg_form.pas=C:\Users\Administrator\Desktop\git\win_mac_tool\cfgForm.pas</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.877,C:\Users\Administrator\Desktop\git\win_mac_tool\cfg_form.dfm=C:\Users\Administrator\Desktop\git\win_mac_tool\cfgForm.dfm</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.037,=C:\Users\Administrator\Desktop\生产2\core\Gdiplus.pas</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.200,C:\Users\Administrator\Desktop\git\win_mac_tool\core\core_db.pas=C:\Users\Administrator\Desktop\git\win_mac_tool\core\CoreDB.pas</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.801,C:\Users\Administrator\Desktop\git\win_mac_tool\desktopTool.dproj=C:\Users\Administrator\Desktop\git\win_mac_tool\tsFm.dproj</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.110,C:\Users\Administrator\Desktop\43245\WinBarDock\Unit1.pas=C:\Users\Administrator\Desktop\43245\WinBarDock\core\PopupMenuManager.pas</Transaction>
     <Transaction>1899-12-30 00:00:00.000.466,=C:\Users\Administrator\Desktop\43245\WinBarDock\Unit1.pas</Transaction>
     <Transaction>1899-12-30 00:00:00.000.836,=C:\Users\Administrator\Desktop\git\win_mac_tool\sqlite\SQLite3.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.370,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\bottom_form.dfm=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\InfoBarForm.dfm</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.424,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\dTool.dproj=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\WinBarOS.dproj</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.315,=C:\Users\Administrator\Desktop\生产2\core\Blur.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.987,C:\Users\Administrator\Desktop\git\win_mac_tool\main.dfm=C:\Users\Administrator\Desktop\git\win_mac_tool\tsForm.dfm</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.110,C:\Users\Administrator\Desktop\43245\WinBarDock\core\PopupMenuManager.pas=C:\Users\Administrator\Desktop\43245\WinBarDock\Unit1.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.200,C:\Users\Administrator\Desktop\git\win_mac_tool\core\CoreDB.pas=C:\Users\Administrator\Desktop\git\win_mac_tool\core\core_db.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.929,=C:\Users\Administrator\Desktop\git\win_mac_tool\sqlite\SQLiteTable3.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.600,C:\Users\Administrator\Desktop\生产2\core\Blur.pas=</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.877,C:\Users\Administrator\Desktop\git\win_mac_tool\cfgForm.pas=C:\Users\Administrator\Desktop\git\win_mac_tool\cfg_form.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.800,=C:\Users\Administrator\Desktop\git\win_mac_tool\bottom_form.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.749,=C:\Users\Administrator\Desktop\git\win_mac_tool\core\CoreDB.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.677,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\cfg_form.pas=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ConfigurationForm.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.037,=C:\Users\Administrator\Desktop\生产2\core\Gdiplus.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.987,C:\Users\Administrator\Desktop\git\win_mac_tool\main.pas=C:\Users\Administrator\Desktop\git\win_mac_tool\tsForm.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.055,C:\Users\Administrator\Desktop\xx11\20240621\Unit1.pas=C:\Users\Administrator\Desktop\xx11\20240621\core\u_json.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.520,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\main.dfm=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ApplicationMain.dfm</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.200,C:\Users\Administrator\Desktop\11\WinBarDock\WinBarOS.dproj=C:\Users\Administrator\Desktop\11\WinBarDock\WinBarDock.dproj</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.877,C:\Users\Administrator\Desktop\git\win_mac_tool\cfgForm.dfm=C:\Users\Administrator\Desktop\git\win_mac_tool\cfg_form.dfm</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.328,=C:\Users\Administrator\Desktop\xx11\20240621\Unit1.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.370,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\bottom_form.pas=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\InfoBarForm.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.520,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\main.pas=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ApplicationMain.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.677,C:\Users\Administrator\Desktop\22222222222\win_mac_tool\cfg_form.dfm=C:\Users\Administrator\Desktop\22222222222\win_mac_tool\ConfigurationForm.dfm</Transaction>
     <Transaction>1899-12-30 00:00:00.000.882,=C:\Users\Administrator\Desktop\git\win_mac_tool\sqlite\sqlite3udf.pas</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.987,C:\Users\Administrator\Desktop\git\win_mac_tool\tsForm.dfm=C:\Users\Administrator\Desktop\git\win_mac_tool\main.dfm</Transaction>
-    <Transaction>1899-12-30 00:00:00.000.595,C:\Users\Administrator\Desktop\git\win_mac_tool\dTool.dproj=C:\Users\Administrator\Desktop\git\win_mac_tool\desktopTool.dproj</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.801,C:\Users\Administrator\Desktop\git\win_mac_tool\tsFm.dproj=C:\Users\Administrator\Desktop\git\win_mac_tool\desktopTool.dproj</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.595,C:\Users\Administrator\Desktop\git\win_mac_tool\desktopTool.dproj=C:\Users\Administrator\Desktop\git\win_mac_tool\dTool.dproj</Transaction>
+    <Transaction>2024-09-14 11:47:27.776,=C:\Users\Administrator\Desktop\23123\WinBarDock\src\ApplicationMain.pas</Transaction>
+    <Transaction>2024-09-14 11:47:27.839,=C:\Users\Administrator\Desktop\23123\WinBarDock\src\ConfigurationForm.pas</Transaction>
+    <Transaction>2024-09-14 11:47:27.874,=C:\Users\Administrator\Desktop\23123\WinBarDock\src\InfoBarForm.pas</Transaction>
   </Transactions>
 	<ProjectSortOrder AutoSort="0" SortType="0">
     <File Path="core"/>
@@ -35,11 +38,12 @@
     <File Path="core\event.pas"/>
     <File Path="core\u_json.pas"/>
     <File Path="core\PopupMenuManager.pas"/>
-    <File Path="ApplicationMain.pas"/>
-    <File Path="ApplicationMain.dfm"/>
-    <File Path="ConfigurationForm.pas"/>
-    <File Path="ConfigurationForm.dfm"/>
-    <File Path="InfoBarForm.pas"/>
-    <File Path="InfoBarForm.dfm"/>
+    <File Path="src"/>
+    <File Path="src\ApplicationMain.pas"/>
+    <File Path="src\ApplicationMain.dfm"/>
+    <File Path="src\ConfigurationForm.pas"/>
+    <File Path="src\ConfigurationForm.dfm"/>
+    <File Path="src\InfoBarForm.pas"/>
+    <File Path="src\InfoBarForm.dfm"/>
   </ProjectSortOrder>
 </BorlandProject>

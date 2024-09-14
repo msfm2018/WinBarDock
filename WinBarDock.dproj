@@ -150,19 +150,22 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="ApplicationMain.pas">
-            <Form>Form1</Form>
-        </DCCReference>
-        <DCCReference Include="ConfigurationForm.pas">
-            <Form>mycfg</Form>
-        </DCCReference>
         <DCCReference Include="core\core.pas"/>
         <DCCReference Include="core\event.pas"/>
-        <DCCReference Include="InfoBarForm.pas">
-            <Form>bottomForm</Form>
-        </DCCReference>
         <DCCReference Include="core\u_json.pas"/>
         <DCCReference Include="core\PopupMenuManager.pas"/>
+        <DCCReference Include="src\ApplicationMain.pas">
+            <Form>Form1</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="src\ConfigurationForm.pas">
+            <Form>CfgForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="src\InfoBarForm.pas">
+            <Form>bottomForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -203,6 +206,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="bin\WinBarDock.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>WinBarDock.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="bin\WinBarDock.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win64">
                         <RemoteName>WinBarDock.exe</RemoteName>
                         <Overwrite>true</Overwrite>
