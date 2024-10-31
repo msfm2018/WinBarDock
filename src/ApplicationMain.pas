@@ -836,13 +836,13 @@ end;
 
 procedure TForm1.action_set_acce(Sender: TObject);
 var
-  OpenDlg: TOpenDialog;
+  OpenDlg: TFileOpenDialog;
 begin
-  OpenDlg := TOpenDialog.Create(nil);
+  OpenDlg := TFileOpenDialog.Create(nil);
   with OpenDlg do
   begin
-    Filter := 'ctrl+b 热键(*.exe)|*.exe';
-    DefaultExt := '*.exe';
+  //  Filter := 'ctrl+b 热键(*.exe)|*.exe';
+  //  DefaultExt := '*.exe';
 
     if Execute then
     begin
