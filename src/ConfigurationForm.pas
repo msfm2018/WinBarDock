@@ -252,7 +252,7 @@ begin
   LabeledEdit2.Text := '';
 end;
 
-procedure TCfgForm.imgEdit1DblClick(Sender: TObject);
+(* procedure TCfgForm.imgEdit1DblClick(Sender: TObject);
 var
   OpenDlg: TOpenDialog;
 begin
@@ -281,6 +281,38 @@ begin
     OpenDlg.Filter := '文件(*.EXE)|*.EXE';
     OpenDlg.DefaultExt := '*.EXE';
 
+    if OpenDlg.Execute then
+    begin
+      LabeledEdit2.Text := OpenDlg.FileName;
+    end;
+  finally
+    OpenDlg.Free;
+  end;
+end; *)
+
+procedure TCfgForm.imgEdit1DblClick(Sender: TObject);
+var
+  OpenDlg: TFileOpenDialog;
+begin
+  OpenDlg := TFileOpenDialog.Create(nil);
+
+  try
+    if OpenDlg.Execute then
+    begin
+      imgEdit1.Text := OpenDlg.FileName;
+    end;
+
+  finally
+    OpenDlg.Free;
+  end;
+end;
+
+procedure TCfgForm.LabeledEdit2DblClick(Sender: TObject);
+var
+  OpenDlg: TFileOpenDialog;
+begin
+  OpenDlg := TFileOpenDialog.Create(nil);
+  try
     if OpenDlg.Execute then
     begin
       LabeledEdit2.Text := OpenDlg.FileName;
