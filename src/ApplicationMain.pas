@@ -7,7 +7,7 @@ uses
   core, Dialogs, ExtCtrls, Generics.Collections, Vcl.Imaging.pngimage,
   Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug, ComObj, PsAPI,
   Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs, System.Math, System.JSON,
-  u_json, ConfigurationForm, Vcl.Menus, InfoBarForm, System.Generics.Collections,
+  u_json, ConfigurationForm, Vcl.Menus, InfoBarForm, System.Generics.Collections,Dwmapi,
   PopupMenuManager, event, Vcl.StdCtrls;
 
 type
@@ -69,7 +69,11 @@ type
     procedure menuMgr;
 
   end;
-
+  const
+  DWMWCP_DEFAULT = 0;
+  DWMWCP_SQUARE = 1;
+  DWMWCP_ROUND = 2;
+  DWMWCP_CNTR_RADIUS = 3;
 var
   Form1: TForm1;
   tmp_json: TDictionary<string, TSettingItem>;
@@ -86,7 +90,18 @@ implementation
 
 {$R *.dfm}
 
+procedure SetWindowCornerPreference(hWnd: HWND);
+var
+  cornerPreference: Integer;
+begin
+  cornerPreference := DWMWCP_ROUND;  // 设置为圆角
 
+  // 调用 DwmSetWindowAttribute API 设置窗口的角落偏好
+  if DwmSetWindowAttribute(hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, @cornerPreference, SizeOf(cornerPreference)) <> S_OK then
+  begin
+
+  end;
+end;
 // 计算和定位节点的逻辑
 
 procedure TForm1.CalculateAndPositionNodes();
