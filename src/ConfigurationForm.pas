@@ -250,6 +250,7 @@ begin
   tip.Text := '无';
   imgEdit1.Text := '';
   LabeledEdit2.Text := '';
+   SetWindowCornerPreference(Handle);
 end;
 
 (* procedure TCfgForm.imgEdit1DblClick(Sender: TObject);

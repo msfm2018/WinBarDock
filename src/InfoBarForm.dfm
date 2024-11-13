@@ -33,7 +33,6 @@ object bottomForm: TbottomForm
     TabOrder = 0
     OnDblClick = LVexeinfoDblClick
     OnMouseDown = LVexeinfoMouseDown
-    ExplicitHeight = 512
   end
   object Panel1: TPanel
     Left = 82
@@ -46,7 +45,6 @@ object bottomForm: TbottomForm
     ParentBackground = False
     TabOrder = 1
     StyleElements = [seFont]
-    ExplicitHeight = 512
   end
   object Panel2: TPanel
     Left = 0

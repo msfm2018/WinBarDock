@@ -112,7 +112,7 @@ begin
 
   CreateDefaultFile();
   LoadIco();
-
+//    SetWindowCornerPreference(Handle);
 end;
 
 procedure TbottomForm.WndProc(var Msg: TMessage);
