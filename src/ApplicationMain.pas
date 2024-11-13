@@ -8,11 +8,10 @@ uses
   Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug, ComObj, PsAPI,
   Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs, System.Math, System.JSON,
   u_json, ConfigurationForm, Vcl.Menus, InfoBarForm, System.Generics.Collections,
-  PopupMenuManager, event, Vcl.StdCtrls;
+  Dwmapi, PopupMenuManager, event, Vcl.StdCtrls;
 
 type
   TForm1 = class(TForm)
-
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -34,7 +33,7 @@ type
     gdraw_text: string;
     procedure node_click(Sender: TObject);
     procedure wndproc(var Msg: tmessage); override;
-    procedure snap_top_windows;
+
   private
     main_background: timage;
 
@@ -70,11 +69,16 @@ type
 
   end;
 
+const
+  DWMWCP_DEFAULT = 0;
+  DWMWCP_SQUARE = 1;
+  DWMWCP_ROUND = 2;
+  DWMWCP_CNTR_RADIUS = 3;
+
 var
   Form1: TForm1;
   tmp_json: TDictionary<string, TSettingItem>;
   cs: TCriticalSection;
-  inOnce: integer = 0;
 
 var
   FormPosition: TFormPositions;
@@ -82,11 +86,27 @@ var
 var
   PopupMenuMgr: TPopupMenuManager;
 
+var
+  hMouseHook: HHOOK;
+  hwndMonitor: HWND;
+  heventHook: THandle;
+
 implementation
 
 {$R *.dfm}
 
+procedure SetWindowCornerPreference(hWnd: hWnd);
+var
+  cornerPreference: Integer;
+begin
+  cornerPreference := DWMWCP_ROUND;  // 设置为圆角
 
+  // 调用 DwmSetWindowAttribute API 设置窗口的角落偏好
+  if DwmSetWindowAttribute(hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, @cornerPreference, SizeOf(cornerPreference)) <> S_OK then
+  begin
+
+  end;
+end;
 // 计算和定位节点的逻辑
 
 procedure TForm1.CalculateAndPositionNodes();
@@ -169,86 +189,6 @@ begin
 
   end;
   cs.Leave;
-end;
-
-procedure TForm1.snap_top_windows();
-var
-  lp: TPoint;
-  screenHeight: Integer;
-  reducedRect: TRect;
-begin
-  if g_core.nodes.is_configuring then
-    Exit;
-
-  GetCursorPos(lp);
-  screenHeight := Screen.WorkAreaHeight;
-
-  // 检查光标是否在窗体范围内且当前没有在捕捉窗口
-//  if not PtInRect(Self.BoundsRect, lp) then
-
-  reducedRect := Rect(Self.BoundsRect.Left, Self.BoundsRect.Top, Self.BoundsRect.Right, Self.BoundsRect.Bottom - 64);
-
-  if not PtInRect(reducedRect, lp) then
-  begin
-
-    inc(inOnce);
-    if inOnce > 10000 then
-      inOnce := 20;
-
-    if (inOnce < 20) then
-    begin
-    // 计算和定位节点
-      CalculateAndPositionNodes();
-
-    // 窗体水平居中屏幕
-      Left := Screen.Width div 2 - Width div 2;
-
-    //顶部
-      if Top < top_snap_distance then
-      begin
-        Top := -(Height - visible_height) + 50;
-
-        Left := Screen.Width div 2 - Width div 2;
-        restore_state();
-        FormPosition := [fpTop];
-        g_core.utils.SetTaskbarAutoHide(false);
-      end
-    //底部
-      else if top + height > screenHeight then
-      begin
-        g_core.utils.SetTaskbarAutoHide(true);
-        Top := screenHeight - Height + 130;
-        Left := Screen.Width div 2 - Width div 2;
-        FormPosition := [fpBottom]; // 设置位置为底部
-      end
-      //中间
-      else
-      begin
-        FormPosition := [];
-
-        g_core.utils.SetTaskbarAutoHide(false);              //隐藏任务栏
-      end;
-
-    end;
-  end
-  else
-  begin
-
-    if FormPosition = [] then
-    begin
-
-    end
-    else if fpTop in FormPosition then
-    begin
-      if Top < top_snap_distance then
-        Top := -56;
-    end
-    else if fpBottom in FormPosition then
-    begin
-      Top := screenHeight - Height + 80;
-    end;
-
-  end
 end;
 
 procedure tform1.FreeDictionary;
@@ -382,7 +322,6 @@ begin
   hoverLabel.Top := Node.Top - hoverLabel.Height - 5;
   hoverLabel.Visible := True;
 
-  inOnce := 0;
 end;
 
 procedure TForm1.node_mouse_leave(Sender: TObject);
@@ -391,16 +330,18 @@ begin
   if hoverLabel <> nil then
     FreeAndNil(hoverLabel);
   restore_state;
-  inOnce := 0;
 end;
 
 procedure TForm1.wndproc(var Msg: tmessage);
 begin
   inherited;
   case Msg.Msg of
-    WM_TIMER:
+    WM_DPICHANGED:
       begin
-        snap_top_windows();
+        OutputDebugString('WM_DPICHANGED');
+        var rc: PRect;
+        rc := PRect(Msg.LParam);
+        SetWindowPos(Msg.WParam, 0, rc.Left, rc.Top, rc.Right - rc.Left, rc.Bottom - rc.Top, 0);
       end;
     WM_MOUSEWHEEL:
       form_mouse_wheel(TWMMouseWheel(Msg));
@@ -410,22 +351,119 @@ begin
         FormPosition := [];
 
       end;
-//      WM_ENTERSIZEMOVE:begin
-//
-//      end;
-//      WM_EXITSIZEMOVE:begin
 
-//      end;
+  end;
+end;
+
+function LowLevelMouseProc(nCode: Integer; wParam: wParam; lParam: lParam): LRESULT; stdcall;
+var
+  lp: TPoint;
+  reducedRect: TRect;
+  mouseStruct: PMSLLHOOKSTRUCT;
+  screenHeight: Integer;
+  wheelDelta: integer;
+begin
+  if (nCode = HC_ACTION) then
+  begin
+    mouseStruct := PMSLLHOOKSTRUCT(lParam);
+    if mouseStruct <> nil then
+    begin
+      if (wParam = WM_MOUSEMOVE) then
+      begin
+
+        lp := mouseStruct^.pt;
+
+        screenHeight := Screen.WorkAreaHeight;
+
+        reducedRect := Rect(form1.BoundsRect.Left, form1.BoundsRect.Top, form1.BoundsRect.Right, form1.BoundsRect.Bottom - 64);
+
+        if not PtInRect(reducedRect, lp) then
+        begin
+
+
+    // 计算和定位节点
+          form1.CalculateAndPositionNodes();
+
+    // 窗体水平居中屏幕
+          form1.Left := Screen.Width div 2 - form1.Width div 2;
+
+    //顶部
+          if form1.Top < top_snap_distance then
+          begin
+            form1.Top := -(form1.Height - visible_height) + 50;
+
+            form1.Left := Screen.Width div 2 - form1.Width div 2;
+            restore_state();
+            FormPosition := [fpTop];
+            g_core.utils.SetTaskbarAutoHide(false);
+          end
+    //底部
+          else if form1.top + form1.height > screenHeight then
+          begin
+            g_core.utils.SetTaskbarAutoHide(true);
+            form1.Top := screenHeight - form1.Height + 130;
+            form1.Left := Screen.Width div 2 - form1.Width div 2;
+            FormPosition := [fpBottom]; // 设置位置为底部
+          end
+      //中间
+          else
+          begin
+            FormPosition := [];
+
+            g_core.utils.SetTaskbarAutoHide(false);              //隐藏任务栏
+          end;
+
+        end
+        else
+        begin
+
+          if FormPosition = [] then
+          begin
+
+          end
+          else if fpTop in FormPosition then
+          begin
+            if form1.Top < top_snap_distance then
+              form1.Top := -56;
+          end
+          else if fpBottom in FormPosition then
+          begin
+            form1.Top := screenHeight - form1.Height + 80;
+          end;
+        end;
+      end
+
+    end;
+  end;
+
+  Result := CallNextHookEx(hMouseHook, nCode, wParam, lParam);
+end;
+
+procedure WinEventProc(hook: THandle; event: DWORD; hwnd: hwnd; idObject, idChild: LONG; idEventThread, time: DWORD); stdcall;
+var
+  rc: TRect;
+begin
+  // 检查是否是我们想要的窗口和事件
+  if (hwnd = hwndMonitor) and (idObject = OBJID_WINDOW) and (idChild = CHILDID_SELF) and (event = EVENT_OBJECT_LOCATIONCHANGE) then
+  begin
+    // 获取窗口的位置
+    if GetWindowRect(hwndMonitor, rc) then
+    begin
+      // 输出窗口的位置
+//      Debug.Show(Format('Window rect is (%d,%d)-(%d,%d)', [rc.Left, rc.Top, rc.Right, rc.Bottom]));
+
+    end;
   end;
 end;
 
 procedure TForm1.FormShow(Sender: TObject);
+var
+  processId, threadId: DWORD;
 begin
 
   Initialize_form();
 
   ConfigureLayout();
-  SetTimer(Handle, 10, 10, nil);
 
   add_json('startx', 'Start Button.png', 'startx', '开始菜单', True, nil);
   add_json('recycle', 'recycle.png', 'recycle', '回收站', True, nil);
@@ -444,6 +482,16 @@ begin
 
   bottomForm.Height := Screen.WorkAreaHeight;
   bottomForm.show;
+
+  hwndMonitor := Handle;
+  hMouseHook := SetWindowsHookEx(WH_MOUSE_LL, @LowLevelMouseProc, 0, 0);
+
+  //监控 窗口发生变化
+  GetWindowThreadProcessId(hwndMonitor, processId);
+  heventHook := SetWinEventHook(EVENT_OBJECT_LOCATIONCHANGE, EVENT_OBJECT_LOCATIONCHANGE, 0, @WinEventProc, processId, 0, WINEVENT_OUTOFCONTEXT);
+  SetWindowCornerPreference(Handle);
+
+  SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 end;
 
 function TForm1.get_node_at_point(ScreenPoint: TPoint): t_node;
@@ -685,11 +733,30 @@ begin
   pm.Free;
 end;
 
+procedure RemoveMouseHook;
+begin
+  // 卸载钩子
+  if hMouseHook <> 0 then
+  begin
+    UnhookWindowsHookEx(hMouseHook);
+    hMouseHook := 0;
+  end;
+  if heventHook <> 0 then
+  begin
+
+    UnhookWinEvent(heventHook);
+    heventHook := 0;
+  end;
+
+end;
+
 procedure TForm1.FormDestroy(Sender: TObject);
 var
   v: TSettingItem;
   SettingsObj: TJSONObject;
 begin
+  RemoveMouseHook();
+
   TrayIcon1.free;
   SettingsObj := g_jsonobj.GetValue('settings') as TJSONObject;
   if SettingsObj = nil then
@@ -725,7 +792,6 @@ begin
   FreeDictionary();
 
   cs.Free;
-  KillTimer(Handle, 10);
   action_terminate(self);
   main_background.Free;
 
@@ -787,6 +853,7 @@ begin
 
     var i1 := g_core.json.Config.nodesize;
     i1 := round(1.1 * i1);
+
     g_core.nodes.node_size := i1;
     set_nodesize_value(g_core.json, i1);
   end

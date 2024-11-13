@@ -61,6 +61,17 @@ type
 
   TFormPositions = set of TFormPosition; // 定义一个集合类型，表示可以包含顶部、底部或二者
 
+type
+  MSLLHOOKSTRUCT = record
+    pt: TPoint;  // 鼠标位置
+    mouseData: DWORD;  // 鼠标按钮状态等
+    flags: DWORD;  // 标志
+    time: DWORD;  // 事件时间
+    dwExtraInfo: ULONG_PTR;  // 附加信息
+  end;
+
+  PMSLLHOOKSTRUCT = ^MSLLHOOKSTRUCT;  // 指向 MSLLHOOKSTRUCT 的指针
+
 const
   visible_height = 19;       // 代表可见高度
   top_snap_distance = 40;   // 吸附距离
