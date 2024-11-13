@@ -90,23 +90,13 @@ var
   hMouseHook: HHOOK;
   hwndMonitor: HWND;
   heventHook: THandle;
+  inOnce: integer = 0;
 
 implementation
 
 {$R *.dfm}
 
-procedure SetWindowCornerPreference(hWnd: hWnd);
-var
-  cornerPreference: Integer;
-begin
-  cornerPreference := DWMWCP_ROUND;  // 设置为圆角
 
-  // 调用 DwmSetWindowAttribute API 设置窗口的角落偏好
-  if DwmSetWindowAttribute(hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, @cornerPreference, SizeOf(cornerPreference)) <> S_OK then
-  begin
-
-  end;
-end;
 // 计算和定位节点的逻辑
 
 procedure TForm1.CalculateAndPositionNodes();
@@ -321,7 +311,7 @@ begin
   hoverLabel.Left := Node.Left + (Node.Width div 2) - (hoverLabel.Width div 2);
   hoverLabel.Top := Node.Top - hoverLabel.Height - 5;
   hoverLabel.Visible := True;
-
+  inOnce := 0;
 end;
 
 procedure TForm1.node_mouse_leave(Sender: TObject);
@@ -330,6 +320,7 @@ begin
   if hoverLabel <> nil then
     FreeAndNil(hoverLabel);
   restore_state;
+  inOnce := 0;
 end;
 
 procedure TForm1.wndproc(var Msg: tmessage);
@@ -380,39 +371,46 @@ begin
         if not PtInRect(reducedRect, lp) then
         begin
 
+          inc(inOnce);
+          if inOnce > 10000 then
+            inOnce := 20;
+
+          if (inOnce < 20) then
+          begin
 
     // 计算和定位节点
-          form1.CalculateAndPositionNodes();
+            form1.CalculateAndPositionNodes();
 
     // 窗体水平居中屏幕
-          form1.Left := Screen.Width div 2 - form1.Width div 2;
+            form1.Left := Screen.Width div 2 - form1.Width div 2;
 
     //顶部
-          if form1.Top < top_snap_distance then
-          begin
-            form1.Top := -(form1.Height - visible_height) + 50;
+            if form1.Top < top_snap_distance then
+            begin
+              form1.Top := -(form1.Height - visible_height) + 50;
 
-            form1.Left := Screen.Width div 2 - form1.Width div 2;
-            restore_state();
-            FormPosition := [fpTop];
-            g_core.utils.SetTaskbarAutoHide(false);
-          end
+              form1.Left := Screen.Width div 2 - form1.Width div 2;
+              restore_state();
+              FormPosition := [fpTop];
+              g_core.utils.SetTaskbarAutoHide(false);
+            end
     //底部
-          else if form1.top + form1.height > screenHeight then
-          begin
-            g_core.utils.SetTaskbarAutoHide(true);
-            form1.Top := screenHeight - form1.Height + 130;
-            form1.Left := Screen.Width div 2 - form1.Width div 2;
-            FormPosition := [fpBottom]; // 设置位置为底部
-          end
+            else if form1.top + form1.height > screenHeight then
+            begin
+              g_core.utils.SetTaskbarAutoHide(true);
+              form1.Top := screenHeight - form1.Height + 130;
+              form1.Left := Screen.Width div 2 - form1.Width div 2;
+              FormPosition := [fpBottom]; // 设置位置为底部
+            end
       //中间
-          else
-          begin
-            FormPosition := [];
+            else
+            begin
+              FormPosition := [];
 
-            g_core.utils.SetTaskbarAutoHide(false);              //隐藏任务栏
+              g_core.utils.SetTaskbarAutoHide(false);              //隐藏任务栏
+            end;
+
           end;
-
         end
         else
         begin
