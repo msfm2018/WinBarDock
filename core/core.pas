@@ -4,7 +4,7 @@ interface
 
 uses
   shellapi, classes, winapi.windows, Graphics, SysUtils, messages,
-  Vcl.Imaging.pngimage, System.IniFiles, Registry, forms, GDIPAPI, GDIPOBJ,
+  Vcl.Imaging.pngimage, System.IniFiles, Registry, forms, GDIPAPI, GDIPOBJ,  Dwmapi,
   u_json, vcl.controls, ComObj, System.Generics.Collections, ConfigurationForm,
   TlHelp32, Winapi.PsAPI, System.SyncObjs, vcl.ExtCtrls, math;
 
@@ -96,7 +96,7 @@ procedure SimulateCtrlEsc;
 procedure EmptyRecycleBin;
 
 procedure UpdateCoreSettingsFromTmpJson(const tmp_json: TDictionary<string, TSettingItem>; var core_settings: TDictionary<string, TSettingItem>; cs: TCriticalSection);
-
+    procedure SetWindowCornerPreference(hWnd: hWnd);
 var
   g_core: t_core_class;
   original_task_list: TStringList;
@@ -158,7 +158,18 @@ begin
   end;
 end;
 
+  procedure SetWindowCornerPreference(hWnd: hWnd);
+var
+  cornerPreference: Integer;
+begin
+  cornerPreference := DWMWCP_ROUND;  // 设置为圆角
 
+  // 调用 DwmSetWindowAttribute API 设置窗口的角落偏好
+  if DwmSetWindowAttribute(hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, @cornerPreference, SizeOf(cornerPreference)) <> S_OK then
+  begin
+
+  end;
+end;
 
 //清空回收站
 procedure EmptyRecycleBin;
