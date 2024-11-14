@@ -4,9 +4,9 @@ interface
 
 uses
   shellapi, classes, winapi.windows, Graphics, SysUtils, messages,
-  Vcl.Imaging.pngimage, System.IniFiles, Registry, forms, GDIPAPI, GDIPOBJ,  Dwmapi,
-  u_json, vcl.controls, ComObj, System.Generics.Collections, ConfigurationForm,
-  TlHelp32, Winapi.PsAPI, System.SyncObjs, vcl.ExtCtrls, math;
+  Vcl.Imaging.pngimage, System.IniFiles, Registry, forms, GDIPAPI, GDIPOBJ,
+  Dwmapi, u_json, vcl.controls, ComObj, System.Generics.Collections,
+  ConfigurationForm, TlHelp32, Winapi.PsAPI, System.SyncObjs, vcl.ExtCtrls, math;
 
 type
   t_node = class(TImage)
@@ -96,7 +96,9 @@ procedure SimulateCtrlEsc;
 procedure EmptyRecycleBin;
 
 procedure UpdateCoreSettingsFromTmpJson(const tmp_json: TDictionary<string, TSettingItem>; var core_settings: TDictionary<string, TSettingItem>; cs: TCriticalSection);
-    procedure SetWindowCornerPreference(hWnd: hWnd);
+
+procedure SetWindowCornerPreference(hWnd: hWnd);
+
 var
   g_core: t_core_class;
   original_task_list: TStringList;
@@ -158,7 +160,7 @@ begin
   end;
 end;
 
-  procedure SetWindowCornerPreference(hWnd: hWnd);
+procedure SetWindowCornerPreference(hWnd: hWnd);
 var
   cornerPreference: Integer;
 begin
@@ -647,6 +649,27 @@ begin
   end;
 
 end;
+ //function TForm1.get_node_at_point(ScreenPoint: TPoint): t_node;
+//var
+//  ClientPoint: TPoint;
+//  I: Integer;
+//  Node: t_node;
+//begin
+//  Result := nil;
+//
+//  ClientPoint := ScreenToClient(ScreenPoint);
+//
+//  for I := 0 to g_core.nodes.count - 1 do
+//  begin
+//    Node := g_core.nodes.Nodes[I];
+//
+//    if PtInRect(Node.BoundsRect, ClientPoint) then
+//    begin
+//      Result := Node;
+//      Exit;
+//    end;
+//  end;
+//end;
 
 initialization
   g_core := t_core_class.Create;
