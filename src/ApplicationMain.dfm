@@ -19,7 +19,6 @@ object Form1: TForm1
   StyleElements = [seFont, seBorder]
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  OnKeyDown = FormKeyDown
   OnMouseDown = FormMouseDown
   OnPaint = FormPaint
   OnShow = FormShow

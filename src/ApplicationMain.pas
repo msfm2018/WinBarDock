@@ -3,12 +3,11 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  core, Dialogs, ExtCtrls, Generics.Collections, Vcl.Imaging.pngimage,
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, core, Dialogs, ExtCtrls, Generics.Collections, Vcl.Imaging.pngimage,
   Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug, ComObj, PsAPI,
   Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs, System.Math, System.JSON,
   u_json, ConfigurationForm, Vcl.Menus, InfoBarForm, System.Generics.Collections,
-  Dwmapi, PopupMenuManager, event, Vcl.StdCtrls;
+  PopupMenuManager, event;
 
 type
   TForm1 = class(TForm)
@@ -22,8 +21,6 @@ type
     procedure action_style_1(Sender: TObject);
     procedure action_style_2(Sender: TObject);
     procedure action_translator(Sender: TObject);
-
-    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormCreate(Sender: TObject);
     procedure FormPaint(Sender: TObject);
 
@@ -52,17 +49,15 @@ type
     FAltF4Key, FShowkeyid: Word;
     procedure hotkey(var Msg: tmsg); message WM_HOTKEY;
   public
-    hoverLabel: TLabel;
     procedure ConfigureLayout;
   private
     TrayIcon1: TTrayIcon;
     TrayPopupMenu: TPopupMenu;
-    procedure handle_ayout(Sender: TObject; lp: TPoint);
-    function get_node_at_point(ScreenPoint: TPoint): t_node;
+    procedure handle_ayout(Sender: TObject);
     procedure form_mouse_wheel(WheelMsg: TWMMouseWheel);
     procedure CleanupPopupMenu;
 
-    procedure FreeDictionary;
+    procedure FreeDic;
     procedure AdjustNodeSize(Node: t_node; Rate: Double);
 
     procedure menuMgr;
@@ -79,9 +74,11 @@ var
   Form1: TForm1;
   tmp_json: TDictionary<string, TSettingItem>;
   cs: TCriticalSection;
+  label_top, label_left: integer;
 
 var
   FormPosition: TFormPositions;
+  hoverLabel: Boolean = false;
 
 var
   PopupMenuMgr: TPopupMenuManager;
@@ -102,86 +99,289 @@ implementation
 procedure TForm1.CalculateAndPositionNodes();
 var
   Node: t_node;
-  I: Integer;
+  I, NodeCount, NodeSize, NodeGap: Integer;
   v: TSettingItem;
+  ClientCenterY: Integer;
+  kys: TDictionary<string, TSettingItem>;
 begin
+
+  NodeSize := g_core.nodes.node_size;
+  NodeGap := g_core.nodes.node_gap;
+  NodeCount := g_core.json.Settings.Count;
+  kys := g_core.json.Settings;
+
+  ClientCenterY := (Self.ClientHeight - NodeSize) div 2;
+
   cs.Enter;
   try
-    g_core.nodes.count := g_core.json.Settings.Count;
+    try
+      g_core.nodes.count := NodeCount;
 
-    if g_core.nodes.Nodes <> nil then
-      for Node in g_core.nodes.Nodes do
-      begin
-        g_core.json.Settings.TryGetValue(Node.key, v);
-        if not v.Is_path_valid then
-          FreeAndNil(v.memory_image);
-        FreeAndNil(Node);
-      end;
-
-    Form1.height := g_core.nodes.node_size + g_core.nodes.node_size div 2 + 130;
-
-    setlength(g_core.nodes.Nodes, g_core.nodes.count);
-    I := 0;
-    for var Key in g_core.json.Settings.keys do
-    begin
-      var MValue := g_core.json.Settings.Items[Key];
-      Node := t_node.Create(self);
-      g_core.nodes.Nodes[I] := Node;
-      Node.Width := g_core.nodes.node_size;
-      Node.Height := g_core.nodes.node_size;
-
-      if I = 0 then
-        Node.Left := g_core.nodes.node_gap + exptend
-      else
-
-        Node.Left := g_core.nodes.Nodes[I - 1].Left + g_core.nodes.node_gap + Node.Width;
-
-      with Node do
-      begin
-        id := I;
-        Top := (Self.ClientHeight - g_core.nodes.node_size) div 2;
-        Center := true;
-
-        Transparent := true;
-        Parent := self;
-        file_path := MValue.FilePath;
-        tool_tip := MValue.tool_tip;
-
-        if MValue.Is_path_valid then
-          Picture.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\' + MValue.image_file_name)
-        else
+      if g_core.nodes.Nodes <> nil then
+        for Node in g_core.nodes.Nodes do
         begin
-          MValue.memory_image.Position := 0;
-          Picture.LoadFromStream(MValue.memory_image);
+          kys.TryGetValue(Node.key, v);
+          if not v.Is_path_valid then
+            FreeAndNil(v.memory_image);
+          FreeAndNil(Node);
         end;
 
-        Stretch := true;
-        OnMouseLeave := node_mouse_leave;
-        OnMouseMove := node_mouse_move;
-        OnMouseDown := FormMouseDown;
-        OnClick := node_click;
+      Form1.height := NodeSize + NodeSize div 2 + 130;
 
-        OnMouseEnter := node_mouse_enter;
+      setlength(g_core.nodes.Nodes, NodeCount);
+      I := 0;
+      var keys := kys.keys;
+      for var Key in keys do
+      begin
+        var MValue := kys.Items[Key];
+        Node := t_node.Create(self);
+        g_core.nodes.Nodes[I] := Node;
+        Node.Width := NodeSize;
+        Node.Height := NodeSize;
 
-        original_size.cx := g_core.nodes.Nodes[I].Width;
-        original_size.cy := g_core.nodes.Nodes[I].height;
-        center_point.x := g_core.nodes.Nodes[I].Left + g_core.nodes.Nodes[I].Width div 2;
-        center_point.y := g_core.nodes.Nodes[I].top + g_core.nodes.Nodes[I].height div 2;
+        if I = 0 then
+          Node.Left := NodeGap + exptend
+        else
+          Node.Left := g_core.nodes.Nodes[I - 1].Left + NodeGap + Node.Width;
 
+        with Node do
+        begin
+
+          id := I;
+          Top := ClientCenterY;
+          Center := true;
+
+          Transparent := true;
+          Parent := self;
+          file_path := MValue.FilePath;
+          tool_tip := MValue.tool_tip;
+
+          if MValue.Is_path_valid then
+            Picture.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\' + MValue.image_file_name)
+          else
+          begin
+            MValue.memory_image.Position := 0;
+            Picture.LoadFromStream(MValue.memory_image);
+          end;
+
+          Stretch := true;
+          OnMouseLeave := node_mouse_leave;
+          OnMouseMove := node_mouse_move;
+          OnMouseDown := FormMouseDown;
+          OnClick := node_click;
+
+          OnMouseEnter := node_mouse_enter;
+
+          original_size.cx := g_core.nodes.Nodes[I].Width;
+          original_size.cy := g_core.nodes.Nodes[I].height;
+          center_point.x := g_core.nodes.Nodes[I].Left + g_core.nodes.Nodes[I].Width div 2;
+          center_point.y := g_core.nodes.Nodes[I].top + g_core.nodes.Nodes[I].height div 2;
+
+        end;
+        Inc(I)
       end;
-      Inc(I)
+
+      if NodeCount > 0 then
+        Self.Width := g_core.nodes.Nodes[NodeCount - 1].Left + g_core.nodes.Nodes[NodeCount - 1].Width + NodeGap + exptend;
+
+    except
+
     end;
-
-    if g_core.nodes.count > 0 then
-      Self.Width := g_core.nodes.Nodes[g_core.nodes.count - 1].Left + g_core.nodes.Nodes[g_core.nodes.count - 1].Width + g_core.nodes.node_gap + exptend;
-
-  except
-
+  finally
+    cs.Leave;
   end;
-  cs.Leave;
+
 end;
 
-procedure tform1.FreeDictionary;
+procedure TForm1.node_mouse_enter(Sender: TObject);
+var
+  Node: t_node;
+begin
+  Node := Sender as t_node;
+
+  gdraw_text := Node.tool_tip;
+
+  label_top := Node.Top - 65;
+  label_left := Node.Left + (Node.Width div 2);
+
+  hoverLabel := true;
+  inOnce := 0;
+end;
+
+procedure TForm1.node_mouse_leave(Sender: TObject);
+begin
+
+  restore_state;
+  inOnce := 0;
+end;
+// 移动窗口逻辑
+
+procedure TForm1.node_mouse_move(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+var
+  rate: double;
+  a, b: integer;
+  I: Integer;
+  NewWidth, NewHeight: Integer;
+  Rate11: double;
+  Current_node: t_node;
+  lp: tpoint;
+begin
+  if g_core.nodes.is_configuring then
+    exit;
+
+  if (EventDef.isLeftClick) then
+  begin
+    if (X <> EventDef.X) or (Y <> EventDef.Y) then
+    begin
+      EventDef.X := X;
+      EventDef.Y := Y;
+
+      move_windows(Handle);
+    end
+    else
+      timage(Sender).OnClick(self);
+  end
+  else
+  begin
+
+    var Node := t_node(Sender);
+    if hoverLabel then
+    begin
+      label_top := Node.Top - 35;
+      label_left := Node.Left + (Node.Width div 4); //- (hoverLabel.Width div 2);
+    end;
+
+    GetCursorPos(lp);
+
+    node_at_cursor := t_node(Sender);
+
+    if g_core.json.Config.style = 'style-2' then
+    begin
+
+        // 调整当前节点
+      Current_node := node_at_cursor;
+
+//    var GC := (X mod (Current_node.original_size.cx * 2)) / (Current_node.original_size.cx * 2);
+//
+//  // 使用 Sin 函数生成 0-1-0 的变化率
+//    var Rate11 := Sin(GC * Pi);
+
+
+      if X > Current_node.original_size.cx div 2 then
+      begin
+
+        var NodeCenterX := Current_node.original_size.cx;
+        var SymmetricX := Abs(X - NodeCenterX);
+        var GC := (SymmetricX mod (Current_node.original_size.cx * 2)) / (Current_node.original_size.cx * 2);
+        Rate11 := Sin(GC * Pi);
+      end
+      else
+      begin
+        var GC := (X mod (Current_node.original_size.cx * 2)) / (Current_node.original_size.cx * 2);
+
+        Rate11 := Sin(GC * Pi);
+      end;
+//        Rate11  := 0.5 * (1 - Cos(Pi * Rate11));
+      AdjustNodeSize(Current_node, Rate11);
+    end
+    else if g_core.json.Config.style = 'style-1' then
+    begin
+
+      for I := 0 to g_core.nodes.count - 1 do
+      begin
+        Current_node := g_core.nodes.Nodes[I];
+//           if Node= Current_node then
+//             Continue;
+
+
+        a := Current_node.Left - ScreenToClient(lp).X + Current_node.Width div 2;
+        b := Current_node.Top - ScreenToClient(lp).Y + Current_node.Height div 4;
+
+        rate := g_core.utils.rate(a, b);
+        rate := Min(Max(rate, 0.5), 1);
+        if Node = Current_node then
+          rate := rate - 0.1;
+
+        NewWidth := Round(Current_node.original_size.cx * 2 * rate);
+        NewHeight := Round(Current_node.original_size.cy * 2 * rate);
+
+        var maxValue: Integer := 128;
+
+        NewWidth := Min(NewWidth, maxValue);
+        NewHeight := Min(NewHeight, maxValue);
+
+        Current_node.center_point.x := Current_node.Left + Current_node.Width div 2;
+        Current_node.center_point.y := Current_node.Top + Current_node.Height div 2;
+
+        if top < top_snap_distance + 100 then
+        begin
+
+          Current_node.Width := Floor(Current_node.original_size.cx * 2 * rate);
+          Current_node.height := Floor(Current_node.original_size.cx * 2 * rate);
+          Current_node.Left := Current_node.Left - Floor((Current_node.Width - Current_node.original_size.cx) * rate) - 6;
+        end
+        else
+        begin
+
+      // 调整顶部位置而不改变底部位置
+          var newTop := Current_node.Top - (NewHeight - Current_node.Height);
+
+          Current_node.SetBounds(Current_node.center_point.x - NewWidth div 2, newTop, NewWidth, NewHeight);
+        end;
+
+
+//    中间往外凸显
+//       Current_node.SetBounds(Current_node.center_x - NewWidth div 2, Current_node.center_y - NewHeight div 2, NewWidth, NewHeight);
+
+      end;
+    end;
+    handle_ayout(Self);
+
+  end;
+end;
+
+procedure TForm1.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  if g_core.nodes.is_configuring then
+    exit;
+  if Button = mbleft then
+  begin
+    EventDef.isLeftClick := true;
+    EventDef.Y := Y;
+    EventDef.X := X;
+  end;
+
+end;
+
+procedure TForm1.node_click(Sender: TObject);
+begin
+  if t_node(Sender).file_path = '' then
+    Exit;
+  if t_node(Sender).tool_tip = '开始菜单' then
+  begin
+    SimulateCtrlEsc();
+  end
+  else if t_node(Sender).tool_tip = '回收站' then
+  begin
+
+    if MessageDlg('Are you sure you want to empty the Recycle Bin?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+    begin
+      EmptyRecycleBin();
+      MessageDlg('The Recycle Bin has been emptied.', mtInformation, [mbOK], 0);
+    end;
+  end
+  else if t_node(Sender).tool_tip = '' then
+    g_core.utils.launch_app(t_node(Sender).file_path)
+  else if not BringWindowToFront(t_node(Sender).tool_tip) then
+    g_core.utils.launch_app(t_node(Sender).file_path)
+  else
+    g_core.utils.launch_app(t_node(Sender).file_path);
+
+  EventDef.isLeftClick := False;
+
+end;
+
+procedure tform1.FreeDic;
 var
   Key: string;
   SettingItem: TSettingItem;
@@ -291,38 +491,6 @@ begin
   end;
 end;
 
-procedure TForm1.node_mouse_enter(Sender: TObject);
-var
-  Node: t_node;
-begin
-  Node := Sender as t_node;
-
-  if not Assigned(hoverLabel) then
-  begin
-    hoverLabel := TLabel.Create(Self);
-    hoverLabel.Parent := Parent;
-    hoverLabel.Transparent := True;
-    hoverLabel.Caption := Node.tool_tip;
-    gdraw_text := Node.tool_tip;
-    hoverLabel.Font.Size := 14;
-    hoverLabel.Font.Color := clBlack;
-  end;
-
-  hoverLabel.Left := Node.Left + (Node.Width div 2) - (hoverLabel.Width div 2);
-  hoverLabel.Top := Node.Top - hoverLabel.Height - 5;
-  hoverLabel.Visible := True;
-  inOnce := 0;
-end;
-
-procedure TForm1.node_mouse_leave(Sender: TObject);
-begin
-  hoverLabel.Visible := false;
-  if hoverLabel <> nil then
-    FreeAndNil(hoverLabel);
-  restore_state;
-  inOnce := 0;
-end;
-
 procedure TForm1.wndproc(var Msg: tmessage);
 begin
   inherited;
@@ -377,7 +545,8 @@ begin
 
           if (inOnce < 20) then
           begin
-
+            if hoverLabel then
+              hoverLabel := false;
     // 计算和定位节点
             form1.CalculateAndPositionNodes();
 
@@ -492,29 +661,7 @@ begin
   SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 end;
 
-function TForm1.get_node_at_point(ScreenPoint: TPoint): t_node;
-var
-  ClientPoint: TPoint;
-  I: Integer;
-  Node: t_node;
-begin
-  Result := nil;
-
-  ClientPoint := ScreenToClient(ScreenPoint);
-
-  for I := 0 to g_core.nodes.count - 1 do
-  begin
-    Node := g_core.nodes.Nodes[I];
-
-    if PtInRect(Node.BoundsRect, ClientPoint) then
-    begin
-      Result := Node;
-      Exit;
-    end;
-  end;
-end;
-
-procedure TForm1.handle_ayout(Sender: TObject; lp: TPoint);
+procedure TForm1.handle_ayout(Sender: TObject);
 var
   NewFormWidth: Integer;
   j: Integer;
@@ -522,7 +669,10 @@ var
   ExpDelta: Double;
   rate: Double;
 begin
-  NewFormWidth := g_core.nodes.Nodes[g_core.nodes.count - 1].Left + g_core.nodes.Nodes[g_core.nodes.count - 1].Width + g_core.nodes.node_gap + exptend;
+  var count := g_core.nodes.count;
+  var tnodes := g_core.nodes.Nodes;
+  var node_gap := g_core.nodes.node_gap;
+  NewFormWidth := tnodes[count - 1].Left + tnodes[count - 1].Width + node_gap + exptend;
   // 计算移动的增量
   Delta := NewFormWidth - Width;
 
@@ -540,13 +690,13 @@ begin
 
     SetBounds(Left - Round(ExpDelta) div 2, Top, Width + Round(ExpDelta), Height);
 
-    for j := 0 to g_core.nodes.count - 1 do
+    for j := 0 to count - 1 do
     begin
-      var inner_node := g_core.nodes.Nodes[j];
+      var inner_node := tnodes[j];
       if j = 0 then
-        inner_node.Left := g_core.nodes.node_gap + exptend
+        inner_node.Left := +exptend
       else
-        inner_node.Left := g_core.nodes.Nodes[j - 1].Left + g_core.nodes.Nodes[j - 1].Width + g_core.nodes.node_gap;
+        inner_node.Left := tnodes[j - 1].Left + tnodes[j - 1].Width + node_gap;
     end;
   end;
 end;
@@ -587,133 +737,6 @@ begin
 
 end;
 
-
-// 移动窗口逻辑
-procedure TForm1.node_mouse_move(Sender: TObject; Shift: TShiftState; X, Y: Integer);
-var
-  rate: double;
-  a, b: integer;
-  I: Integer;
-  NewWidth, NewHeight: Integer;
-  Rate11: double;
-  Current_node: t_node;
-  lp: tpoint;
-begin
-  if g_core.nodes.is_configuring then
-    exit;
-
-  if (EventDef.isLeftClick) then
-  begin
-    if (X <> EventDef.X) or (Y <> EventDef.Y) then
-    begin
-      EventDef.X := X;
-      EventDef.Y := Y;
-
-      move_windows(Handle);
-    end
-    else
-      timage(Sender).OnClick(self);
-  end
-  else
-  begin
-
-    var Node := t_node(Sender);
-    if hoverLabel <> nil then
-    begin
-      hoverLabel.Left := Node.Left + (Node.Width div 2) - (hoverLabel.Width div 2);
-      hoverLabel.Top := Node.Top - hoverLabel.Height - 5;
-    end;
-
-    GetCursorPos(lp);
-
-//    node_at_cursor := get_node_at_point(lp);
-    node_at_cursor := t_node(Sender);
-
-    if g_core.json.Config.style = 'style-2' then
-    begin
-
-        // 调整当前节点
-      Current_node := node_at_cursor;
-
-//    var GC := (X mod (Current_node.original_size.cx * 2)) / (Current_node.original_size.cx * 2);
-//
-//  // 使用 Sin 函数生成 0-1-0 的变化率
-//    var Rate11 := Sin(GC * Pi);
-
-
-      if X > Current_node.original_size.cx div 2 then
-      begin
-
-        var NodeCenterX := Current_node.original_size.cx;
-        var SymmetricX := Abs(X - NodeCenterX);
-        var GC := (SymmetricX mod (Current_node.original_size.cx * 2)) / (Current_node.original_size.cx * 2);
-        Rate11 := Sin(GC * Pi);
-      end
-      else
-      begin
-        var GC := (X mod (Current_node.original_size.cx * 2)) / (Current_node.original_size.cx * 2);
-
-        Rate11 := Sin(GC * Pi);
-      end;
-//        Rate11  := 0.5 * (1 - Cos(Pi * Rate11));
-      AdjustNodeSize(Current_node, Rate11);
-    end
-    else if g_core.json.Config.style = 'style-1' then
-    begin
-
-      for I := 0 to g_core.nodes.count - 1 do
-      begin
-        Current_node := g_core.nodes.Nodes[I];
-//           if Node= Current_node then
-//             Continue;
-
-
-        a := Current_node.Left - ScreenToClient(lp).X + Current_node.Width div 2;
-        b := Current_node.Top - ScreenToClient(lp).Y + Current_node.Height div 4;
-
-        rate := g_core.utils.rate(a, b);
-        rate := Min(Max(rate, 0.5), 1);
-        if Node = Current_node then
-          rate := rate - 0.1;
-
-        NewWidth := Round(Current_node.original_size.cx * 2 * rate);
-        NewHeight := Round(Current_node.original_size.cy * 2 * rate);
-
-        var maxValue: Integer := 128;
-
-        NewWidth := Min(NewWidth, maxValue);
-        NewHeight := Min(NewHeight, maxValue);
-
-        Current_node.center_point.x := Current_node.Left + Current_node.Width div 2;
-        Current_node.center_point.y := Current_node.Top + Current_node.Height div 2;
-
-        if top < top_snap_distance + 100 then
-        begin
-
-          Current_node.Width := Floor(Current_node.original_size.cx * 2 * rate);
-          Current_node.height := Floor(Current_node.original_size.cx * 2 * rate);
-          Current_node.Left := Current_node.Left - Floor((Current_node.Width - Current_node.original_size.cx) * rate) - 6;
-        end
-        else
-        begin
-
-      // 调整顶部位置而不改变底部位置
-          var newTop := Current_node.Top - (NewHeight - Current_node.Height);
-
-          Current_node.SetBounds(Current_node.center_point.x - NewWidth div 2, newTop, NewWidth, NewHeight);
-        end;
-
-
-//    中间往外凸显
-//       Current_node.SetBounds(Current_node.center_x - NewWidth div 2, Current_node.center_y - NewHeight div 2, NewWidth, NewHeight);
-
-      end;
-    end;
-    handle_ayout(Self, lp);
-
-  end;
-end;
-
 procedure TForm1.FormCreate(Sender: TObject);
 begin
 
@@ -733,7 +756,6 @@ end;
 
 procedure RemoveMouseHook;
 begin
-  // 卸载钩子
   if hMouseHook <> 0 then
   begin
     UnhookWindowsHookEx(hMouseHook);
@@ -787,24 +809,11 @@ begin
   end;
 
   CleanupPopupMenu();
-  FreeDictionary();
+  FreeDic();
 
   cs.Free;
   action_terminate(self);
   main_background.Free;
-
-end;
-
-procedure TForm1.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-  if g_core.nodes.is_configuring then
-    exit;
-  if Button = mbleft then
-  begin
-    EventDef.isLeftClick := true;
-    EventDef.Y := Y;
-    EventDef.X := X;
-  end;
 
 end;
 
@@ -813,21 +822,21 @@ var
   g: TGPGraphics;
   font: TGPFont;
 begin
-  if Assigned(hoverLabel) then
+  if (hoverLabel) then
   begin
-
     g := TGPGraphics.Create(Canvas.Handle);
     try
       var sbRed := TGPSolidBrush.Create(aclWhite);
       var sbBlack := TGPSolidBrush.Create(aclBlack);
       font := TGPFont.Create('微软雅黑', 16, FontStyleRegular);
       try
-        g.DrawString(gdraw_text, -1, font, MakePoint(hoverLabel.Left - 1, hoverLabel.top + 0.0), sbBlack);
-        g.DrawString(gdraw_text, -1, font, MakePoint(hoverLabel.Left + 1, hoverLabel.top + 0.0), sbBlack);
-        g.DrawString(gdraw_text, -1, font, MakePoint(hoverLabel.Left, hoverLabel.top + 0.0 - 1), sbBlack);
-        g.DrawString(gdraw_text, -1, font, MakePoint(hoverLabel.Left, hoverLabel.top + 0.0 + 1), sbBlack);
 
-        g.DrawString(gdraw_text, -1, font, MakePoint(hoverLabel.Left, hoverLabel.top + 0.0), sbRed);
+        g.DrawString(gdraw_text, -1, font, MakePoint(label_left - 1, label_top + 0.0), sbBlack);
+        g.DrawString(gdraw_text, -1, font, MakePoint(label_left + 1, label_top + 0.0), sbBlack);
+        g.DrawString(gdraw_text, -1, font, MakePoint(label_left, label_top + 0.0 - 1), sbBlack);
+        g.DrawString(gdraw_text, -1, font, MakePoint(label_left, label_top + 0.0 + 1), sbBlack);
+
+        g.DrawString(gdraw_text, -1, font, MakePoint(label_left, label_top + 0.0), sbRed);
       finally
         font.Free;
         sbRed.Free;
@@ -844,25 +853,14 @@ procedure TForm1.form_mouse_wheel(WheelMsg: TWMMouseWheel);
 begin
   if g_core.nodes.is_configuring then
     Exit;
+  var i1 := g_core.json.Config.nodesize;
 
-  // 根据滚轮方向调整节点大小
   if WheelMsg.WheelDelta > 0 then
-  begin
-
-    var i1 := g_core.json.Config.nodesize;
-    i1 := round(1.1 * i1);
-
-    g_core.nodes.node_size := i1;
-    set_nodesize_value(g_core.json, i1);
-  end
+    i1 := round(1.1 * i1)
   else
-  begin
-    var i1 := g_core.json.Config.nodesize;
     i1 := round(i1 * 0.9);
-    g_core.nodes.node_size := i1;
-    set_nodesize_value(g_core.json, i1);
-  end;
-
+  g_core.nodes.node_size := i1;
+  set_nodesize_value(g_core.json, i1);
   ConfigureLayout();
 
 end;
@@ -906,8 +904,6 @@ begin
   OpenDlg := TFileOpenDialog.Create(nil);
   with OpenDlg do
   begin
-  //  Filter := 'ctrl+b 热键(*.exe)|*.exe';
-  //  DefaultExt := '*.exe';
 
     if Execute then
     begin
@@ -923,12 +919,6 @@ begin
 
 end;
 
-procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-begin
-  if Key = VK_ESCAPE then
-    Close;
-end;
-
 procedure TForm1.ConfigureLayout();
 begin
   g_core.nodes.is_configuring := False;
@@ -940,34 +930,6 @@ begin
     Form1.top := 0;
 
   restore_state();
-
-end;
-
-procedure TForm1.node_click(Sender: TObject);
-begin
-  if t_node(Sender).file_path = '' then
-    Exit;
-  if t_node(Sender).tool_tip = '开始菜单' then
-  begin
-    SimulateCtrlEsc();
-  end
-  else if t_node(Sender).tool_tip = '回收站' then
-  begin
-
-    if MessageDlg('Are you sure you want to empty the Recycle Bin?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
-    begin
-      EmptyRecycleBin();
-      MessageDlg('The Recycle Bin has been emptied.', mtInformation, [mbOK], 0);
-    end;
-  end
-  else if t_node(Sender).tool_tip = '' then
-    g_core.utils.launch_app(t_node(Sender).file_path)
-  else if not BringWindowToFront(t_node(Sender).tool_tip) then
-    g_core.utils.launch_app(t_node(Sender).file_path)
-  else
-    g_core.utils.launch_app(t_node(Sender).file_path);
-
-  EventDef.isLeftClick := False;
 
 end;
 
