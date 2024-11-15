@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.ExtCtrls, Winapi.ShellAPI, Vcl.ComCtrls, ActiveX, shlobj, u_json,
-  System.JSON, u_debug, comobj, Vcl.ImgList, Vcl.Menus, System.ImageList,
+  System.JSON, u_debug, comobj, Vcl.ImgList, Vcl.Menus, System.ImageList,  utils,
   Vcl.StdCtrls;
 
 type
@@ -44,7 +44,7 @@ type
 var
   bottomForm: TbottomForm;
 
-function SystemShutdown(reboot: Boolean): boolean; stdcall; external './dll/Project7.dll';
+
 
 implementation
 

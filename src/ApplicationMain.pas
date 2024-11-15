@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, core, Dialogs, ExtCtrls, Generics.Collections, Vcl.Imaging.pngimage,
   Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug, ComObj, PsAPI,
   Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs, System.Math, System.JSON,
-  u_json, ConfigurationForm, Vcl.Menus, InfoBarForm, System.Generics.Collections,
+  u_json, ConfigurationForm, Vcl.Menus, InfoBarForm, System.Generics.Collections,  plug,
   PopupMenuManager, event;
 
 type
@@ -627,7 +627,7 @@ procedure TForm1.FormShow(Sender: TObject);
 var
   processId, threadId: DWORD;
 begin
-
+    load_plug();
   Initialize_form();
 
   ConfigureLayout();

@@ -11,7 +11,9 @@ uses
   PopupMenuManager in 'core\PopupMenuManager.pas',
   ApplicationMain in 'src\ApplicationMain.pas' {Form1},
   ConfigurationForm in 'src\ConfigurationForm.pas' {CfgForm},
-  InfoBarForm in 'src\InfoBarForm.pas' {bottomForm};
+  InfoBarForm in 'src\InfoBarForm.pas' {bottomForm},
+  plug in 'core\plug.pas',
+  utils in 'core\utils.pas';
 
 {$R *.res}
 

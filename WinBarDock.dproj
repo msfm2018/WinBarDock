@@ -166,6 +166,8 @@
             <Form>bottomForm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="core\plug.pas"/>
+        <DCCReference Include="core\utils.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
