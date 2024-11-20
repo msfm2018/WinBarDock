@@ -500,7 +500,9 @@ begin
         OutputDebugString('WM_DPICHANGED');
         var rc: PRect;
         rc := PRect(Msg.LParam);
-        SetWindowPos(Msg.WParam, 0, rc.Left, rc.Top, rc.Right - rc.Left, rc.Bottom - rc.Top, 0);
+        //SetWindowPos(Msg.WParam, 0, rc.Left, rc.Top, rc.Right - rc.Left, rc.Bottom - rc.Top, 0);
+        SetWindowPos(Msg.WParam, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top - MulDiv(50, GetDpiForWindow(Msg.WParam), 96), 0);
+  
       end;
     WM_MOUSEWHEEL:
       form_mouse_wheel(TWMMouseWheel(Msg));
