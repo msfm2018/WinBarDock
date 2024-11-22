@@ -18,6 +18,7 @@ __declspec(dllexport) BOOL HideFromTaskbarAndAltTab(HWND hwnd) {
     // Use ITaskbarList to remove the window from the taskbar
     ITaskbarList* pTaskList = NULL;
     hr = CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER, &IID_ITaskbarList, (void**)&pTaskList);
+     hr = pTaskList->HrInit();
     if (SUCCEEDED(hr) && pTaskList) {
         pTaskList->lpVtbl->DeleteTab(pTaskList, hwnd);
         pTaskList->lpVtbl->Release(pTaskList);
@@ -39,18 +40,18 @@ __declspec(dllexport) BOOL HideFromTaskbarAndAltTab(HWND hwnd) {
     return TRUE;
 }
 
-// ¸Ãº¯ÊıÓÃÓÚ´´½¨ ITaskbarList ½Ó¿ÚµÄÊµÀı²¢·µ»ØËüµÄÖ¸Õë
+// è¯¥å‡½æ•°ç”¨äºåˆ›å»º ITaskbarList æ¥å£çš„å®ä¾‹å¹¶è¿”å›å®ƒçš„æŒ‡é’ˆ
 __declspec(dllexport) HRESULT CreateTaskbarList(ITaskbarList** ppTaskbarList)
 {
     if (ppTaskbarList == NULL)
         return E_POINTER;
 
-    // ³õÊ¼»¯ COM ¿â
+    // åˆå§‹åŒ– COM åº“
     HRESULT hr = CoInitialize(NULL);
     if (FAILED(hr))
         return hr;
 
-    // ´´½¨ ITaskbarList ÊµÀı
+    // åˆ›å»º ITaskbarList å®ä¾‹
     hr = CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER, &IID_ITaskbarList, (void**)ppTaskbarList);
     if (FAILED(hr)) {
         CoUninitialize();
@@ -58,7 +59,7 @@ __declspec(dllexport) HRESULT CreateTaskbarList(ITaskbarList** ppTaskbarList)
     return hr;
 }
 
-// ¸Ãº¯ÊıÓÃÓÚÊÍ·Å ITaskbarList ½Ó¿Ú²¢·´³õÊ¼»¯ COM ¿â
+// è¯¥å‡½æ•°ç”¨äºé‡Šæ”¾ ITaskbarList æ¥å£å¹¶ååˆå§‹åŒ– COM åº“
 __declspec(dllexport) void ReleaseTaskbarList(ITaskbarList* pTaskbarList)
 {
     if (pTaskbarList) {
