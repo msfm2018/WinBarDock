@@ -13,7 +13,8 @@ uses
   ConfigurationForm in 'src\ConfigurationForm.pas' {CfgForm},
   InfoBarForm in 'src\InfoBarForm.pas' {bottomForm},
   plug in 'core\plug.pas',
-  utils in 'core\utils.pas';
+  utils in 'core\utils.pas',
+  TaskbarList in 'core\TaskbarList.pas';
 
 {$R *.res}
 
@@ -21,7 +22,7 @@ begin
 
 
   Application.Initialize;
-  Application.MainFormOnTaskbar := False;
+  Application.MainFormOnTaskbar := true;
   TStyleManager.TrySetStyle('Iceberg Classico');
   Application.CreateForm(TForm1, Form1);
   Application.Run;

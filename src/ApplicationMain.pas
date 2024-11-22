@@ -3,11 +3,12 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, core, Dialogs, ExtCtrls, Generics.Collections, Vcl.Imaging.pngimage,
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  core, Dialogs, ExtCtrls, Generics.Collections, Vcl.Imaging.pngimage,
   Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug, ComObj, PsAPI,
   Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs, System.Math, System.JSON,
-  u_json, ConfigurationForm, Vcl.Menus, InfoBarForm, System.Generics.Collections,  plug,
-  PopupMenuManager, event;
+  u_json, ConfigurationForm, Vcl.Menus, InfoBarForm, System.Generics.Collections,
+  plug, TaskbarList, PopupMenuManager, event;
 
 type
   TForm1 = class(TForm)
@@ -88,6 +89,7 @@ var
   hwndMonitor: HWND;
   heventHook: THandle;
   inOnce: integer = 0;
+  pTaskbarList: ITaskbarList;
 
 implementation
 
@@ -445,10 +447,6 @@ begin
   form1.left := g_core.json.Config.Left;
   Form1.top := g_core.json.Config.Top;
 
-  SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) and (not WS_EX_APPWINDOW));
-  SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
-  ShowWindow(Application.Handle, SW_HIDE);
-
   exclusion_app := g_core.json.Exclusion.Value;
 
   if FindAtom('ZWXhoaabbtKey') = 0 then
@@ -502,7 +500,7 @@ begin
         rc := PRect(Msg.LParam);
         //SetWindowPos(Msg.WParam, 0, rc.Left, rc.Top, rc.Right - rc.Left, rc.Bottom - rc.Top, 0);
         SetWindowPos(Msg.WParam, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top - MulDiv(50, GetDpiForWindow(Msg.WParam), 96), 0);
-  
+
       end;
     WM_MOUSEWHEEL:
       form_mouse_wheel(TWMMouseWheel(Msg));
@@ -592,11 +590,13 @@ begin
           end
           else if fpTop in FormPosition then
           begin
+            inOnce := 0;
             if form1.Top < top_snap_distance then
               form1.Top := -56;
           end
           else if fpBottom in FormPosition then
           begin
+            inOnce := 0;
             form1.Top := screenHeight - form1.Height + 80;
           end;
         end;
@@ -629,8 +629,10 @@ procedure TForm1.FormShow(Sender: TObject);
 var
   processId, threadId: DWORD;
 begin
-    load_plug();
+  load_plug();
   Initialize_form();
+
+  HideFromTaskbarAndAltTab(Handle);
 
   ConfigureLayout();
 
@@ -745,6 +747,7 @@ begin
   SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) or WS_EX_LAYERED);
 
   SetLayeredWindowAttributes(Handle, $000EADEE, 0, LWA_COLORKEY);
+
 end;
 
 procedure TForm1.CleanupPopupMenu;

@@ -18,5 +18,8 @@
     <ClCompile Include="mydll.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="taskbarList.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

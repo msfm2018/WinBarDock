@@ -168,6 +168,7 @@
         </DCCReference>
         <DCCReference Include="core\plug.pas"/>
         <DCCReference Include="core\utils.pas"/>
+        <DCCReference Include="core\TaskbarList.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

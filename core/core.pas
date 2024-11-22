@@ -563,7 +563,7 @@ begin
   if taskbar <> 0 then
   begin
     abd.cbSize := SizeOf(APPBARDATA);
-    abd.hWnd := taskbar;
+//    abd.hWnd := taskbar;
     if autoHide then
       abd.lParam := ABS_AUTOHIDE
     else
