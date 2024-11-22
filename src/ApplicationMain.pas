@@ -592,11 +592,13 @@ begin
           end
           else if fpTop in FormPosition then
           begin
+            inOnce:=0;
             if form1.Top < top_snap_distance then
               form1.Top := -56;
           end
           else if fpBottom in FormPosition then
           begin
+            inOnce:=0;
             form1.Top := screenHeight - form1.Height + 80;
           end;
         end;
