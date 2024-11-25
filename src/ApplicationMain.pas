@@ -89,7 +89,7 @@ var
   hwndMonitor: HWND;
   heventHook: THandle;
   inOnce: integer = 0;
-  pTaskbarList: ITaskbarList;
+
 
 implementation
 

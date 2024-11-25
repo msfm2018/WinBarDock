@@ -21,5 +21,8 @@
     <ClCompile Include="taskbarList.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="startUp.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -5,7 +5,7 @@ interface
 uses
   shellapi, classes, winapi.windows, Graphics, SysUtils, messages,
   Vcl.Imaging.pngimage, System.IniFiles, Registry, forms, GDIPAPI, GDIPOBJ,
-  Dwmapi, u_json, vcl.controls, ComObj, System.Generics.Collections,
+  Dwmapi, u_json, vcl.controls, ComObj, System.Generics.Collections, utils,
   ConfigurationForm, TlHelp32, Winapi.PsAPI, System.SyncObjs, vcl.ExtCtrls, math;
 
 type
@@ -182,17 +182,8 @@ end;
 
 procedure SimulateCtrlEsc;
 begin
-  // Simulate Ctrl key down
-  keybd_event(VK_CONTROL, 0, 0, 0);
+  OpenStartOnMonitor();
 
-  // Simulate Esc key down
-  keybd_event(VK_ESCAPE, 0, 0, 0);
-
-  // Simulate Esc key up
-  keybd_event(VK_ESCAPE, 0, KEYEVENTF_KEYUP, 0);
-
-  // Simulate Ctrl key up
-  keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
 end;
 
 procedure t_utils.CopyFileToFolder(const SourceFile, DestinationFolder: string);

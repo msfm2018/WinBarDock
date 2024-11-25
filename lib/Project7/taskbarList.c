@@ -18,7 +18,8 @@ __declspec(dllexport) BOOL HideFromTaskbarAndAltTab(HWND hwnd) {
     // Use ITaskbarList to remove the window from the taskbar
     ITaskbarList* pTaskList = NULL;
     hr = CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER, &IID_ITaskbarList, (void**)&pTaskList);
-     hr = pTaskList->HrInit();
+    if (pTaskList)
+       hr=  pTaskList->lpVtbl->HrInit(pTaskList);
     if (SUCCEEDED(hr) && pTaskList) {
         pTaskList->lpVtbl->DeleteTab(pTaskList, hwnd);
         pTaskList->lpVtbl->Release(pTaskList);
