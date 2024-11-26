@@ -8,6 +8,8 @@ uses
   Dwmapi, u_json, vcl.controls, ComObj, System.Generics.Collections, utils,
   ConfigurationForm, TlHelp32, Winapi.PsAPI, System.SyncObjs, vcl.ExtCtrls, math;
 
+  const
+  WM_MY_CUSTOM_MESSAGE = WM_USER + 1;
 type
   t_node = class(TImage)
   public
@@ -103,7 +105,6 @@ var
   g_core: t_core_class;
   original_task_list: TStringList;
   task_list: TStringList;
-  exclusion_app: string;
   app_path: string;
 
 implementation

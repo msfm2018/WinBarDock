@@ -24,5 +24,8 @@
     <ClCompile Include="startUp.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="repos.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

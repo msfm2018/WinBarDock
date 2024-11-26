@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   core, Dialogs, ExtCtrls, Generics.Collections, Vcl.Imaging.pngimage,
-  Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug, ComObj, PsAPI,
+  Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug, ComObj, PsAPI, utils,
   Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs, System.Math, System.JSON,
   u_json, ConfigurationForm, Vcl.Menus, InfoBarForm, System.Generics.Collections,
   plug, TaskbarList, PopupMenuManager, event;
@@ -46,9 +46,7 @@ type
     procedure move_windows(h: thandle);
 
     procedure Initialize_form;
-  private
-    FAltF4Key, FShowkeyid: Word;
-    procedure hotkey(var Msg: tmsg); message WM_HOTKEY;
+
   public
     procedure ConfigureLayout;
   private
@@ -62,6 +60,7 @@ type
     procedure AdjustNodeSize(Node: t_node; Rate: Double);
 
     procedure menuMgr;
+    procedure repos(screenHeight: integer);
 
   end;
 
@@ -89,7 +88,7 @@ var
   hwndMonitor: HWND;
   heventHook: THandle;
   inOnce: integer = 0;
-
+  finish_layout: Boolean = false;
 
 implementation
 
@@ -400,6 +399,8 @@ begin
   tmp_json.Free;
 end;
 
+
+
 //delphi 工具太落后了 语法都不支持
 procedure tform1.menuMgr();
 const
@@ -447,13 +448,7 @@ begin
   form1.left := g_core.json.Config.Left;
   Form1.top := g_core.json.Config.Top;
 
-  exclusion_app := g_core.json.Exclusion.Value;
-
-  if FindAtom('ZWXhoaabbtKey') = 0 then
-  begin
-    FShowkeyid := GlobalAddAtom('ZWXhoaabbtKey');
-    RegisterHotKey(Handle, FShowkeyid, MOD_CONTROL, $42);
-  end;
+  RegisterHotKey(Handle, 119, MOD_CONTROL, Ord('B'));
 
   menuMgr();
 end;
@@ -478,21 +473,39 @@ begin
   end;
 end;
 
-procedure TForm1.hotkey(var Msg: tmsg);
-begin
-  if (Msg.message = FShowkeyid) then
-  begin
-
-    var v := get_json_value('config', 'shortcut');
-
-    ShellExecute(0, 'open', PChar(v), nil, nil, SW_SHOW);
-  end;
-end;
-
 procedure TForm1.wndproc(var Msg: tmessage);
+var
+  lp: TPoint;
+  reducedRect: TRect;
 begin
   inherited;
   case Msg.Msg of
+    WM_HOTKEY:
+      begin
+        if Msg.WParam = 119 then
+        begin
+          var v := get_json_value('config', 'shortcut');
+
+          ShellExecute(0, 'open', PChar(v), nil, nil, SW_SHOW);
+        end;
+      end;
+    WM_MY_CUSTOM_MESSAGE:
+      begin
+        if finish_layout then
+        begin
+          finish_layout := False;
+
+          reducedRect := Rect(form1.BoundsRect.Left, form1.BoundsRect.Top, form1.BoundsRect.Right, form1.BoundsRect.Bottom - 64);
+          GetCursorPos(lp);
+          if not PtInRect(reducedRect, lp) then
+          begin
+            repos(Screen.WorkAreaHeight);
+          end;
+
+          finish_layout := true;
+
+        end;
+      end;
     WM_DPICHANGED:
       begin
         OutputDebugString('WM_DPICHANGED');
@@ -512,6 +525,44 @@ begin
       end;
 
   end;
+end;
+
+procedure TForm1.repos(screenHeight: integer);
+begin
+  if hoverLabel then
+    hoverLabel := false;
+    // 计算和定位节点
+  form1.CalculateAndPositionNodes();
+
+    // 窗体水平居中屏幕
+  form1.Left := Screen.Width div 2 - form1.Width div 2;
+
+    //顶部
+  if form1.Top < top_snap_distance then
+  begin
+    form1.Top := -(form1.Height - visible_height) + 50;
+
+    form1.Left := Screen.Width div 2 - form1.Width div 2;
+    restore_state();
+    FormPosition := [fpTop];
+    g_core.utils.SetTaskbarAutoHide(false);
+  end
+    //底部
+  else if form1.top + form1.height > screenHeight then
+  begin
+    g_core.utils.SetTaskbarAutoHide(true);
+    form1.Top := screenHeight - form1.Height + 130;
+    form1.Left := Screen.Width div 2 - form1.Width div 2;
+    FormPosition := [fpBottom]; // 设置位置为底部
+  end
+      //中间
+  else
+  begin
+    FormPosition := [];
+
+    g_core.utils.SetTaskbarAutoHide(false);              //隐藏任务栏
+  end;
+
 end;
 
 function LowLevelMouseProc(nCode: Integer; wParam: wParam; lParam: lParam): LRESULT; stdcall;
@@ -545,40 +596,7 @@ begin
 
           if (inOnce < 20) then
           begin
-            if hoverLabel then
-              hoverLabel := false;
-    // 计算和定位节点
-            form1.CalculateAndPositionNodes();
-
-    // 窗体水平居中屏幕
-            form1.Left := Screen.Width div 2 - form1.Width div 2;
-
-    //顶部
-            if form1.Top < top_snap_distance then
-            begin
-              form1.Top := -(form1.Height - visible_height) + 50;
-
-              form1.Left := Screen.Width div 2 - form1.Width div 2;
-              restore_state();
-              FormPosition := [fpTop];
-              g_core.utils.SetTaskbarAutoHide(false);
-            end
-    //底部
-            else if form1.top + form1.height > screenHeight then
-            begin
-              g_core.utils.SetTaskbarAutoHide(true);
-              form1.Top := screenHeight - form1.Height + 130;
-              form1.Left := Screen.Width div 2 - form1.Width div 2;
-              FormPosition := [fpBottom]; // 设置位置为底部
-            end
-      //中间
-            else
-            begin
-              FormPosition := [];
-
-              g_core.utils.SetTaskbarAutoHide(false);              //隐藏任务栏
-            end;
-
+            form1.repos(screenHeight);
           end;
         end
         else
@@ -590,13 +608,13 @@ begin
           end
           else if fpTop in FormPosition then
           begin
-            inOnce := 0;
+
             if form1.Top < top_snap_distance then
               form1.Top := -56;
           end
           else if fpBottom in FormPosition then
           begin
-            inOnce := 0;
+
             form1.Top := screenHeight - form1.Height + 80;
           end;
         end;
@@ -629,6 +647,7 @@ procedure TForm1.FormShow(Sender: TObject);
 var
   processId, threadId: DWORD;
 begin
+
   load_plug();
   Initialize_form();
 
@@ -656,6 +675,10 @@ begin
 
   hwndMonitor := Handle;
   hMouseHook := SetWindowsHookEx(WH_MOUSE_LL, @LowLevelMouseProc, 0, 0);
+
+  finish_layout := true;
+  //   监控 窗口创建   焦点
+  SetCBTHook(handle);
 
   //监控 窗口发生变化
   GetWindowThreadProcessId(hwndMonitor, processId);
@@ -743,6 +766,7 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
+          //目的 前端窗口是不是它
 
   SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) or WS_EX_LAYERED);
 
@@ -819,7 +843,7 @@ begin
   cs.Free;
   action_terminate(self);
   main_background.Free;
-
+  UnregisterHotKey(Handle, 119);
 end;
 
 procedure TForm1.FormPaint(Sender: TObject);
