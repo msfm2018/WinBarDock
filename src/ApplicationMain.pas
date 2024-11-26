@@ -586,7 +586,18 @@ begin
         screenHeight := Screen.WorkAreaHeight;
 
         reducedRect := Rect(form1.BoundsRect.Left, form1.BoundsRect.Top, form1.BoundsRect.Right, form1.BoundsRect.Bottom - 64);
-
+        
+      if PtInRect(reducedRect, lp) then
+        begin
+        
+          form1.FormStyle := fsStayOnTop;
+        end
+        else
+        begin
+          
+          form1.FormStyle := fsNormal;
+        end;
+        
         if not PtInRect(reducedRect, lp) then
         begin
 
