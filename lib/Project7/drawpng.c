@@ -3,20 +3,20 @@
 #include <png.h>
 #include <cairo.h>
 #include <math.h>
-#include <wchar.h>  // Îª¿í×Ö·ûÖ§³ÖÌí¼ÓÍ·ÎÄ¼ş
+#include <wchar.h>  // ä¸ºå®½å­—ç¬¦æ”¯æŒæ·»åŠ å¤´æ–‡ä»¶
 #define M_PI 3.14159265358979323846
 
 #define IMAGE_WIDTH 125
 #define IMAGE_HEIGHT 125
-#define SCALE_FACTOR 3  // Ìá¸ß·Ö±æÂÊµÄ±¶Êı
-#define MAX_FONT_SIZE 30  // ÉèÖÃ×î´ó×ÖÌå´óĞ¡
-#define MIN_FONT_SIZE 10   // ÉèÖÃ×îĞ¡×ÖÌå´óĞ¡
+#define SCALE_FACTOR 3  // æé«˜åˆ†è¾¨ç‡çš„å€æ•°
+#define MAX_FONT_SIZE 30  // è®¾ç½®æœ€å¤§å­—ä½“å¤§å°
+#define MIN_FONT_SIZE 10   // è®¾ç½®æœ€å°å­—ä½“å¤§å°
 
-// ¼ÆËãÊÊºÏµÄ×ÖÌå´óĞ¡
+// è®¡ç®—é€‚åˆçš„å­—ä½“å¤§å°
 double calculate_font_size(cairo_t* cr, const char* text, int image_width, int image_height) {
     double font_size = MAX_FONT_SIZE;
 
-    // ÉèÖÃÖ§³ÖÖĞÎÄµÄ×ÖÌå
+    // è®¾ç½®æ”¯æŒä¸­æ–‡çš„å­—ä½“
     cairo_select_font_face(cr, "Microsoft YaHei", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 
     while (font_size >= MIN_FONT_SIZE) {
@@ -24,12 +24,12 @@ double calculate_font_size(cairo_t* cr, const char* text, int image_width, int i
         cairo_text_extents_t extents;
         cairo_text_extents(cr, text, &extents);
 
-        // Èç¹ûÎÄ±¾¿í¶ÈºÍ¸ß¶ÈĞ¡ÓÚÍ¼ÏñµÄ³ß´ç£¬ËµÃ÷¿ÉÒÔÊÊÓ¦
+        // å¦‚æœæ–‡æœ¬å®½åº¦å’Œé«˜åº¦å°äºå›¾åƒçš„å°ºå¯¸ï¼Œè¯´æ˜å¯ä»¥é€‚åº”
         if (extents.width < image_width - 40 && extents.height < image_height - 40) {
             break;
         }
 
-        font_size -= 2;  // ËõĞ¡×ÖÌå´óĞ¡
+        font_size -= 2;  // ç¼©å°å­—ä½“å¤§å°
     }
 
     return font_size;
@@ -42,73 +42,78 @@ __declspec(dllexport) void write_png_with_text(const char* filename, const char*
     cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, high_res_width, high_res_height);
     cairo_t* cr = cairo_create(surface);
 
-    // ÆôÓÃ¿¹¾â³İ
+    // å¯ç”¨æŠ—é”¯é½¿
     cairo_set_antialias(cr, CAIRO_ANTIALIAS_SUBPIXEL);
 
-    // »æÖÆÍ¸Ã÷±³¾°
-    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0); // ±³¾°Í¸Ã÷
-    cairo_paint(cr); // Ìî³ä±³¾°
+    // ç»˜åˆ¶é€æ˜èƒŒæ™¯
+    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0); // èƒŒæ™¯é€æ˜
+    cairo_paint(cr); // å¡«å……èƒŒæ™¯
 
-    //// ´´½¨Ô²ĞÎÇøÓòµÄ½¥±ä±³¾°
+    //// åˆ›å»ºåœ†å½¢åŒºåŸŸçš„æ¸å˜èƒŒæ™¯
     //cairo_pattern_t* gradient = cairo_pattern_create_radial(
-    //    high_res_width / 2, high_res_height / 2, 0,  // ÄÚÔ²ĞÄ£¬°ë¾¶Îª0
-    //    high_res_width / 2, high_res_height / 2, high_res_width / 2  // ÍâÔ²£¬°ë¾¶ÎªÍ¼ÏñµÄ°ë¾¶
+    //    high_res_width / 2, high_res_height / 2, 0,  // å†…åœ†å¿ƒï¼ŒåŠå¾„ä¸º0
+    //    high_res_width / 2, high_res_height / 2, high_res_width / 2  // å¤–åœ†ï¼ŒåŠå¾„ä¸ºå›¾åƒçš„åŠå¾„
     //);
 
-    //// ÉèÖÃ½¥±äµÄÑÕÉ«£º´ÓÄÚÔ²ÎªÀ¶É«µ½ÍâÔ²Îª×ÏÉ«
-    //cairo_pattern_add_color_stop_rgb(gradient, 0, 0.2, 0.4, 0.8);  // ÄÚÔ²ÑÕÉ«£¨À¶É«£©
-    //cairo_pattern_add_color_stop_rgb(gradient, 1, 0.5, 0.2, 0.7);  // ÍâÔ²ÑÕÉ«£¨×ÏÉ«£©
+    //// è®¾ç½®æ¸å˜çš„é¢œè‰²ï¼šä»å†…åœ†ä¸ºè“è‰²åˆ°å¤–åœ†ä¸ºç´«è‰²
+    //cairo_pattern_add_color_stop_rgb(gradient, 0, 0.2, 0.4, 0.8);  // å†…åœ†é¢œè‰²ï¼ˆè“è‰²ï¼‰
+    //cairo_pattern_add_color_stop_rgb(gradient, 1, 0.5, 0.2, 0.7);  // å¤–åœ†é¢œè‰²ï¼ˆç´«è‰²ï¼‰
 
-    //// ½«½¥±äÓ¦ÓÃµ½Ô²ĞÎ±³¾°ÇøÓò
+    //// å°†æ¸å˜åº”ç”¨åˆ°åœ†å½¢èƒŒæ™¯åŒºåŸŸ
     //cairo_set_source(cr, gradient);
-    //cairo_arc(cr, high_res_width / 2, high_res_height / 2, high_res_width / 2, 0, 2 * M_PI); // Ô²ĞÎÂ·¾¶
-    //cairo_fill(cr); // Ìî³äÔ²ĞÎ
+    //cairo_arc(cr, high_res_width / 2, high_res_height / 2, high_res_width / 2, 0, 2 * M_PI); // åœ†å½¢è·¯å¾„
+    //cairo_fill(cr); // å¡«å……åœ†å½¢
 
-        // ¼ÆËã¸ß·Ö±æÂÊÏÂÔ²ĞÎµÄ°ë¾¶
-    double circle_radius = (high_res_width < high_res_height ? high_res_width : high_res_height) / 2 - 2; // Áô2px±ß¾à±ÜÃâ¾â³İ
+        // è®¡ç®—é«˜åˆ†è¾¨ç‡ä¸‹åœ†å½¢çš„åŠå¾„
+    double circle_radius = (high_res_width < high_res_height ? high_res_width : high_res_height) / 2 - 2; // ç•™2pxè¾¹è·é¿å…é”¯é½¿
 
-    // ´´½¨´ÓÀ¶É«µ½×ÏÉ«µÄ¾¶Ïò½¥±ä±³¾°
+    // åˆ›å»ºä»è“è‰²åˆ°ç´«è‰²çš„å¾„å‘æ¸å˜èƒŒæ™¯
     cairo_pattern_t* gradient = cairo_pattern_create_radial(
         high_res_width / 2, high_res_height / 2, 0,
         high_res_width / 2, high_res_height / 2, circle_radius
     );
 
-    // ÉèÖÃ½¥±äÑÕÉ«
-    cairo_pattern_add_color_stop_rgb(gradient, 0, 0.2, 0.4, 0.8); // ÄÚÔ²£¨À¶É«£©
-    cairo_pattern_add_color_stop_rgb(gradient, 1, 0.5, 0.2, 0.7); // ÍâÔ²£¨×ÏÉ«£©
+    // è®¾ç½®æ¸å˜é¢œè‰²
+    //cairo_pattern_add_color_top_rgb(gradient, 0, 0.2, 0.4, 0.8); // å†…åœ†ï¼ˆè“è‰²ï¼‰
+   // cairo_pattern_add_color_stop_rgb(gradient, 1, 0.5, 0.2, 0.7); // å¤–åœ†ï¼ˆç´«è‰²ï¼‰
 
-    // Ó¦ÓÃ½¥±ä²¢»æÖÆÔ²ĞÎ
+    cairo_pattern_add_color_stop_rgb(gradient, 0, 0.2, 0.4, 0.8); // å†…åœ†ï¼ˆè“è‰²ï¼‰
+    cairo_pattern_add_color_stop_rgb(gradient, 0.8, 0.5, 0.2, 0.7); // è¿‡æ¸¡åŒºï¼ˆæ¸å˜ï¼‰
+    cairo_pattern_add_color_stop_rgb(gradient, 1, 0.3, 0.0, 0.5); // å¤–åœ†ï¼ˆæ·±ç´«è‰²ï¼‰
+
+    
+    // åº”ç”¨æ¸å˜å¹¶ç»˜åˆ¶åœ†å½¢
     cairo_set_source(cr, gradient);
     cairo_arc(cr, high_res_width / 2, high_res_height / 2, circle_radius, 0, 2 * M_PI);
     cairo_fill(cr);
 
 
-    // ¼ÆËãÊÊºÏµÄ×ÖÌå´óĞ¡
+    // è®¡ç®—é€‚åˆçš„å­—ä½“å¤§å°
     double font_size = calculate_font_size(cr, text, IMAGE_WIDTH, IMAGE_HEIGHT);
 
-    // ÉèÖÃÖ§³ÖÖĞÎÄµÄ×ÖÌå
+    // è®¾ç½®æ”¯æŒä¸­æ–‡çš„å­—ä½“
     cairo_select_font_face(cr, "Microsoft YaHei", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, font_size * SCALE_FACTOR);  // ·Å´ó×ÖÌåÒÔÊÊÓ¦¸ß·Ö±æÂÊ
+    cairo_set_font_size(cr, font_size * SCALE_FACTOR);  // æ”¾å¤§å­—ä½“ä»¥é€‚åº”é«˜åˆ†è¾¨ç‡
 
-    // ¼ÆËãÎÄ×ÖµÄ³ß´ç
+    // è®¡ç®—æ–‡å­—çš„å°ºå¯¸
     cairo_text_extents_t extents;
     cairo_text_extents(cr, text, &extents);
 
-    // ¼ÆËãÎÄ±¾¾ÓÖĞÎ»ÖÃ
+    // è®¡ç®—æ–‡æœ¬å±…ä¸­ä½ç½®
     double x = (high_res_width - extents.width) / 2 - extents.x_bearing;
     double y = (high_res_height - extents.height) / 2 - extents.y_bearing;
 
-    // ÉèÖÃÎÄ×ÖÑÕÉ«Îª°×É«£¨Óë½¥±ä±³¾°¶Ô±È£©
+    // è®¾ç½®æ–‡å­—é¢œè‰²ä¸ºç™½è‰²ï¼ˆä¸æ¸å˜èƒŒæ™¯å¯¹æ¯”ï¼‰
     cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
 
-    // »æÖÆÎÄ×Ö
+    // ç»˜åˆ¶æ–‡å­—
     cairo_move_to(cr, x, y);
     cairo_show_text(cr, text);
 
-    // ±£´æÎª PNG ÎÄ¼ş
+    // ä¿å­˜ä¸º PNG æ–‡ä»¶
     cairo_surface_write_to_png(surface, filename);
 
-    // ÇåÀí
+    // æ¸…ç†
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
 }
