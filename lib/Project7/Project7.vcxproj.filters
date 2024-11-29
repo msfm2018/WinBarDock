@@ -18,14 +18,20 @@
     <ClCompile Include="mydll.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="taskbarList.c">
+    <ClCompile Include="trayShow.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="startUp.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="repos.c">
+    <ClCompile Include="startSystem.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="drawpng.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

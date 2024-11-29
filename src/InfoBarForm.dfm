@@ -3,7 +3,7 @@ object bottomForm: TbottomForm
   Top = 0
   BorderStyle = bsNone
   Caption = #24555#25463#24212#29992#38754#26495'---'#40736#26631#25302#20837#24212#29992
-  ClientHeight = 571
+  ClientHeight = 678
   ClientWidth = 86
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,7 +18,7 @@ object bottomForm: TbottomForm
     Left = 0
     Top = 0
     Width = 82
-    Height = 488
+    Height = 418
     Hint = #25302#20837#24212#29992
     Align = alClient
     BevelInner = bvNone
@@ -38,7 +38,7 @@ object bottomForm: TbottomForm
     Left = 82
     Top = 0
     Width = 4
-    Height = 488
+    Height = 418
     Align = alRight
     Caption = 'Panel1'
     Color = clRed
@@ -48,17 +48,18 @@ object bottomForm: TbottomForm
   end
   object Panel2: TPanel
     Left = 0
-    Top = 488
+    Top = 418
     Width = 86
-    Height = 83
+    Height = 260
     Align = alBottom
+    AutoSize = True
     TabOrder = 2
     object Button1: TButton
       Left = 1
-      Top = 1
+      Top = 177
       Width = 84
       Height = 40
-      Align = alTop
+      Align = alBottom
       Caption = #37325#21551
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -71,7 +72,7 @@ object bottomForm: TbottomForm
     end
     object Button2: TButton
       Left = 1
-      Top = 40
+      Top = 217
       Width = 84
       Height = 42
       Align = alBottom
@@ -84,6 +85,60 @@ object bottomForm: TbottomForm
       ParentFont = False
       TabOrder = 1
       OnClick = Button2Click
+    end
+    object Button4: TButton
+      Left = 1
+      Top = 116
+      Width = 84
+      Height = 25
+      Caption = #26679#24335'B'
+      TabOrder = 2
+      OnClick = Button4Click
+    end
+    object Button5: TButton
+      Left = 1
+      Top = 87
+      Width = 84
+      Height = 25
+      Caption = #26679#24335'A'
+      TabOrder = 3
+      OnClick = Button5Click
+    end
+    object Button6: TButton
+      Left = 2
+      Top = 1
+      Width = 84
+      Height = 25
+      Caption = #32763#35793
+      TabOrder = 4
+      OnClick = Button6Click
+    end
+    object Button7: TButton
+      Left = 2
+      Top = 30
+      Width = 84
+      Height = 25
+      Caption = #37197#32622
+      TabOrder = 5
+      OnClick = Button7Click
+    end
+    object Button8: TButton
+      Left = 2
+      Top = 58
+      Width = 84
+      Height = 25
+      Caption = #24555#25463
+      TabOrder = 6
+      OnClick = Button8Click
+    end
+    object Button3: TButton
+      Left = 1
+      Top = 145
+      Width = 84
+      Height = 25
+      Caption = #36864#20986
+      TabOrder = 7
+      OnClick = Button3Click
     end
   end
   object ImgList: TImageList

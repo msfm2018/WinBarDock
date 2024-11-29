@@ -15,13 +15,6 @@ type
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-
-    procedure action_config(Sender: TObject);
-    procedure action_terminate(Sender: TObject);
-    procedure action_set_acce(Sender: TObject);
-    procedure action_style_1(Sender: TObject);
-    procedure action_style_2(Sender: TObject);
-    procedure action_translator(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormPaint(Sender: TObject);
 
@@ -50,8 +43,6 @@ type
   public
     procedure ConfigureLayout;
   private
-    TrayIcon1: TTrayIcon;
-    TrayPopupMenu: TPopupMenu;
     procedure handle_ayout(Sender: TObject);
     procedure form_mouse_wheel(WheelMsg: TWMMouseWheel);
     procedure CleanupPopupMenu;
@@ -59,7 +50,6 @@ type
     procedure FreeDic;
     procedure AdjustNodeSize(Node: t_node; Rate: Double);
 
-    procedure menuMgr;
     procedure repos(screenHeight: integer);
 
   end;
@@ -79,9 +69,6 @@ var
 var
   FormPosition: TFormPositions;
   hoverLabel: Boolean = false;
-
-var
-  PopupMenuMgr: TPopupMenuManager;
 
 var
   hMouseHook: HHOOK;
@@ -399,35 +386,6 @@ begin
   tmp_json.Free;
 end;
 
-
-
-//delphi 工具太落后了 语法都不支持
-procedure tform1.menuMgr();
-const
-  MenuLabels: array[0..5] of string = ('Translator', 'Config', 'Set Acce', 'Terminate', 'Style 1', 'Style 2');
-var
-  MenuHandlers: array[0..5] of TNotifyEvent;
-begin
-
-  MenuHandlers[0] := action_translator;
-  MenuHandlers[1] := action_config;
-  MenuHandlers[2] := action_set_acce;
-  MenuHandlers[3] := action_terminate;
-  MenuHandlers[4] := action_style_1;
-  MenuHandlers[5] := action_style_2;
-
-  PopupMenuMgr := TPopupMenuManager.Create(Self, MenuLabels, MenuHandlers);
-  PopupMenuMgr.InitializePopupMenu;
-  PopupMenuMgr.SetChecked(4, True);  // 设置 style-1 为选中
-
-  TrayIcon1 := TTrayIcon.Create(Self);
-  TrayIcon1.Icon := Application.Icon;  // 设置托盘图标
-  TrayIcon1.Visible := True;           // 显示托盘图标
-  TrayIcon1.Hint := 'WinBarDock';    // 设置提示文本
-
-  TrayIcon1.PopupMenu := PopupMenuMgr.GetPopupMenu;
-end;
-
 procedure tform1.Initialize_form();
 begin
   Form1.Font.Name := Screen.Fonts.Text;
@@ -450,27 +408,6 @@ begin
 
   RegisterHotKey(Handle, 119, MOD_CONTROL, Ord('B'));
 
-  menuMgr();
-end;
-
-procedure TForm1.action_style_1(Sender: TObject);
-begin
-  if not TMenuItem(Sender).Checked then
-  begin
-    PopupMenuMgr.SetChecked(4, true);  // 设置 style-1 为选中
-    PopupMenuMgr.SetChecked(5, false);  // 设置 style-1 为选中
-    g_core.json.Config.style := 'style-1';
-  end;
-end;
-
-procedure TForm1.action_style_2(Sender: TObject);
-begin
-  if not TMenuItem(Sender).Checked then
-  begin
-    PopupMenuMgr.SetChecked(5, true);  // 设置 style-1 为选中
-    PopupMenuMgr.SetChecked(4, false);  // 设置 style-1 为选中
-    g_core.json.Config.style := 'style-2';
-  end;
 end;
 
 procedure TForm1.wndproc(var Msg: tmessage);
@@ -586,6 +523,17 @@ begin
         screenHeight := Screen.WorkAreaHeight;
 
         reducedRect := Rect(form1.BoundsRect.Left, form1.BoundsRect.Top, form1.BoundsRect.Right, form1.BoundsRect.Bottom - 64);
+
+        if PtInRect(reducedRect, lp) then
+        begin
+
+          form1.FormStyle := fsStayOnTop;
+        end
+        else
+        begin
+
+          form1.FormStyle := fsNormal;
+        end;
 
         if not PtInRect(reducedRect, lp) then
         begin
@@ -804,9 +752,9 @@ var
   v: TSettingItem;
   SettingsObj: TJSONObject;
 begin
+
   RemoveMouseHook();
 
-  TrayIcon1.free;
   SettingsObj := g_jsonobj.GetValue('settings') as TJSONObject;
   if SettingsObj = nil then
     Exit;
@@ -841,7 +789,8 @@ begin
   FreeDic();
 
   cs.Free;
-  action_terminate(self);
+  set_json_value('config', 'left', left.ToString);
+  set_json_value('config', 'top', top.ToString);
   main_background.Free;
   UnregisterHotKey(Handle, 119);
 end;
@@ -909,45 +858,6 @@ begin
 
 end;
 
-procedure TForm1.action_translator(Sender: TObject);
-begin
-  g_core.utils.launch_app(g_core.json.Config.translator);
-end;
-
-procedure TForm1.action_config(Sender: TObject);
-var
-  vobj: TObject;
-begin
-
-  vobj := g_core.find_object_by_name('cfgForm');
-  g_core.nodes.is_configuring := true;
-  SetWindowPos(TCfgForm(vobj).Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
-  TCfgForm(vobj).ShowModal;
-
-end;
-
-procedure TForm1.action_set_acce(Sender: TObject);
-var
-  OpenDlg: TFileOpenDialog;
-begin
-  OpenDlg := TFileOpenDialog.Create(nil);
-  with OpenDlg do
-  begin
-
-    if Execute then
-    begin
-
-      cs.Enter;
-
-      set_json_value('config', 'shortcut', FileName);
-
-      cs.Leave;
-    end;
-  end;
-  OpenDlg.Free;
-
-end;
-
 procedure TForm1.ConfigureLayout();
 begin
   g_core.nodes.is_configuring := False;
@@ -960,14 +870,6 @@ begin
 
   restore_state();
 
-end;
-
-procedure TForm1.action_terminate(Sender: TObject);
-begin
-
-  set_json_value('config', 'left', left.ToString);
-  set_json_value('config', 'top', top.ToString);
-  Application.Terminate;
 end;
 
 end.

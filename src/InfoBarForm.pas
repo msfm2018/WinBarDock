@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.ExtCtrls, Winapi.ShellAPI, Vcl.ComCtrls, ActiveX, shlobj, u_json,
-  System.JSON, u_debug, comobj, Vcl.ImgList, Vcl.Menus, System.ImageList,  utils,
+  System.JSON, u_debug, comobj, Vcl.ImgList, Vcl.Menus, System.ImageList, utils,
   Vcl.StdCtrls;
 
 type
@@ -19,6 +19,12 @@ type
     Panel2: TPanel;
     Button1: TButton;
     Button2: TButton;
+    Button3: TButton;
+    Button4: TButton;
+    Button5: TButton;
+    Button6: TButton;
+    Button7: TButton;
+    Button8: TButton;
     procedure FormShow(Sender: TObject);
     procedure LVexeinfoDblClick(Sender: TObject);
     procedure action_translator(Sender: TObject);
@@ -26,6 +32,12 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
+    procedure Button7Click(Sender: TObject);
+    procedure Button8Click(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
   private
     into_snap_windows: Boolean;
     procedure WndProc(var Msg: TMessage); override;
@@ -44,14 +56,12 @@ type
 var
   bottomForm: TbottomForm;
 
-
-
 implementation
 
 {$R *.dfm}
 
 uses
-  core;
+  core, ConfigurationForm;
 
 procedure sort_layout(hwnd: hwnd; uMsg, idEvent: UINT; dwTime: DWORD); stdcall;
 begin
@@ -289,6 +299,52 @@ end;
 procedure TbottomForm.Button2Click(Sender: TObject);
 begin
   SystemShutdown(false);
+end;
+
+procedure TbottomForm.Button3Click(Sender: TObject);
+begin
+//  set_json_value('config', 'left', left.ToString);
+//  set_json_value('config', 'top', top.ToString);
+  Application.Terminate;
+end;
+
+procedure TbottomForm.Button4Click(Sender: TObject);
+begin
+  g_core.json.Config.style := 'style-2';
+end;
+
+procedure TbottomForm.Button5Click(Sender: TObject);
+begin
+  g_core.json.Config.style := 'style-1';
+end;
+
+procedure TbottomForm.Button6Click(Sender: TObject);
+begin
+  g_core.utils.launch_app(g_core.json.Config.translator);
+end;
+
+procedure TbottomForm.Button7Click(Sender: TObject);
+var
+  vobj: TObject;
+begin
+
+  vobj := g_core.find_object_by_name('cfgForm');
+  g_core.nodes.is_configuring := true;
+  SetWindowPos(TCfgForm(vobj).Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
+  TCfgForm(vobj).ShowModal;
+end;
+
+procedure TbottomForm.Button8Click(Sender: TObject);
+var
+  OpenDlg: TFileOpenDialog;
+begin
+  OpenDlg := TFileOpenDialog.Create(nil);
+
+  if OpenDlg.Execute then
+    set_json_value('config', 'shortcut', OpenDlg.FileName);
+
+  OpenDlg.Free;
+
 end;
 
 procedure TbottomForm.LoadIco;

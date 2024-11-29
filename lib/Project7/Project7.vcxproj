@@ -72,6 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>Project7</TargetName>
+    <OutDir>C:\Users\Administrator\Desktop\d12\WinBarDock\bin</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <TargetName>Project7</TargetName>
@@ -143,12 +144,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="drawpng.c" />
     <ClCompile Include="mydll.c" />
-    <ClCompile Include="repos.c" />
+    <ClCompile Include="startSystem.c" />
     <ClCompile Include="startUp.c" />
-    <ClCompile Include="taskbarList.c" />
+    <ClCompile Include="trayShow.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="packages\librsvg.1.0.3\build\native\librsvg.targets" Condition="Exists('packages\librsvg.1.0.3\build\native\librsvg.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>这台计算机上缺少此项目引用的 NuGet 程序包。使用“NuGet 程序包还原”可下载这些程序包。有关更多信息，请参见 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\librsvg.1.0.3\build\native\librsvg.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\librsvg.1.0.3\build\native\librsvg.targets'))" />
+  </Target>
 </Project>

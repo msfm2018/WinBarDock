@@ -1,7 +1,6 @@
 object CfgForm: TCfgForm
   Left = 0
   Top = 0
-  BorderStyle = bsDialog
   Caption = #37197#32622'  '
   ClientHeight = 631
   ClientWidth = 894
@@ -20,7 +19,7 @@ object CfgForm: TCfgForm
     Left = 0
     Top = 0
     Width = 894
-    Height = 514
+    Height = 441
     Hint = #21452#20987#21024#38500
     Align = alTop
     BorderStyle = bsNone
@@ -51,7 +50,7 @@ object CfgForm: TCfgForm
   end
   object Button1: TButton
     Left = 795
-    Top = 527
+    Top = 469
     Width = 91
     Height = 62
     Caption = #28155#21152
@@ -66,14 +65,13 @@ object CfgForm: TCfgForm
   end
   object imgEdit1: TLabeledEdit
     Left = 81
-    Top = 520
+    Top = 455
     Width = 541
-    Height = 30
+    Height = 38
     Hint = #21452#20987#28155#21152
-    BorderStyle = bsNone
-    EditLabel.Width = 56
-    EditLabel.Height = 30
-    EditLabel.Caption = #33410#28857#32972#26223
+    EditLabel.Width = 70
+    EditLabel.Height = 38
+    EditLabel.Caption = #33258#23450#20041#32972#26223
     Enabled = False
     Font.Charset = GB2312_CHARSET
     Font.Color = clWindowText
@@ -88,39 +86,15 @@ object CfgForm: TCfgForm
     Text = ''
     OnDblClick = imgEdit1DblClick
   end
-  object LabeledEdit2: TLabeledEdit
-    Left = 81
-    Top = 584
-    Width = 541
-    Height = 30
-    Hint = #21452#20987#28155#21152
-    BorderStyle = bsNone
-    EditLabel.Width = 56
-    EditLabel.Height = 30
-    EditLabel.Caption = #33410#28857#36335#24452
-    Font.Charset = GB2312_CHARSET
-    Font.Color = clWindowText
-    Font.Height = 30
-    Font.Name = #23435#20307
-    Font.Style = []
-    LabelPosition = lpLeft
-    ParentFont = False
-    ParentShowHint = False
-    ShowHint = True
-    TabOrder = 3
-    Text = ''
-    OnDblClick = LabeledEdit2DblClick
-  end
   object text_edit: TLabeledEdit
     Left = 81
-    Top = 552
-    Width = 112
-    Height = 30
+    Top = 503
+    Width = 208
+    Height = 38
     Hint = #21452#20987#28155#21152
-    BorderStyle = bsNone
-    EditLabel.Width = 56
-    EditLabel.Height = 30
-    EditLabel.Caption = #33410#28857#25991#23383
+    EditLabel.Width = 70
+    EditLabel.Height = 38
+    EditLabel.Caption = #33258#23450#20041#25991#23383
     Font.Charset = GB2312_CHARSET
     Font.Color = clWindowText
     Font.Height = 30
@@ -131,46 +105,44 @@ object CfgForm: TCfgForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 4
+    TabOrder = 3
     Text = ''
-    OnDblClick = LabeledEdit2DblClick
   end
   object RadioGroup1: TRadioGroup
     Left = 649
-    Top = 538
+    Top = 473
     Width = 112
     Height = 52
-    TabOrder = 5
+    TabOrder = 4
   end
   object rbimg: TRadioButton
     Left = 656
-    Top = 545
+    Top = 480
     Width = 97
     Height = 17
-    Caption = #33258#23450#20041#22270#29255
-    TabOrder = 6
+    Caption = #33258#23450#20041#32972#26223
+    TabOrder = 5
     OnClick = rbimgClick
   end
   object rbtxt: TRadioButton
     Left = 656
-    Top = 568
+    Top = 503
     Width = 97
     Height = 17
     Caption = #33258#23450#20041#25991#23383
     Checked = True
-    TabOrder = 7
+    TabOrder = 6
     TabStop = True
     OnClick = rbtxtClick
   end
   object tip: TLabeledEdit
     Left = 416
-    Top = 552
+    Top = 503
     Width = 206
-    Height = 30
-    BorderStyle = bsNone
+    Height = 38
     EditLabel.Width = 56
-    EditLabel.Height = 30
-    EditLabel.Caption = #25552#31034#20449#24687
+    EditLabel.Height = 38
+    EditLabel.Caption = #25552#31034#25991#23383
     Font.Charset = GB2312_CHARSET
     Font.Color = clWindowText
     Font.Height = 30
@@ -178,7 +150,31 @@ object CfgForm: TCfgForm
     Font.Style = []
     LabelPosition = lpLeft
     ParentFont = False
+    TabOrder = 7
+    Text = ''
+    TextHint = #26080
+  end
+  object filedit: TLabeledEdit
+    Left = 81
+    Top = 567
+    Width = 792
+    Height = 38
+    Hint = #21452#20987#28155#21152
+    EditLabel.Width = 56
+    EditLabel.Height = 38
+    EditLabel.Caption = #25991#20214#36335#24452
+    EditLabel.OnDblClick = fileditSubLabelDblClick
+    Font.Charset = GB2312_CHARSET
+    Font.Color = clWindowText
+    Font.Height = 30
+    Font.Name = #23435#20307
+    Font.Style = []
+    LabelPosition = lpLeft
+    ParentFont = False
+    ParentShowHint = False
+    ShowHint = True
     TabOrder = 8
-    Text = #26080
+    Text = ''
+    OnDblClick = imgEdit1DblClick
   end
 end
