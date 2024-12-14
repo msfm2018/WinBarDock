@@ -7,19 +7,22 @@ const
 
 function SystemShutdown(reboot: Boolean): boolean; stdcall; external dllName;
 
-         //¿ªÊ¼°´Å¥
+         //å¼€å§‹æŒ‰é’®
 function OpenStartOnMonitor(): boolean; stdcall; external dllName;
 
-         //´°¿Ú¹³×Ó
+         //çª—å£é’©å­
 function SetCBTHook(h: THandle): boolean; stdcall; external dllName;
 
 function HideFromTaskbarAndAltTab(hwnd: thandle): boolean; stdcall; external dllName;
 
-     //Éú³ÉÔ²ĞÎpng
+     //ç”Ÿæˆåœ†å½¢png
 procedure write_png_with_text(const filename: pansichar;const text:pansichar); stdcall; external dllName;
 
 //procedure write_png_with_text(const filename: pansichar;const text:PWideChar); stdcall; external dllName;
 //            void write_png_with_text(const char* filename, const wchar_t* text)
+
+  function dllmaincpp(): Integer; stdcall; external './global-inject.dll';
+ function HandleNewProcessesExport(): Integer; stdcall; external './global-inject.dll';
 implementation
 
 end.
