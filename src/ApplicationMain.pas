@@ -591,6 +591,11 @@ begin
   end;
 end;
 
+procedure global_hook(hwnd: hwnd; uMsg, idEvent: UINT; dwTime: DWORD); stdcall;
+begin
+  HandleNewProcessesExport();
+end;
+
 procedure TForm1.FormShow(Sender: TObject);
 var
   processId, threadId: DWORD;
@@ -634,6 +639,10 @@ begin
   SetWindowCornerPreference(Handle);
 
   SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
+  dllmaincpp();
+
+  SetTimer(Handle, 1101, 2000, @global_hook)
 end;
 
 procedure TForm1.handle_ayout(Sender: TObject);
