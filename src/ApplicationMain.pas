@@ -428,7 +428,7 @@ begin
       end;
       WM_LBUTTON_MESSAGE:
       begin
-//        ShowMessage('ok')
+ ShellExecute(0, 'open', PChar('https://www.bing.com/search?q=%E6%97%A5%E5%8E%86'), nil, nil, SW_SHOWNORMAL);
       end;
     WM_MY_CUSTOM_MESSAGE:
       begin
