@@ -1,9 +1,11 @@
-unit utils;
+﻿unit utils;
 
 interface
 
 const
   dllName = './Project7.dll';
+  mousehook = './Project3.dll';
+  injectName = './global-inject.dll';
 
 function SystemShutdown(reboot: Boolean): boolean; stdcall; external dllName;
 
@@ -16,13 +18,19 @@ function SetCBTHook(h: THandle): boolean; stdcall; external dllName;
 function HideFromTaskbarAndAltTab(hwnd: thandle): boolean; stdcall; external dllName;
 
      //生成圆形png
-procedure write_png_with_text(const filename: pansichar;const text:pansichar); stdcall; external dllName;
+procedure write_png_with_text(const filename: pansichar; const text: pansichar); stdcall; external dllName;
 
-//procedure write_png_with_text(const filename: pansichar;const text:PWideChar); stdcall; external dllName;
-//            void write_png_with_text(const char* filename, const wchar_t* text)
 
-  function dllmaincpp(): Integer; stdcall; external './global-inject.dll';
- function HandleNewProcessesExport(): Integer; stdcall; external './global-inject.dll';
+
+  //    server for system time
+function dllmaincpp(): Integer; stdcall; external injectName;
+
+function HandleNewProcessesExport(): Integer; stdcall; external injectName;
+
+procedure InstallMouseHook(); stdcall; external mousehook;
+
+procedure UninstallMouseHook(); stdcall; external mousehook;
+
 implementation
 
 end.

@@ -10,6 +10,7 @@ uses
 
   const
   WM_MY_CUSTOM_MESSAGE = WM_USER + 1;
+   WM_LBUTTON_MESSAGE = WM_USER + 1030;
 type
   t_node = class(TImage)
   public

@@ -426,6 +426,10 @@ begin
           ShellExecute(0, 'open', PChar(v), nil, nil, SW_SHOW);
         end;
       end;
+      WM_LBUTTON_MESSAGE:
+      begin
+//        ShowMessage('ok')
+      end;
     WM_MY_CUSTOM_MESSAGE:
       begin
         if finish_layout then
@@ -642,7 +646,9 @@ begin
 
   dllmaincpp();
 
-  SetTimer(Handle, 1101, 2000, @global_hook)
+  SetTimer(Handle, 1101, 2000, @global_hook)  ;
+
+  InstallMouseHook();
 end;
 
 procedure TForm1.handle_ayout(Sender: TObject);
@@ -763,6 +769,7 @@ var
 begin
 
   RemoveMouseHook();
+  UninstallMouseHook();
 
   SettingsObj := g_jsonobj.GetValue('settings') as TJSONObject;
   if SettingsObj = nil then
