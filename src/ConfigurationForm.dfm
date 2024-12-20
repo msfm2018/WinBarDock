@@ -177,4 +177,15 @@ object CfgForm: TCfgForm
     Text = ''
     OnDblClick = imgEdit1DblClick
   end
+  object ComboBox1: TComboBox
+    Left = 81
+    Top = 609
+    Width = 145
+    Height = 22
+    TabOrder = 9
+    Text = #26679#24335'1'
+    Items.Strings = (
+      #26679#24335'1'
+      #26679#24335'2')
+  end
 end

@@ -18,7 +18,7 @@ function SetCBTHook(h: THandle): boolean; stdcall; external dllName;
 function HideFromTaskbarAndAltTab(hwnd: thandle): boolean; stdcall; external dllName;
 
      //生成圆形png
-procedure write_png_with_text(const filename: pansichar; const text: pansichar); stdcall; external dllName;
+procedure write_png_with_text(const filename: pansichar; const text: pansichar;cmode:integer); stdcall; external dllName;
 
 
 

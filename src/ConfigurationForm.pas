@@ -20,6 +20,7 @@ type
     rbtxt: TRadioButton;
     tip: TLabeledEdit;
     filedit: TLabeledEdit;
+    ComboBox1: TComboBox;
     procedure Buttoaction_translator(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
@@ -80,8 +81,10 @@ begin
       utf8Text := PAnsiChar(UTF8Encode(Trim(text_edit.Text)));
 
       ansi_path := PAnsiChar(UTF8Encode(imgpath));
-
-      write_png_with_text(ansi_path, utf8Text);
+      if ComboBox1.Text = '样式1' then
+        write_png_with_text(ansi_path, utf8Text, 2)
+      else
+        write_png_with_text(ansi_path, utf8Text, 1);
 
       key1 := ExtractFileName(imgpath);
       Hash := THashMD5.GetHashString(key1);
