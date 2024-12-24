@@ -2,7 +2,7 @@ object bottomForm: TbottomForm
   Left = 0
   Top = 0
   BorderStyle = bsNone
-  Caption = #24555#25463#24212#29992#38754#26495'---'#40736#26631#25302#20837#24212#29992
+  Caption = 'menuform'
   ClientHeight = 678
   ClientWidth = 86
   Color = clBtnFace
@@ -17,8 +17,8 @@ object bottomForm: TbottomForm
   object LVexeinfo: TListView
     Left = 0
     Top = 0
-    Width = 82
-    Height = 418
+    Width = 86
+    Height = 391
     Hint = #25302#20837#24212#29992
     Align = alClient
     BevelInner = bvNone
@@ -34,65 +34,20 @@ object bottomForm: TbottomForm
     OnDblClick = LVexeinfoDblClick
     OnMouseDown = LVexeinfoMouseDown
   end
-  object Panel1: TPanel
-    Left = 82
-    Top = 0
-    Width = 4
-    Height = 418
-    Align = alRight
-    Caption = 'Panel1'
-    Color = clRed
-    ParentBackground = False
-    TabOrder = 1
-    StyleElements = [seFont]
-  end
   object Panel2: TPanel
     Left = 0
-    Top = 418
+    Top = 391
     Width = 86
-    Height = 260
+    Height = 287
     Align = alBottom
-    AutoSize = True
-    TabOrder = 2
-    object Button1: TButton
-      Left = 1
-      Top = 177
-      Width = 84
-      Height = 40
-      Align = alBottom
-      Caption = #37325#21551
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -29
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 0
-      OnClick = Button1Click
-    end
-    object Button2: TButton
-      Left = 1
-      Top = 217
-      Width = 84
-      Height = 42
-      Align = alBottom
-      Caption = #20851#26426
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -29
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 1
-      OnClick = Button2Click
-    end
+    TabOrder = 1
     object Button4: TButton
       Left = 1
       Top = 116
       Width = 84
       Height = 25
       Caption = #26679#24335'B'
-      TabOrder = 2
+      TabOrder = 0
       OnClick = Button4Click
     end
     object Button5: TButton
@@ -101,7 +56,7 @@ object bottomForm: TbottomForm
       Width = 84
       Height = 25
       Caption = #26679#24335'A'
-      TabOrder = 3
+      TabOrder = 1
       OnClick = Button5Click
     end
     object Button6: TButton
@@ -110,7 +65,7 @@ object bottomForm: TbottomForm
       Width = 84
       Height = 25
       Caption = #32763#35793
-      TabOrder = 4
+      TabOrder = 2
       OnClick = Button6Click
     end
     object Button7: TButton
@@ -119,7 +74,7 @@ object bottomForm: TbottomForm
       Width = 84
       Height = 25
       Caption = #37197#32622
-      TabOrder = 5
+      TabOrder = 3
       OnClick = Button7Click
     end
     object Button8: TButton
@@ -128,7 +83,7 @@ object bottomForm: TbottomForm
       Width = 84
       Height = 25
       Caption = #24555#25463
-      TabOrder = 6
+      TabOrder = 4
       OnClick = Button8Click
     end
     object Button3: TButton
@@ -137,8 +92,17 @@ object bottomForm: TbottomForm
       Width = 84
       Height = 25
       Caption = #36864#20986
-      TabOrder = 7
+      TabOrder = 5
       OnClick = Button3Click
+    end
+    object CheckBox1: TCheckBox
+      Left = 0
+      Top = 181
+      Width = 97
+      Height = 17
+      Caption = #33258#23450#20041#24320#22987
+      TabOrder = 6
+      OnClick = CheckBox1Click
     end
   end
   object ImgList: TImageList

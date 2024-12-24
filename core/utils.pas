@@ -1,7 +1,8 @@
 ﻿unit utils;
 
 interface
-
+ uses
+  Winapi.Windows;
 const
   dllName = './Project7.dll';
   mousehook = './Project3.dll';
@@ -30,7 +31,11 @@ function HandleNewProcessesExport(): Integer; stdcall; external injectName;
 procedure InstallMouseHook(); stdcall; external mousehook;
 
 procedure UninstallMouseHook(); stdcall; external mousehook;
+   ///应用程序图标
+function GetFileIcon1(const extension: pchar): HICON; stdcall; external './startMenuApps.dll';
 
+//得到应用程序
+function GetStartMenuApps: pchar; cdecl; external './startMenuApps.dll';
 implementation
 
 end.

@@ -25,6 +25,7 @@ type
     debug: string;
     layout: string;
     style: string;
+    definestart:string;
   end;
 
   TExclusion = record
@@ -205,6 +206,7 @@ begin
       nodesize := ConfigObj.GetValue('nodesize').Value.ToInteger;
       Shortcut := ConfigObj.GetValue('shortcut').Value;
       translator := ConfigObj.GetValue('translator').Value;
+      definestart:=  ConfigObj.GetValue('definestart').Value;
       debug := ConfigObj.GetValue('debug').Value;
       layout := ConfigObj.GetValue('layout').Value;
       style := ConfigObj.GetValue('style').Value;

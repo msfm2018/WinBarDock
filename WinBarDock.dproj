@@ -169,6 +169,8 @@
         <DCCReference Include="core\plug.pas"/>
         <DCCReference Include="core\utils.pas"/>
         <DCCReference Include="core\TaskbarList.pas"/>
+        <DCCReference Include="core\ImgButton.pas"/>
+        <DCCReference Include="core\ImgPanel.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

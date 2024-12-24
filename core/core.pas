@@ -8,9 +8,11 @@ uses
   Dwmapi, u_json, vcl.controls, ComObj, System.Generics.Collections, utils,
   ConfigurationForm, TlHelp32, Winapi.PsAPI, System.SyncObjs, vcl.ExtCtrls, math;
 
-  const
+const
   WM_MY_CUSTOM_MESSAGE = WM_USER + 1;
-   WM_LBUTTON_MESSAGE = WM_USER + 1030;
+  WM_LBUTTON_MESSAGE = WM_USER + 1030;
+  WM_defaultStart_MESSAGE = WM_USER + 1031;
+
 type
   t_node = class(TImage)
   public
@@ -53,6 +55,7 @@ type
     json: TMySettings;
     utils: t_utils;
     nodes: t_node_container;
+    ImageCache: TDictionary<string, timage>;  // New cache dictionary
   private
     object_map: TDictionary<string, TObject>;
   public
@@ -642,30 +645,10 @@ begin
   end;
 
 end;
- //function TForm1.get_node_at_point(ScreenPoint: TPoint): t_node;
-//var
-//  ClientPoint: TPoint;
-//  I: Integer;
-//  Node: t_node;
-//begin
-//  Result := nil;
-//
-//  ClientPoint := ScreenToClient(ScreenPoint);
-//
-//  for I := 0 to g_core.nodes.count - 1 do
-//  begin
-//    Node := g_core.nodes.Nodes[I];
-//
-//    if PtInRect(Node.BoundsRect, ClientPoint) then
-//    begin
-//      Result := Node;
-//      Exit;
-//    end;
-//  end;
-//end;
 
 initialization
   g_core := t_core_class.Create;
+  g_core.ImageCache := TDictionary<string, timage>.Create;
   app_path := ExtractFilePath(ParamStr(0));
   g_jsonobj := load_json_from_file(app_path + 'cfg.json');
 
@@ -687,6 +670,15 @@ initialization
 
 
 finalization
+  var Key: string;
+
+  // 释放 TDictionary 中的 TImage 对象
+  for Key in g_core.ImageCache.Keys do
+    g_core.ImageCache[Key].Free;
+
+  // 释放 TDictionary 对象
+  g_core.ImageCache.Free;
+
   g_core.object_map.Free;
 
   g_core.Free;

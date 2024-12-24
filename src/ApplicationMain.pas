@@ -51,6 +51,7 @@ type
     procedure AdjustNodeSize(Node: t_node; Rate: Double);
 
     procedure repos(screenHeight: integer);
+    procedure nodeimgload;
 
   end;
 
@@ -76,13 +77,40 @@ var
   heventHook: THandle;
   inOnce: integer = 0;
   finish_layout: Boolean = false;
+//  ImageCache: TDictionary<string, timage>;  // New cache dictionary
 
 implementation
 
 {$R *.dfm}
 
+procedure TForm1.nodeimgload();
+var
+  kys: TDictionary<string, TSettingItem>;
+begin
+
+  kys := g_core.json.Settings;
+
+  var keys := kys.keys;
+  for var Key in keys do
+  begin
+    var MValue := kys.Items[Key];
+    var p: timage;
+    if not g_core.ImageCache.TryGetValue(MValue.image_file_name, p) then
+    begin
+      p := TImage.Create(nil);
+      p.Picture.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\' + MValue.image_file_name);
+      g_core.ImageCache.Add(MValue.image_file_name, p);
+
+    end
+
+  end;
+
+end;
+
+
 
 // 计算和定位节点的逻辑
+            //重新设计 把图片预存到 内存中 不每次再文件中加载
 
 procedure TForm1.CalculateAndPositionNodes();
 var
@@ -103,6 +131,7 @@ begin
   cs.Enter;
   try
     try
+
       g_core.nodes.count := NodeCount;
 
       if g_core.nodes.Nodes <> nil then
@@ -145,7 +174,21 @@ begin
           tool_tip := MValue.tool_tip;
 
           if MValue.Is_path_valid then
-            Picture.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\' + MValue.image_file_name)
+          begin
+            var p: timage;
+            if not g_core.ImageCache.TryGetValue(MValue.image_file_name, p) then
+            begin
+
+              Node.Picture.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\' + MValue.image_file_name);
+
+            end
+            else
+            begin
+
+              Node.Picture.Assign(p.Picture);
+
+            end;
+          end
           else
           begin
             MValue.memory_image.Position := 0;
@@ -347,7 +390,11 @@ begin
     Exit;
   if t_node(Sender).tool_tip = '开始菜单' then
   begin
-    SimulateCtrlEsc();
+    if bottomForm.Caption = 'selfdefinestartmenu' then
+      PostMessage(handle, WM_USER + 1031, 0, 0)
+    else
+      SimulateCtrlEsc();
+
   end
   else if t_node(Sender).tool_tip = '回收站' then
   begin
@@ -426,9 +473,14 @@ begin
           ShellExecute(0, 'open', PChar(v), nil, nil, SW_SHOW);
         end;
       end;
-      WM_LBUTTON_MESSAGE:
+    WM_LBUTTON_MESSAGE:
       begin
- ShellExecute(0, 'open', PChar('https://www.bing.com/search?q=%E6%97%A5%E5%8E%86'), nil, nil, SW_SHOWNORMAL);
+        ShellExecute(0, 'open', PChar('https://www.bing.com/search?q=%E6%97%A5%E5%8E%86'), nil, nil, SW_SHOWNORMAL);
+      end;
+
+    WM_defaultStart_MESSAGE:
+      begin
+        g_core.utils.launch_app(ExtractFilePath(ParamStr(0)) + 'startx.exe');
       end;
     WM_MY_CUSTOM_MESSAGE:
       begin
@@ -452,7 +504,7 @@ begin
         OutputDebugString('WM_DPICHANGED');
         var rc: PRect;
         rc := PRect(Msg.LParam);
-        //SetWindowPos(Msg.WParam, 0, rc.Left, rc.Top, rc.Right - rc.Left, rc.Bottom - rc.Top, 0);
+
         SetWindowPos(Msg.WParam, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top - MulDiv(50, GetDpiForWindow(Msg.WParam), 96), 0);
 
       end;
@@ -605,11 +657,13 @@ var
   processId, threadId: DWORD;
 begin
 
+
   load_plug();
   Initialize_form();
 
   HideFromTaskbarAndAltTab(Handle);
 
+  nodeimgload();
   ConfigureLayout();
 
   add_json('startx', 'Start Button.png', 'startx', '开始菜单', True, nil);
@@ -646,9 +700,22 @@ begin
 
   dllmaincpp();
 
-  SetTimer(Handle, 1101, 2000, @global_hook)  ;
+  SetTimer(Handle, 1101, 2000, @global_hook);
 
   InstallMouseHook();
+
+  if g_core.json.Config.definestart = 'true' then
+  begin
+    bottomForm.Caption := 'selfdefinestartmenu';
+    bottomForm.CheckBox1.Checked := true;
+
+  end
+  else
+  begin
+    bottomForm.Caption := 'toolform';
+    bottomForm.CheckBox1.Checked := false;
+  end;
+
 end;
 
 procedure TForm1.handle_ayout(Sender: TObject);
@@ -767,6 +834,7 @@ var
   v: TSettingItem;
   SettingsObj: TJSONObject;
 begin
+
 
   RemoveMouseHook();
   UninstallMouseHook();

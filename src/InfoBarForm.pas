@@ -6,8 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.ExtCtrls, Winapi.ShellAPI, Vcl.ComCtrls, ActiveX, shlobj, u_json,
-  System.JSON, u_debug, comobj, Vcl.ImgList, Vcl.Menus, System.ImageList, utils,
-  Vcl.StdCtrls;
+  ImgButton, System.JSON, u_debug, comobj, Vcl.ImgList, Vcl.Menus,
+  System.ImageList, utils, Vcl.StdCtrls;
 
 type
   TbottomForm = class(TForm)
@@ -15,29 +15,26 @@ type
     ImgList: TImageList;
     PopupMenu1: TPopupMenu;
     N1: TMenuItem;
-    Panel1: TPanel;
     Panel2: TPanel;
-    Button1: TButton;
-    Button2: TButton;
     Button3: TButton;
     Button4: TButton;
     Button5: TButton;
     Button6: TButton;
     Button7: TButton;
     Button8: TButton;
+    CheckBox1: TCheckBox;
     procedure FormShow(Sender: TObject);
     procedure LVexeinfoDblClick(Sender: TObject);
     procedure action_translator(Sender: TObject);
     procedure LVexeinfoMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure Button8Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure CheckBox1Click(Sender: TObject);
   private
     into_snap_windows: Boolean;
     procedure WndProc(var Msg: TMessage); override;
@@ -50,11 +47,15 @@ type
     procedure LoadIco;
     procedure CreateDefaultFile;
     procedure snap_top_windows;
+    procedure closebtnClick(Sender: TObject);
+    procedure resetbtnClick(Sender: TObject);
 
   end;
 
 var
   bottomForm: TbottomForm;
+  closebtn: TImgButton;
+  resetbtn: TImgButton;
 
 implementation
 
@@ -122,7 +123,35 @@ begin
 
   CreateDefaultFile();
   LoadIco();
-//    SetWindowCornerPreference(Handle);
+    SetWindowCornerPreference(Handle);
+
+
+  closebtn := TImgButton.Create(self);
+  closebtn.Parent := Panel2;
+
+  closebtn.SetBounds(40, Panel2.Height - 40, 32, 32);
+  closebtn.Image.LoadFromFile(ExtractFilePath(ParamStr(0)) + '/imgapp/close_hover.png');
+  closebtn.Image1.LoadFromFile(ExtractFilePath(ParamStr(0)) + '/imgapp/close.png');
+  closebtn.OnClick := closebtnClick;
+  closebtn.Cursor := crHandpoint;
+
+  resetbtn := TImgButton.Create(self);
+  resetbtn.Parent := Panel2;
+  resetbtn.SetBounds(0, Panel2.Height - 40, 32, 32);
+  resetbtn.Image.LoadFromFile(ExtractFilePath(ParamStr(0)) + '/imgapp/reset_hover.png');
+  resetbtn.Image1.LoadFromFile(ExtractFilePath(ParamStr(0)) + '/imgapp/reset.png');
+  resetbtn.OnClick := resetbtnClick;
+  resetbtn.Cursor := crHandpoint
+end;
+
+procedure TbottomForm.resetbtnClick(Sender: TObject);
+begin
+  SystemShutdown(True);
+end;
+
+procedure TbottomForm.closebtnClick(Sender: TObject);
+begin
+  SystemShutdown(false);
 end;
 
 procedure TbottomForm.WndProc(var Msg: TMessage);
@@ -291,16 +320,6 @@ begin
   Show_app(Path, FileName);
 end;
 
-procedure TbottomForm.Button1Click(Sender: TObject);
-begin
-  SystemShutdown(True);
-end;
-
-procedure TbottomForm.Button2Click(Sender: TObject);
-begin
-  SystemShutdown(false);
-end;
-
 procedure TbottomForm.Button3Click(Sender: TObject);
 begin
 //  set_json_value('config', 'left', left.ToString);
@@ -388,6 +407,23 @@ begin
     Result := 'MSTSC'
   else
     Result := FileName;
+end;
+
+procedure TbottomForm.CheckBox1Click(Sender: TObject);
+begin
+  if CheckBox1.Checked then
+  begin
+
+    set_json_value('config', 'definestart', 'true');
+
+    Caption := 'selfdefinestartmenu';
+
+  end
+  else
+  begin
+    set_json_value('config', 'definestart', 'false');
+    Caption := 'toolform';
+  end;
 end;
 
 function TbottomForm.Show_app(Path, FileName: string): Boolean;

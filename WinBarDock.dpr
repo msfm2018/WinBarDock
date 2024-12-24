@@ -14,7 +14,9 @@ uses
   InfoBarForm in 'src\InfoBarForm.pas' {bottomForm},
   plug in 'core\plug.pas',
   utils in 'core\utils.pas',
-  TaskbarList in 'core\TaskbarList.pas';
+  TaskbarList in 'core\TaskbarList.pas',
+  ImgButton in 'core\ImgButton.pas',
+  ImgPanel in 'core\ImgPanel.pas';
 
 {$R *.res}
 
@@ -23,7 +25,7 @@ begin
 
   Application.Initialize;
   Application.MainFormOnTaskbar := true;
-  TStyleManager.TrySetStyle('Iceberg Classico');
+//  TStyleManager.TrySetStyle('Iceberg Classico');
   Application.CreateForm(TForm1, Form1);
   Application.Run;
 
