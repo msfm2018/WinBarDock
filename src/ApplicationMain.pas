@@ -480,7 +480,34 @@ begin
 
     WM_defaultStart_MESSAGE:
       begin
-        g_core.utils.launch_app(ExtractFilePath(ParamStr(0)) + 'startx.exe');
+      //尝试使用 flutter
+        var param := ExtractFilePath(ParamStr(0)) + 'img\app';
+        var exepath := ExtractFilePath(ParamStr(0)) + 'startx\flutter_application_1.exe';
+//        g_core.utils.launch_app(exepath, param);
+
+
+        var StartupInfo: TStartupInfo;
+        var ProcessInfo: TProcessInformation;
+        var FilePath: string;
+        var Params: string;
+        begin
+          FilePath := exepath; // Path to your Flutter executable
+          Params := param; // Parameters to pass
+
+          FillChar(StartupInfo, SizeOf(StartupInfo), 0);
+          StartupInfo.cb := SizeOf(StartupInfo);
+          if CreateProcess(nil, PChar(FilePath + ' ' + Params), nil, nil, False, 0, nil, nil, StartupInfo, ProcessInfo) then
+          begin
+            CloseHandle(ProcessInfo.hProcess);
+            CloseHandle(ProcessInfo.hThread);
+          end
+          else
+          begin
+            ShowMessage('Failed to start process');
+          end;
+
+        end;
+
       end;
     WM_MY_CUSTOM_MESSAGE:
       begin
@@ -656,7 +683,7 @@ procedure TForm1.FormShow(Sender: TObject);
 var
   processId, threadId: DWORD;
 begin
-
+  takeappico();
 
   load_plug();
   Initialize_form();
@@ -834,7 +861,6 @@ var
   v: TSettingItem;
   SettingsObj: TJSONObject;
 begin
-
 
   RemoveMouseHook();
   UninstallMouseHook();

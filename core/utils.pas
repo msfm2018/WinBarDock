@@ -36,6 +36,9 @@ function GetFileIcon1(const extension: pchar): HICON; stdcall; external './start
 
 //得到应用程序
 function GetStartMenuApps: pchar; cdecl; external './startMenuApps.dll';
+
+procedure takeappico; cdecl; external './startMenuApps.dll';
+
 implementation
 
 end.

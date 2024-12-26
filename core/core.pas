@@ -42,7 +42,7 @@ type
     procedure CopyFileToFolder(const SourceFile, DestinationFolder: string);
 
   public
-    procedure launch_app(const Path: string);
+    procedure launch_app(const Path: string; param: string = '');
 
     procedure auto_run;
     procedure init_background(img: TImage; obj: tform; src: string);
@@ -588,15 +588,22 @@ begin
   SetWindowRgn(hdl, Rgn, true);
 end;
 
-procedure t_utils.launch_app(const Path: string);
+procedure t_utils.launch_app(const Path: string; param: string = '');
 begin
   if Path.Trim = '' then
     Exit;
-
-  if Path.Contains('https') or Path.Contains('http') or Path.Contains('.html') or Path.Contains('.htm') then
-    ShellExecute(Application.Handle, nil, PChar(Path), nil, nil, SW_SHOWNORMAL)
+  if param = '' then
+  begin
+    if Path.Contains('https') or Path.Contains('http') or Path.Contains('.html') or Path.Contains('.htm') then
+      ShellExecute(Application.Handle, nil, PChar(Path), nil, nil, SW_SHOWNORMAL)
+    else
+      ShellExecute(0, 'open', PChar(Path), nil, nil, SW_SHOW);
+  end
   else
-    ShellExecute(0, 'open', PChar(Path), nil, nil, SW_SHOW);
+  begin
+
+    ShellExecute(0, 'open', PChar(Path), PChar(param), nil, SW_SHOWNORMAL);
+  end;
 end;
 
 function t_utils.rate(a, b: double): Double;
