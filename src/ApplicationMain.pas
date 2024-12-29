@@ -3,12 +3,12 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,Registry,Winapi.Dwmapi,
-  core, Dialogs, ExtCtrls, Generics.Collections, Vcl.Imaging.pngimage,
-  Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug, ComObj, PsAPI, utils,
-  Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs, System.Math, System.JSON,
-  u_json, ConfigurationForm, Vcl.Menus, InfoBarForm, System.Generics.Collections,
-  plug, TaskbarList, PopupMenuManager, event;
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Registry, Winapi.Dwmapi, core, Dialogs, ExtCtrls, Generics.Collections,
+  Vcl.Imaging.pngimage, Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug,
+  ComObj, PsAPI, utils, Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs,
+  System.Math, System.JSON, u_json, ConfigurationForm, Vcl.Menus, InfoBarForm,
+  System.Generics.Collections, plug, TaskbarList, PopupMenuManager, event;
 
 type
   TForm1 = class(TForm)
@@ -82,10 +82,12 @@ var
 implementation
 
 {$R *.dfm}
+
 const
   kGetPreferredBrightnessRegKey = 'Software\Microsoft\Windows\CurrentVersion\Themes\Personalize';
   kGetPreferredBrightnessRegValue = 'AppsUseLightTheme';
-  procedure UpdateTheme(hWnd: HWND);
+
+procedure UpdateTheme(hWnd: hWnd);
 var
   Reg: TRegistry;
   LightMode: DWORD;
@@ -106,6 +108,11 @@ begin
   finally
     Reg.Free;
   end;
+end;
+
+procedure ScaleFormForDPI(Form: TForm; ScaleFactor: Double);
+begin
+  Form.SetBounds(Round(Form.Left * ScaleFactor), Round(Form.Top * ScaleFactor), Round(Form.Width * ScaleFactor), Round(Form.Height * ScaleFactor));
 end;
 
 procedure TForm1.nodeimgload();
@@ -482,10 +489,24 @@ begin
 
 end;
 
+function MonitorFromWindow(Handle: hWnd; dwFlags: DWORD): HMONITOR; stdcall; external 'user32.dll' name 'MonitorFromWindow';
+
+const
+  // 定义MONITOR_DEFAULTTONEAREST常量
+  MONITOR_DEFAULTTONEAREST = 2;
+  MDT_EFFECTIVE_DPI = 0;
+
+function GetDpiForMonitor(Monitor: HMONITOR; dpiType: DWORD; var dpiX: UINT; var dpiY: UINT): HRESULT; stdcall; external 'shcore.dll' name 'GetDpiForMonitor';
+
 procedure TForm1.wndproc(var Msg: tmessage);
 var
   lp: TPoint;
   reducedRect: TRect;
+var
+  Monitor: HMONITOR;
+  DpiX, DpiY: UINT;
+  ScaleFactor: Double;
+  SuggestedRect: PRect;
 begin
   inherited;
   case Msg.Msg of
@@ -552,17 +573,27 @@ begin
         end;
       end;
       //深色 浅色
-      case WM_DWMCOLORIZATIONCOLORCHANGED:
+    WM_DWMCOLORIZATIONCOLORCHANGED:
       begin
-      UpdateTheme(hwnd);
+        UpdateTheme(Handle);
       end;
     WM_DPICHANGED:
       begin
         OutputDebugString('WM_DPICHANGED');
-        var rc: PRect;
-        rc := PRect(Msg.LParam);
 
-        SetWindowPos(Msg.WParam, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top - MulDiv(50, GetDpiForWindow(Msg.WParam), 96), 0);
+         // 提取新的 DPI 信息
+        DpiX := LOWORD(Msg.wParam);
+        DpiY := HIWORD(Msg.wParam);
+
+        // 计算缩放比例
+        ScaleFactor := DpiX / 96.0;
+
+        // 获取建议的窗口矩形并调整窗口
+        SuggestedRect := PRect(Msg.lParam);
+        SetWindowPos(Handle, 0, SuggestedRect.Left, SuggestedRect.Top, SuggestedRect.Right - SuggestedRect.Left, SuggestedRect.Bottom - SuggestedRect.Top, SWP_NOZORDER or SWP_NOACTIVATE);
+
+        // 调整窗体的其他内容（控件、字体等）
+        ScaleFormForDPI(Self, ScaleFactor);
 
       end;
     WM_MOUSEWHEEL:
@@ -712,8 +743,24 @@ end;
 procedure TForm1.FormShow(Sender: TObject);
 var
   processId, threadId: DWORD;
+var
+  Monitor: HMONITOR;
+  DpiX, DpiY: UINT;
+  ScaleFactor: Double;
 begin
- UpdateTheme(handle);
+  // 获取窗口所在的监视器
+  Monitor := MonitorFromWindow(Handle, MONITOR_DEFAULTTONEAREST);
+
+  // 获取 DPI
+  GetDpiForMonitor(Monitor, MDT_EFFECTIVE_DPI, DpiX, DpiY);
+
+  // 计算缩放比例
+  ScaleFactor := DpiX / 96.0;
+
+  // 调整窗体大小
+  ScaleFormForDPI(Self, ScaleFactor);
+
+  UpdateTheme(Handle);
   takeappico();
 
   load_plug();
@@ -747,7 +794,7 @@ begin
 
   finish_layout := true;
   //   监控 窗口创建   焦点
-  SetCBTHook(handle);
+  SetCBTHook(Handle);
 
   //监控 窗口发生变化
   GetWindowThreadProcessId(hwndMonitor, processId);
