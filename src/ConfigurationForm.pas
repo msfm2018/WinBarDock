@@ -417,7 +417,7 @@ var
   v: TSettingItem;
   tmp_key: string;
 begin
-
+EnableNonClientDpiScaling(Handle);
   Apps := TStartMenuApps.GetApps;
   for App in Apps do
 
