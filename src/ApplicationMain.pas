@@ -3,7 +3,7 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,Registry,Winapi.Dwmapi,
   core, Dialogs, ExtCtrls, Generics.Collections, Vcl.Imaging.pngimage,
   Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug, ComObj, PsAPI, utils,
   Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs, System.Math, System.JSON,
@@ -82,6 +82,31 @@ var
 implementation
 
 {$R *.dfm}
+const
+  kGetPreferredBrightnessRegKey = 'Software\Microsoft\Windows\CurrentVersion\Themes\Personalize';
+  kGetPreferredBrightnessRegValue = 'AppsUseLightTheme';
+  procedure UpdateTheme(hWnd: HWND);
+var
+  Reg: TRegistry;
+  LightMode: DWORD;
+  EnableDarkMode: BOOL;
+begin
+  Reg := TRegistry.Create(KEY_READ);
+  try
+    Reg.RootKey := HKEY_CURRENT_USER;
+    if Reg.OpenKeyReadOnly(kGetPreferredBrightnessRegKey) then
+    begin
+      if Reg.ValueExists(kGetPreferredBrightnessRegValue) then
+      begin
+        LightMode := Reg.ReadInteger(kGetPreferredBrightnessRegValue);
+        EnableDarkMode := LightMode = 0;
+        DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, @EnableDarkMode, SizeOf(EnableDarkMode));
+      end;
+    end;
+  finally
+    Reg.Free;
+  end;
+end;
 
 procedure TForm1.nodeimgload();
 var
@@ -526,6 +551,11 @@ begin
 
         end;
       end;
+      //深色 浅色
+      case WM_DWMCOLORIZATIONCOLORCHANGED:
+      begin
+      UpdateTheme(hwnd);
+      end;
     WM_DPICHANGED:
       begin
         OutputDebugString('WM_DPICHANGED');
@@ -683,6 +713,7 @@ procedure TForm1.FormShow(Sender: TObject);
 var
   processId, threadId: DWORD;
 begin
+ UpdateTheme(handle);
   takeappico();
 
   load_plug();
