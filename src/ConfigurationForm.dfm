@@ -24,8 +24,6 @@ object CfgForm: TCfgForm
     Align = alClient
     Caption = 'Panel1'
     TabOrder = 0
-    ExplicitLeft = 345
-    ExplicitWidth = 847
     object ve1: TValueListEditor
       Left = 1
       Top = 1
@@ -56,7 +54,6 @@ object CfgForm: TCfgForm
         #22270#29255#36335#24452
         #25991#20214#36335#24452)
       OnDblClick = ve1DblClick
-      ExplicitWidth = 845
       ColWidths = (
         285
         678)

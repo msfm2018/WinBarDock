@@ -14,33 +14,13 @@ object bottomForm: TbottomForm
   OnClose = FormClose
   OnShow = FormShow
   TextHeight = 14
-  object LVexeinfo: TListView
-    Left = 0
-    Top = 0
-    Width = 86
-    Height = 391
-    Hint = #25302#20837#24212#29992
-    Align = alClient
-    BevelInner = bvNone
-    BevelOuter = bvNone
-    BorderStyle = bsNone
-    Columns = <>
-    Ctl3D = False
-    LargeImages = ImgList
-    ParentShowHint = False
-    PopupMenu = PopupMenu1
-    ShowHint = True
-    TabOrder = 0
-    OnDblClick = LVexeinfoDblClick
-    OnMouseDown = LVexeinfoMouseDown
-  end
   object Panel2: TPanel
     Left = 0
     Top = 391
     Width = 86
     Height = 287
     Align = alBottom
-    TabOrder = 1
+    TabOrder = 0
     object Button4: TButton
       Left = 1
       Top = 116
@@ -651,7 +631,6 @@ object bottomForm: TbottomForm
     Top = 112
     object N1: TMenuItem
       Caption = #21024#38500
-      OnClick = action_translator
     end
   end
 end

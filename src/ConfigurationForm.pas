@@ -8,7 +8,7 @@ uses
   Winapi.ShellAPI, Vcl.ComCtrls, Vcl.Grids, Vcl.ValEdit, Vcl.StdCtrls,
   Vcl.ExtCtrls, Vcl.Buttons, utils, u_json, System.IniFiles, u_debug,
   Vcl.Imaging.pngimage, System.JSON, System.Generics.Collections, Vcl.Menus,
-  Winapi.Dwmapi, winapi.UxTheme, ImgPanel, Vcl.Mask, System.Hash,
+  winapi.UxTheme, ImgPanel, Vcl.Mask, System.Hash,
   System.ImageList, Vcl.ImgList;
 
 type
@@ -81,7 +81,7 @@ implementation
 {$R *.dfm}
 
 uses
-  ApplicationMain, core, GDIPAPI, GDIPOBJ, System.UITypes;
+  core, System.UITypes;
 
 function SaveAppIconAsPng(const FilePath: string): string;
 var
