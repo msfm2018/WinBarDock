@@ -24,7 +24,7 @@ type
 
     procedure snap_top_windows;
 
-    procedure show_aapp(Path, FileName: string);
+    procedure show_aapp(Path, FileName, f1, f2: string);
     procedure PanelMouseEnter(Sender: TObject);
     procedure PanelMouseLeave(Sender: TObject);
     procedure PanelDblClick(Sender: TObject);
@@ -35,7 +35,8 @@ var
   bottomForm: TbottomForm;
   closebtn: TImgButton;
   resetbtn: TImgButton;
-   oldcolor:tcolor;
+  oldcolor: tcolor;
+
 implementation
 
 {$R *.dfm}
@@ -88,10 +89,10 @@ begin
     Left := Screen.WorkAreaWidth - bottomForm.Width
 end;
 
-procedure TbottomForm.show_aapp(Path, FileName: string);
+procedure TbottomForm.show_aapp(Path, FileName, f1, f2: string);
 var
   Panel: TImgPanel;
-  Image: TImage;
+  Image: TImgButton; // TImage;
 begin
   try
     ScrollBox1.VertScrollBar.Visible := True; // 启用垂直滚动条
@@ -106,14 +107,18 @@ begin
     Panel.extendA := FileName;
     Panel.extendB := Path;
 //    Panel.Name := FileName;
-      oldcolor:=Panel.Color;
+    oldcolor := Panel.Color;
     // 创建显示图标的 Image 控件
-    Image := TImage.Create(Panel);
+//    Image := TImage.Create(Panel);
+
+    Image := TImgButton.Create(Panel);
     Image.Parent := Panel;
-    Image.Picture.LoadFromFile(Path);
+//    Image.Picture.LoadFromFile(Path);
+    Image.Image.LoadFromFile(f1);
+    Image.Image1.LoadFromFile(f2);
     Image.Width := 46;  // 设置图标宽度
     Image.Height := 46; // 设置图标高度
-    Image.Stretch := True;
+//    Image.Stretch := True;
     Image.Name := FileName;
     Image.Cursor := crHandPoint;
 
@@ -123,8 +128,8 @@ begin
 
     // 绑定事件
     Image.OnClick := PanelDblClick;
-    Panel.OnMouseEnter := PanelMouseEnter;
-    Panel.OnMouseLeave := PanelMouseLeave;
+//    Panel.OnMouseEnter := PanelMouseEnter;
+//    Panel.OnMouseLeave := PanelMouseLeave;
     Panel.OnClick := PanelDblClick;
   finally
 
@@ -184,14 +189,14 @@ end;
 
 procedure TbottomForm.PanelMouseEnter(Sender: TObject);
 begin
-  (Sender as TImgPanel).color := $f5f5f5;
+  (Sender as TImgPanel).color := clYellow; // $f5f5f5;
 
 end;
 
 procedure TbottomForm.PanelMouseLeave(Sender: TObject);
 begin
 
-  (Sender as TImgPanel).color :=oldcolor;
+  (Sender as TImgPanel).color := oldcolor;
 
 end;
 
@@ -216,15 +221,15 @@ begin
 
   SetWindowCornerPreference(Handle);
   ScrollBox1.VertScrollBar.Visible := True; // 启用垂直滚动条
-  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/close_hover.png', '关机');
-  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/reset_hover.png', '重启');
+  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/close_hover.png', '关机', ExtractFilePath(ParamStr(0)) + '/imgapp/close.png', ExtractFilePath(ParamStr(0)) + '/imgapp/close_hover.png');
+  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/reset_hover.png', '重启', ExtractFilePath(ParamStr(0)) + '/imgapp/reset_hover.png', ExtractFilePath(ParamStr(0)) + '/imgapp/reset.png');
 
-  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-esc-40.png', '退出');
+  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-esc-40.png', '退出', ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-esc-100.png', ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-esc-40.png');
 
-  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-shortcuts-48.png', '快捷');
+  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-ergonomic-keyboard-100.png', '快捷', ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-ergonomic-keyboard-100-hover.png', ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-ergonomic-keyboard-100.png');
 
-  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/cfg.png', '配置');
-  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-translation-64.png', '翻译');
+  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/cfg.png', '配置', ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-settings-100.png', ExtractFilePath(ParamStr(0)) + '/imgapp/cfg.png');
+  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-translation-64.png', '翻译', ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-translation-64.png', ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-google-translate-100.png');
 
   ScrollBox1.Height := 60 * 6;
              // 计算主窗体中心点
@@ -234,9 +239,6 @@ begin
   // 设置窗体位置到主窗体中心
   ScrollBox1.Left := MainFormCenter.X;
   ScrollBox1.Top := MainFormCenter.Y;
-
-
-
 
 end;
 
@@ -262,4 +264,5 @@ end.
 //    set_json_value('config', 'definestart', 'false');
 //    Caption := 'toolform';
 //  end;
+
 
