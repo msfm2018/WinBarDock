@@ -13,57 +13,43 @@ object CfgForm: TCfgForm
   Position = poScreenCenter
   StyleElements = []
   OnClose = FormClose
+  OnMouseDown = FormMouseDown
   OnMouseWheel = FormMouseWheel
   OnShow = FormShow
   TextHeight = 14
   object Panel1: TPanel
     Left = 313
-    Top = 17
+    Top = 25
     Width = 879
-    Height = 478
+    Height = 470
     Align = alClient
     Caption = 'Panel1'
     TabOrder = 0
-    object ve1: TValueListEditor
+    object ListView1: TListView
       Left = 1
       Top = 1
       Width = 877
-      Height = 476
-      Hint = #21452#20987#21024#38500
+      Height = 468
       Align = alClient
-      BorderStyle = bsNone
-      Ctl3D = False
-      DisplayOptions = []
-      DoubleBuffered = True
+      Columns = <>
       Font.Charset = GB2312_CHARSET
       Font.Color = clWindowText
-      Font.Height = -14
-      Font.Name = #23435#20307
+      Font.Height = -19
+      Font.Name = #24494#36719#38597#40657
       Font.Style = []
-      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSizing, goColSizing, goRowSelect, goThumbTracking]
-      ParentCtl3D = False
-      ParentDoubleBuffered = False
+      RowSelect = True
       ParentFont = False
-      ParentShowHint = False
-      ScrollBars = ssVertical
-      ShowHint = True
-      Strings.Strings = (
-        '=')
       TabOrder = 0
-      TitleCaptions.Strings = (
-        #22270#29255#36335#24452
-        #25991#20214#36335#24452)
-      OnDblClick = ve1DblClick
-      ColWidths = (
-        285
-        678)
+      ViewStyle = vsReport
+      OnDblClick = ListView1DblClick
+      OnResize = ListView1Resize
     end
   end
   object ScrollBox1: TScrollBox
     Left = 0
-    Top = 17
+    Top = 25
     Width = 313
-    Height = 478
+    Height = 470
     Align = alLeft
     BevelInner = bvNone
     BevelOuter = bvNone
@@ -81,27 +67,12 @@ object CfgForm: TCfgForm
     BevelEdges = [beTop]
     TabOrder = 2
     Visible = False
-    object Button1: TButton
-      Left = 926
-      Top = 40
-      Width = 91
-      Height = 83
-      Caption = #28155#21152
-      Font.Charset = GB2312_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -32
-      Font.Name = #23435#20307
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 0
-      OnClick = Buttoaction_translator
-    end
     object ComboBox1: TComboBox
       Left = 81
       Top = 13
       Width = 145
       Height = 22
-      TabOrder = 1
+      TabOrder = 0
       Text = #22270#26631#26679#24335'1'
       Items.Strings = (
         #22270#26631#26679#24335'1'
@@ -126,7 +97,7 @@ object CfgForm: TCfgForm
       ParentFont = False
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 2
+      TabOrder = 1
       Text = ''
       OnDblClick = imgEdit1DblClick
     end
@@ -149,7 +120,7 @@ object CfgForm: TCfgForm
       ParentFont = False
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 3
+      TabOrder = 2
       Text = ''
       OnDblClick = imgEdit1DblClick
     end
@@ -172,7 +143,7 @@ object CfgForm: TCfgForm
       ParentFont = False
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 4
+      TabOrder = 3
       Text = ''
     end
     object tip: TLabeledEdit
@@ -190,7 +161,7 @@ object CfgForm: TCfgForm
       Font.Style = []
       LabelPosition = lpLeft
       ParentFont = False
-      TabOrder = 5
+      TabOrder = 4
       Text = ''
       TextHint = #26080
     end
@@ -200,7 +171,7 @@ object CfgForm: TCfgForm
       Width = 97
       Height = 17
       Caption = #36873#25321#22270#26631
-      TabOrder = 6
+      TabOrder = 5
       OnClick = CheckBox1Click
     end
   end
@@ -208,19 +179,11 @@ object CfgForm: TCfgForm
     Left = 0
     Top = 0
     Width = 1192
-    Height = 17
+    Height = 25
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 3
-    object Button2: TButton
-      Left = 1129
-      Top = -3
-      Width = 67
-      Height = 23
-      Caption = 'X'
-      TabOrder = 0
-      OnClick = Button2Click
-    end
+    OnMouseDown = FormMouseDown
   end
   object Button3: TButton
     Left = 1111
@@ -232,7 +195,7 @@ object CfgForm: TCfgForm
     OnClick = Button3Click
   end
   object ImgList: TImageList
-    Left = 440
-    Top = 320
+    Left = 256
+    Top = 368
   end
 end

@@ -422,10 +422,10 @@ begin
     Exit;
   if t_node(Sender).tool_tip = '开始菜单' then
   begin
-    if bottomForm.Caption = 'selfdefinestartmenu' then
+//    if bottomForm.Caption = 'selfdefinestartmenu' then
       PostMessage(handle, WM_USER + 1031, 0, 0)
-    else
-      SimulateCtrlEsc();
+//    else
+//      SimulateCtrlEsc();
 
   end
   else if t_node(Sender).tool_tip = '回收站' then
@@ -777,16 +777,25 @@ begin
   if bottomForm = nil then
     bottomForm := TbottomForm.Create(self);
 
-  bottomForm.top := 0;
+
+
+// 设置窗体高度为屏幕高度的一半
+  bottomForm.Height := Screen.WorkAreaHeight div 2;
+
+// 将窗体顶部设置为屏幕高度的中间位置
+  bottomForm.Top := (Screen.WorkAreaHeight - bottomForm.Height) div 2;
 
   if g_core.json.Config.layout = 'left' then
   begin
-    bottomForm.Left := -bottomForm.Width + 4;
+  // 将窗体放置在屏幕左侧
+    bottomForm.Left := 0; // 或者根据需要调整为 `-bottomForm.Width + 4`
   end
   else
+  begin
+  // 默认设置为屏幕右侧
     bottomForm.Left := Screen.WorkAreaWidth - bottomForm.Width;
+  end;
 
-  bottomForm.Height := Screen.WorkAreaHeight;
   bottomForm.show;
 
   hwndMonitor := Handle;
@@ -808,18 +817,6 @@ begin
   SetTimer(Handle, 1101, 2000, @global_hook);
 
   InstallMouseHook();
-
-  if g_core.json.Config.definestart = 'true' then
-  begin
-    bottomForm.Caption := 'selfdefinestartmenu';
-    bottomForm.CheckBox1.Checked := true;
-
-  end
-  else
-  begin
-    bottomForm.Caption := 'toolform';
-    bottomForm.CheckBox1.Checked := false;
-  end;
 
 end;
 

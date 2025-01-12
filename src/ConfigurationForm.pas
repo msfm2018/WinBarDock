@@ -8,13 +8,11 @@ uses
   Winapi.ShellAPI, Vcl.ComCtrls, Vcl.Grids, Vcl.ValEdit, Vcl.StdCtrls,
   Vcl.ExtCtrls, Vcl.Buttons, utils, u_json, System.IniFiles, u_debug,
   Vcl.Imaging.pngimage, System.JSON, System.Generics.Collections, Vcl.Menus,
-  winapi.UxTheme, ImgPanel, Vcl.Mask, System.Hash,
-  System.ImageList, Vcl.ImgList;
+  ImgButton, winapi.UxTheme, ImgPanel, Vcl.Mask, System.Hash, System.ImageList,
+  Vcl.ImgList;
 
 type
   TCfgForm = class(TForm)
-    ve1: TValueListEditor;
-    Button1: TButton;
     imgEdit1: TLabeledEdit;
     text_edit: TLabeledEdit;
     tip: TLabeledEdit;
@@ -24,24 +22,24 @@ type
     Panel1: TPanel;
     ScrollBox1: TScrollBox;
     Panel2: TPanel;
-    Button2: TButton;
     Panel3: TPanel;
     CheckBox1: TCheckBox;
     Button3: TButton;
-    procedure Buttoaction_translator(Sender: TObject);
+    ListView1: TListView;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure imgEdit1DblClick(Sender: TObject);
-    procedure ve1DblClick(Sender: TObject);
     procedure rbtxtClick(Sender: TObject);
     procedure rbimgClick(Sender: TObject);
     procedure fileditSubLabelDblClick(Sender: TObject);
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure ScrollBox1MouseEnter(Sender: TObject);
     procedure ScrollBox1MouseLeave(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure ListView1DblClick(Sender: TObject);
+    procedure ListView1Resize(Sender: TObject);
   private
     file_map: TDictionary<string, string>;
     procedure AddFileInfoToJson(const Key, ImageFileName, FilePath, ToolTip: string);
@@ -51,10 +49,17 @@ type
     procedure PanelMouseLeave(Sender: TObject);
 
     procedure PanelDblClick(Sender: TObject);
+    procedure Buttoaction_translatoradd(Sender: TObject);
+    procedure closex(Sender: TObject);
+    procedure AdjustLastColumnWidth;
+    procedure translateDblClick(Sender: TObject);
 
   public
     FShadowAlpha: Byte; // 阴影透明度 (0-255)
     FShadowColor: TColor; // 阴影颜色
+
+    closebtn: TImgButton;
+    close1: TImgButton;
   end;
 
   TStartMenuApp = record
@@ -134,18 +139,25 @@ begin
     begin
       AddFileInfoToJson(Hash, ExtractFileName(key1), key2, TImgPanel(Sender).extendA);
 
-      ve1.InsertRow(ExtractFileName(key1), TImgPanel(Sender).extendA, True);
+
+       // 使用 ListView 添加数据
+      with ListView1.Items.Add do
+      begin
+        Caption := ExtractFileName(key1);  // 文件名
+        SubItems.Add(Trim(TImgPanel(Sender).extendA));  // 工具提示
+      end;
+
       ClearInputs;
     end;
 
-        var p: timage;
-      if not g_core.ImageCache.TryGetValue(ExtractFileName(key1), p) then
-      begin
-        p := TImage.Create(nil);
-        p.Picture.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\' + ExtractFileName(key1));
-        g_core.ImageCache.Add(ExtractFileName(key1), p);
+    var p: timage;
+    if not g_core.ImageCache.TryGetValue(ExtractFileName(key1), p) then
+    begin
+      p := TImage.Create(nil);
+      p.Picture.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\' + ExtractFileName(key1));
+      g_core.ImageCache.Add(ExtractFileName(key1), p);
 
-      end
+    end
 
   end;
 
@@ -183,12 +195,13 @@ begin
     Image.Picture.Icon := FileIcon;
     Image.Width := 32;   // 设置图标的大小
     Image.Height := 32;
-
+    Image.OnDblClick := translateDblClick;
     // 创建显示文本的Label控件
     Label1 := TLabel.Create(Self);
     Label1.Parent := Panel;
     Label1.Caption := FileName;
     Label1.AutoSize := True;
+    Label1.OnDblClick := translateDblClick;
 
     Image.Left := 10; // (Panel.Width - Image.Width - Label1.Width - 10) div 2;  // 图标居中
     Image.Top := (Panel.Height - Image.Height) div 2;  // 图标垂直居中
@@ -205,6 +218,14 @@ begin
     FileIcon.Free;
   end;
 
+end;
+
+procedure TCfgForm.translateDblClick(Sender: TObject);
+begin
+  if Sender is tlabel then
+    TImgPanel(TLabel(Sender).Parent).OnDblClick(TLabel(Sender).Parent)
+  else if Sender is TImage then
+    TImgPanel(TImage(Sender).Parent).OnDblClick(TLabel(Sender).Parent);
 end;
 
 procedure TCfgForm.PanelMouseEnter(Sender: TObject);
@@ -264,7 +285,7 @@ begin
   Result := AppList;
 end;
 
-procedure TCfgForm.Buttoaction_translator(Sender: TObject);
+procedure TCfgForm.Buttoaction_translatoradd(Sender: TObject);
 var
   key1, key2, Hash, imgpath: string;
   utf8Text, ansi_path: PAnsiChar;
@@ -284,7 +305,14 @@ begin
       begin
         AddFileInfoToJson(Hash, ExtractFileName(key1), key2, tip.Text);
 
-        ve1.InsertRow(ExtractFileName(key1), Trim(tip.Text), True);
+
+        // 使用 ListView 添加数据
+        with ListView1.Items.Add do
+        begin
+          Caption := ExtractFileName(key1);  // 文件名
+          SubItems.Add(Trim(tip.Text));       // 工具提示
+        end;
+
         ClearInputs;
       end;
 
@@ -319,7 +347,14 @@ begin
       if file_map.TryAdd(Hash, Format('%s,%s,%s', [key1, imgpath, Trim(tip.Text)])) then
       begin
         AddFileInfoToJson(Hash, key1, Trim(filedit.Text), tip.Text);
-        ve1.InsertRow(key1, Trim(tip.Text), True);
+
+         // 使用 ListView 添加数据
+        with ListView1.Items.Add do
+        begin
+          Caption := key1;  // 文件名
+          SubItems.Add(Trim(tip.Text));  // 工具提示
+        end;
+
         ClearInputs;
       end;
 
@@ -335,11 +370,6 @@ begin
     end;
   end;
 
-end;
-
-procedure TCfgForm.Button2Click(Sender: TObject);
-begin
-  Close;
 end;
 
 procedure TCfgForm.Button3Click(Sender: TObject);
@@ -395,9 +425,16 @@ end;
 
 procedure TCfgForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-
+  FreeAndNil(closebtn);
+  FreeAndNil(close1);
   g_core.nodes.is_configuring := false;
   file_map.Free;
+end;
+
+procedure TCfgForm.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  ReleaseCapture;
+  SendMessage(handle, WM_SYSCOMMAND, SC_MOVE + HTCaption, 0);
 end;
 
 procedure TCfgForm.FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
@@ -411,13 +448,48 @@ begin
       Handled := True;
 end;
 
+procedure TCfgForm.AdjustLastColumnWidth;
+var
+  TotalWidth: Integer;
+  ColCount: Integer;
+  I: Integer;
+  UsedWidth: Integer;
+begin
+  // 获取 ListView 的总宽度
+  TotalWidth := ListView1.ClientWidth;
+
+  // 获取列数（假设 ListView 至少有两列）
+  ColCount := ListView1.Columns.Count;
+
+  if ColCount > 1 then
+  begin
+    // 计算除最后一列外所有列的宽度
+    UsedWidth := 360;
+
+    ListView1.Columns[0].Width := UsedWidth;
+    // 设置最后一列的宽度为剩余的空间
+    ListView1.Columns[ColCount - 1].Width := TotalWidth - UsedWidth;
+  end;
+end;
+
 procedure TCfgForm.FormShow(Sender: TObject);
 var
   values: TArray<string>;
   v: TSettingItem;
   tmp_key: string;
 begin
-EnableNonClientDpiScaling(Handle);
+
+// 清空原有的 ListView 数据
+  ListView1.Items.Clear;
+
+  // 设置 ListView 的列
+  ListView1.Columns.Clear;
+  ListView1.Columns.Add;  // 第一列：文件名
+  ListView1.Columns.Add;  // 第二列：工具提示
+
+  AdjustLastColumnWidth();
+
+  EnableNonClientDpiScaling(Handle);
   Apps := TStartMenuApps.GetApps;
   for App in Apps do
 
@@ -425,7 +497,7 @@ EnableNonClientDpiScaling(Handle);
   filedit.Text := '';
   file_map := TDictionary<string, string>.Create;
 
-  ve1.Strings.Clear;
+//  ve1.Strings.Clear;
 
   for tmp_key in g_core.json.Settings.keys do
   begin
@@ -435,8 +507,14 @@ EnableNonClientDpiScaling(Handle);
       begin
         file_map.TryAdd(tmp_key, v.image_file_name + ',' + v.FilePath + ',' + v.tool_tip);
 
-        ve1.InsertRow(v.image_file_name, v.tool_tip, True);
+//        ve1.InsertRow(v.image_file_name, v.tool_tip, True);
 
+         // 将数据插入到 ListView
+        with ListView1.Items.Add do
+        begin
+          Caption := v.image_file_name; // 文件名
+          SubItems.Add(v.tool_tip);      // 工具提示
+        end;
       end;
   end;
 
@@ -447,25 +525,96 @@ EnableNonClientDpiScaling(Handle);
   imgEdit1.Text := '';
 
   SetWindowCornerPreference(Handle);
+
+  closebtn := TImgButton.Create(self);
+  closebtn.Parent := Panel2;
+
+  closebtn.Left := filedit.Left + filedit.Width + 20;
+  closebtn.Top := tip.Top;
+  closebtn.SetBounds(closebtn.Left, closebtn.top, 48, 48);
+
+  closebtn.Image.LoadFromFile(ExtractFilePath(ParamStr(0)) + '/img/add_hover.png');
+  closebtn.Image1.LoadFromFile(ExtractFilePath(ParamStr(0)) + '/img/add.png');
+  closebtn.OnClick := Buttoaction_translatoradd;
+  closebtn.Cursor := crHandpoint;
+
+  close1 := TImgButton.Create(self);
+  close1.Parent := Panel3;
+  close1.Align := alRight;
+
+  close1.Width := 26;
+  close1.Height := 32;
+  close1.Image.LoadFromFile(ExtractFilePath(ParamStr(0)) + '/img/close_hover.png');
+  close1.Image1.LoadFromFile(ExtractFilePath(ParamStr(0)) + '/img/close.png');
+  close1.OnClick := closex;
+  close1.Cursor := crHandpoint;
+
+end;
+
+procedure TCfgForm.closex(Sender: TObject);
+begin
+  close;
 end;
 
 procedure TCfgForm.imgEdit1DblClick(Sender: TObject);
 var
   OpenDlg: TFileOpenDialog;
+  FileType: TFileTypeItem;
 begin
   SendToBack();
   OpenDlg := TFileOpenDialog.Create(nil);
+  FileType := OpenDlg.FileTypes.Add();
+  OpenDlg.Title := '选择 PNG 文件';
+  FileType.DisplayName := 'PNG';
+  FileType.FileMask := '*.png*';
+  OpenDlg.DefaultFolder := GetCurrentDir; // 设置默认文件夹
+
+
+  OpenDlg.DefaultExtension := 'png'; // 设置默认扩展名
 
   try
     if OpenDlg.Execute then
     begin
-      filedit.Text := OpenDlg.FileName;
+      ImgEdit1.Text := OpenDlg.FileName;
     end;
 
   finally
     OpenDlg.Free;
     BringToFront;
   end;
+end;
+
+procedure TCfgForm.ListView1DblClick(Sender: TObject);
+var
+  selectedItem: TListItem;
+  key1, Hash: string;
+begin
+  selectedItem := ListView1.Selected;
+  if selectedItem = nil then
+    Exit;
+
+  key1 := selectedItem.Caption;
+  Hash := THashMD5.GetHashString(key1);
+
+  for var Key in file_map.Keys do
+  begin
+    if Key = Hash then
+    begin
+      ListView1.Items.Delete(selectedItem.Index);  // 删除该项
+
+      file_map.Remove(Key);
+
+      remove_json(Key);
+      del_json_value('settings', Key);
+      Break;
+    end;
+  end;
+
+end;
+
+procedure TCfgForm.ListView1Resize(Sender: TObject);
+begin
+  AdjustLastColumnWidth();
 end;
 
 procedure TCfgForm.rbimgClick(Sender: TObject);
@@ -490,37 +639,6 @@ end;
 procedure TCfgForm.ScrollBox1MouseLeave(Sender: TObject);
 begin
   Screen.Cursor := crDefault;
-end;
-
-procedure TCfgForm.ve1DblClick(Sender: TObject);
-var
-  pp, key1, Hash: string;
-  inx: Integer;
-begin
-  pp := ve1.Keys[ve1.Row];
-  if pp = '' then
-    Exit;
-
-  key1 := pp;
-
-  Hash := THashMD5.GetHashString(key1);
-
-  for var Key in file_map.Keys do
-  begin
-    if Key = Hash then
-    begin
-      if ve1.FindRow(pp, inx) then
-      begin
-        ve1.DeleteRow(inx);
-        file_map.Remove(Key);
-
-        remove_json(Key);
-        del_json_value('settings', Key);
-      end;
-    end;
-
-  end;
-
 end;
 
 end.

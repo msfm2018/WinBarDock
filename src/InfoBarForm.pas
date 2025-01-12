@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  Vcl.ExtCtrls, Winapi.ShellAPI, Vcl.ComCtrls, ActiveX, shlobj, u_json,
+  Vcl.ExtCtrls, Winapi.ShellAPI, Vcl.ComCtrls, ActiveX, shlobj, u_json, ImgPanel,
   ImgButton, System.JSON, u_debug, comobj, Vcl.ImgList, Vcl.Menus,
   System.ImageList, utils, Vcl.StdCtrls;
 
@@ -14,33 +14,20 @@ type
     ImgList: TImageList;
     PopupMenu1: TPopupMenu;
     N1: TMenuItem;
-    Panel2: TPanel;
-    Button3: TButton;
-    Button4: TButton;
-    Button5: TButton;
-    Button6: TButton;
-    Button7: TButton;
-    Button8: TButton;
-    CheckBox1: TCheckBox;
+    ScrollBox1: TScrollBox;
     procedure FormShow(Sender: TObject);
 
     procedure LVexeinfoMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure Button6Click(Sender: TObject);
-    procedure Button7Click(Sender: TObject);
-    procedure Button8Click(Sender: TObject);
-    procedure Button5Click(Sender: TObject);
-    procedure Button4Click(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
-    procedure CheckBox1Click(Sender: TObject);
   private
     into_snap_windows: Boolean;
 
- 
-
     procedure snap_top_windows;
-    procedure closebtnClick(Sender: TObject);
-    procedure resetbtnClick(Sender: TObject);
+
+    procedure show_aapp(Path, FileName: string);
+    procedure PanelMouseEnter(Sender: TObject);
+    procedure PanelMouseLeave(Sender: TObject);
+    procedure PanelDblClick(Sender: TObject);
 
   end;
 
@@ -48,7 +35,7 @@ var
   bottomForm: TbottomForm;
   closebtn: TImgButton;
   resetbtn: TImgButton;
-
+   oldcolor:tcolor;
 implementation
 
 {$R *.dfm}
@@ -101,9 +88,112 @@ begin
     Left := Screen.WorkAreaWidth - bottomForm.Width
 end;
 
+procedure TbottomForm.show_aapp(Path, FileName: string);
+var
+  Panel: TImgPanel;
+  Image: TImage;
+begin
+  try
+    ScrollBox1.VertScrollBar.Visible := True; // 启用垂直滚动条
 
+    Panel := TImgPanel.Create(Scrollbox1);
+    Panel.Parent := ScrollBox1;
+    Panel.Align := alTop; // 设置为垂直排列
+    Panel.Height := 60;   // 每个 Panel 的高度
+    Panel.BevelOuter := bvNone;
+    Panel.ParentColor := False;
+    Panel.StyleElements := [seClient];
+    Panel.extendA := FileName;
+    Panel.extendB := Path;
+//    Panel.Name := FileName;
+      oldcolor:=Panel.Color;
+    // 创建显示图标的 Image 控件
+    Image := TImage.Create(Panel);
+    Image.Parent := Panel;
+    Image.Picture.LoadFromFile(Path);
+    Image.Width := 46;  // 设置图标宽度
+    Image.Height := 46; // 设置图标高度
+    Image.Stretch := True;
+    Image.Name := FileName;
+    Image.Cursor := crHandPoint;
 
+    // 图标垂直和水平居中
+    Image.Left := (Panel.Width - Image.Width) div 2;
+    Image.Top := (Panel.Height - Image.Height) div 2;
 
+    // 绑定事件
+    Image.OnClick := PanelDblClick;
+    Panel.OnMouseEnter := PanelMouseEnter;
+    Panel.OnMouseLeave := PanelMouseLeave;
+    Panel.OnClick := PanelDblClick;
+  finally
+
+  end;
+end;
+
+procedure TbottomForm.PanelDblClick(Sender: TObject);
+var
+  Identifier: string;
+var
+  OpenDlg: TFileOpenDialog;
+var
+  vobj: TObject;
+begin
+  if Sender is timage then
+    Identifier := string(StrPas(PChar(timage(Sender).name)));
+  if Sender is TImgPanel then
+    Identifier := string(StrPas(PChar(TImgPanel(Sender).name)));
+
+  try
+    if Identifier = '关机' then
+    begin
+      SystemShutdown(false);
+    end
+    else if Identifier = '重启' then
+    begin
+      SystemShutdown(true);
+    end
+    else if Identifier = '翻译' then
+      g_core.utils.launch_app(g_core.json.Config.translator)
+    else if Identifier = '快捷' then
+    begin
+
+      OpenDlg := TFileOpenDialog.Create(nil);
+
+      if OpenDlg.Execute then
+        set_json_value('config', 'shortcut', OpenDlg.FileName);
+
+      OpenDlg.Free;
+
+    end
+    else if Identifier = '配置' then
+    begin
+      vobj := g_core.find_object_by_name('cfgForm');
+      g_core.nodes.is_configuring := true;
+      SetWindowPos(TCfgForm(vobj).Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
+      TCfgForm(vobj).Show;
+    end
+    else if Identifier = '退出' then
+      Application.Terminate;
+  finally
+    StrDispose(PChar(TImgPanel(Sender).Tag)); // 释放字符串内存
+  end;
+
+//    g_core.json.Config.style := 'style-2';   g_core.json.Config.style := 'style-1';
+end;
+
+procedure TbottomForm.PanelMouseEnter(Sender: TObject);
+begin
+  (Sender as TImgPanel).color := $f5f5f5;
+
+end;
+
+procedure TbottomForm.PanelMouseLeave(Sender: TObject);
+begin
+
+  (Sender as TImgPanel).color :=oldcolor;
+
+end;
 
 procedure TbottomForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
@@ -111,40 +201,43 @@ begin
 end;
 
 procedure TbottomForm.FormShow(Sender: TObject);
+var
+  MainFormCenter: TPoint;
 begin
+//决定了 要不要调用 hook start
+  caption := 'selfdefinestartmenu';
+
+  Width := 60;
+  DoubleBuffered := true;
   g_core.utils.round_rect(width, height, Handle);
   into_snap_windows := false;
   SetTimer(Handle, 10, 100, @sort_layout);
   DragAcceptFiles(Handle, True);
 
   SetWindowCornerPreference(Handle);
+  ScrollBox1.VertScrollBar.Visible := True; // 启用垂直滚动条
+  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/close_hover.png', '关机');
+  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/reset_hover.png', '重启');
 
-  closebtn := TImgButton.Create(self);
-  closebtn.Parent := Panel2;
+  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-esc-40.png', '退出');
 
-  closebtn.SetBounds(40, Panel2.Height - 40, 32, 32);
-  closebtn.Image.LoadFromFile(ExtractFilePath(ParamStr(0)) + '/imgapp/close_hover.png');
-  closebtn.Image1.LoadFromFile(ExtractFilePath(ParamStr(0)) + '/imgapp/close.png');
-  closebtn.OnClick := closebtnClick;
-  closebtn.Cursor := crHandpoint;
+  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-shortcuts-48.png', '快捷');
 
-  resetbtn := TImgButton.Create(self);
-  resetbtn.Parent := Panel2;
-  resetbtn.SetBounds(0, Panel2.Height - 40, 32, 32);
-  resetbtn.Image.LoadFromFile(ExtractFilePath(ParamStr(0)) + '/imgapp/reset_hover.png');
-  resetbtn.Image1.LoadFromFile(ExtractFilePath(ParamStr(0)) + '/imgapp/reset.png');
-  resetbtn.OnClick := resetbtnClick;
-  resetbtn.Cursor := crHandpoint
-end;
+  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/cfg.png', '配置');
+  show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-translation-64.png', '翻译');
 
-procedure TbottomForm.resetbtnClick(Sender: TObject);
-begin
-  SystemShutdown(True);
-end;
+  ScrollBox1.Height := 60 * 6;
+             // 计算主窗体中心点
+  MainFormCenter.X := (Width - ScrollBox1.Width) div 2;
+  MainFormCenter.Y := (height - ScrollBox1.Height) div 2;
 
-procedure TbottomForm.closebtnClick(Sender: TObject);
-begin
-  SystemShutdown(false);
+  // 设置窗体位置到主窗体中心
+  ScrollBox1.Left := MainFormCenter.X;
+  ScrollBox1.Top := MainFormCenter.Y;
+
+
+
+
 end;
 
 procedure TbottomForm.LVexeinfoMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -153,67 +246,20 @@ begin
   SendMessage(handle, WM_SYSCOMMAND, SC_MOVE + HTCaption, 0);
 end;
 
-procedure TbottomForm.Button3Click(Sender: TObject);
-begin
-  Application.Terminate;
-end;
-
-procedure TbottomForm.Button4Click(Sender: TObject);
-begin
-  g_core.json.Config.style := 'style-2';
-end;
-
-procedure TbottomForm.Button5Click(Sender: TObject);
-begin
-  g_core.json.Config.style := 'style-1';
-end;
-
-procedure TbottomForm.Button6Click(Sender: TObject);
-begin
-  g_core.utils.launch_app(g_core.json.Config.translator);
-end;
-
-procedure TbottomForm.Button7Click(Sender: TObject);
-var
-  vobj: TObject;
-begin
-
-  vobj := g_core.find_object_by_name('cfgForm');
-  g_core.nodes.is_configuring := true;
-  SetWindowPos(TCfgForm(vobj).Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
-  TCfgForm(vobj).Show;
-//    TCfgForm(vobj).ShowModal;
-end;
-
-procedure TbottomForm.Button8Click(Sender: TObject);
-var
-  OpenDlg: TFileOpenDialog;
-begin
-  OpenDlg := TFileOpenDialog.Create(nil);
-
-  if OpenDlg.Execute then
-    set_json_value('config', 'shortcut', OpenDlg.FileName);
-
-  OpenDlg.Free;
-
-end;
-
-procedure TbottomForm.CheckBox1Click(Sender: TObject);
-begin
-  if CheckBox1.Checked then
-  begin
-
-    set_json_value('config', 'definestart', 'true');
-
-    Caption := 'selfdefinestartmenu';
-
-  end
-  else
-  begin
-    set_json_value('config', 'definestart', 'false');
-    Caption := 'toolform';
-  end;
-end;
-
 end.
+
+
+// if CheckBox1.Checked then
+//  begin
+//
+//    set_json_value('config', 'definestart', 'true');
+//
+//    Caption := 'selfdefinestartmenu';
+//
+//  end
+//  else
+//  begin
+//    set_json_value('config', 'definestart', 'false');
+//    Caption := 'toolform';
+//  end;
 

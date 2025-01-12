@@ -14,76 +14,15 @@ object bottomForm: TbottomForm
   OnClose = FormClose
   OnShow = FormShow
   TextHeight = 14
-  object Panel2: TPanel
+  object ScrollBox1: TScrollBox
     Left = 0
-    Top = 391
-    Width = 86
-    Height = 287
-    Align = alBottom
+    Top = 0
+    Width = 100
+    Height = 678
+    BevelInner = bvNone
+    BevelOuter = bvNone
+    BorderStyle = bsNone
     TabOrder = 0
-    object Button4: TButton
-      Left = 1
-      Top = 116
-      Width = 84
-      Height = 25
-      Caption = #26679#24335'B'
-      TabOrder = 0
-      OnClick = Button4Click
-    end
-    object Button5: TButton
-      Left = 1
-      Top = 87
-      Width = 84
-      Height = 25
-      Caption = #26679#24335'A'
-      TabOrder = 1
-      OnClick = Button5Click
-    end
-    object Button6: TButton
-      Left = 2
-      Top = 1
-      Width = 84
-      Height = 25
-      Caption = #32763#35793
-      TabOrder = 2
-      OnClick = Button6Click
-    end
-    object Button7: TButton
-      Left = 2
-      Top = 30
-      Width = 84
-      Height = 25
-      Caption = #37197#32622
-      TabOrder = 3
-      OnClick = Button7Click
-    end
-    object Button8: TButton
-      Left = 2
-      Top = 58
-      Width = 84
-      Height = 25
-      Caption = #24555#25463
-      TabOrder = 4
-      OnClick = Button8Click
-    end
-    object Button3: TButton
-      Left = 1
-      Top = 145
-      Width = 84
-      Height = 25
-      Caption = #36864#20986
-      TabOrder = 5
-      OnClick = Button3Click
-    end
-    object CheckBox1: TCheckBox
-      Left = 0
-      Top = 181
-      Width = 97
-      Height = 17
-      Caption = #33258#23450#20041#24320#22987
-      TabOrder = 6
-      OnClick = CheckBox1Click
-    end
   end
   object ImgList: TImageList
     Height = 32
