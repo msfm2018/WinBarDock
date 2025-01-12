@@ -101,6 +101,10 @@ begin
     Left := Screen.WorkAreaWidth - bottomForm.Width
 end;
 
+
+
+
+
 procedure TbottomForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   KillTimer(Handle, 10);
