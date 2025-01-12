@@ -144,10 +144,10 @@ var
 var
   vobj: TObject;
 begin
-  if Sender is timage then
-    Identifier := string(StrPas(PChar(timage(Sender).name)));
-  if Sender is TImgPanel then
-    Identifier := string(StrPas(PChar(TImgPanel(Sender).name)));
+  if Sender is TImgButton then
+    Identifier := string(StrPas(PChar(TImgButton(Sender).name)));
+//  if Sender is TImgPanel then
+//    Identifier := string(StrPas(PChar(TImgPanel(Sender).name)));
 
   try
     if Identifier = '关机' then
