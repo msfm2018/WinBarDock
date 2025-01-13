@@ -23,4 +23,12 @@ object Form1: TForm1
   OnPaint = FormPaint
   OnShow = FormShow
   TextHeight = 12
+  object Label1: TLabel
+    Left = 168
+    Top = 40
+    Width = 36
+    Height = 12
+    Caption = 'Label1'
+    Visible = False
+  end
 end

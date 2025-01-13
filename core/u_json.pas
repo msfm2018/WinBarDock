@@ -13,7 +13,7 @@ type
     FilePath: string;
     memory_image: TMemoryStream;
     Is_path_valid: Boolean;
-    tool_tip: string;
+    _tip: string;
   end;
 
   TConfig = record
@@ -183,7 +183,7 @@ begin
           image_file_name := SettingsObj.GetValue(Key).GetValue<string>('imagefilename');
 
           FilePath := SettingsObj.GetValue(Key).GetValue<string>('path');
-          tool_tip := SettingsObj.GetValue(Key).GetValue<string>('tooltip');
+          _tip := SettingsObj.GetValue(Key).GetValue<string>('tooltip');
           Is_path_valid := true;
           memory_image := nil;
 

@@ -22,6 +22,8 @@ object bottomForm: TbottomForm
     BevelInner = bvNone
     BevelOuter = bvNone
     BorderStyle = bsNone
+    Color = clWhite
+    ParentColor = False
     TabOrder = 0
   end
   object ImgList: TImageList

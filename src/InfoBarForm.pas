@@ -19,15 +19,15 @@ type
 
     procedure LVexeinfoMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure wndproc(var Msg: tmessage); override;
   private
     into_snap_windows: Boolean;
 
     procedure snap_top_windows;
 
     procedure show_aapp(Path, FileName, f1, f2: string);
-    procedure PanelMouseEnter(Sender: TObject);
-    procedure PanelMouseLeave(Sender: TObject);
     procedure PanelDblClick(Sender: TObject);
+    procedure init;
 
   end;
 
@@ -89,13 +89,34 @@ begin
     Left := Screen.WorkAreaWidth - bottomForm.Width
 end;
 
+procedure TbottomForm.wndproc(var Msg: tmessage);
+var
+  DpiX, DpiY: UINT;
+
+begin
+  inherited;
+  case Msg.Msg of
+    WM_DPICHANGED:
+      begin
+
+         // 提取新的 DPI 信息
+        DpiX := LOWORD(Msg.wParam);
+        DpiY := HIWORD(Msg.wParam);
+
+        Height := Round((60 * 6 + 40) * DpiX / 96.0);
+        Top := (Screen.WorkAreaHeight - Height) div 2;
+
+      end;
+  end;
+end;
+
 procedure TbottomForm.show_aapp(Path, FileName, f1, f2: string);
 var
   Panel: TImgPanel;
   Image: TImgButton; // TImage;
 begin
   try
-    ScrollBox1.VertScrollBar.Visible := True; // 启用垂直滚动条
+    ScrollBox1.Width := Width;
 
     Panel := TImgPanel.Create(Scrollbox1);
     Panel.Parent := ScrollBox1;
@@ -106,30 +127,29 @@ begin
     Panel.StyleElements := [seClient];
     Panel.extendA := FileName;
     Panel.extendB := Path;
-//    Panel.Name := FileName;
+
     oldcolor := Panel.Color;
     // 创建显示图标的 Image 控件
-//    Image := TImage.Create(Panel);
 
     Image := TImgButton.Create(Panel);
     Image.Parent := Panel;
-//    Image.Picture.LoadFromFile(Path);
+
     Image.Image.LoadFromFile(f1);
     Image.Image1.LoadFromFile(f2);
-    Image.Width := 46;  // 设置图标宽度
-    Image.Height := 46; // 设置图标高度
-//    Image.Stretch := True;
+    Image.Width := round(46 * ScaleFactor);   // 设置图标宽度
+    Image.Height := round(46 * ScaleFactor);  // 设置图标高度
+
     Image.Name := FileName;
     Image.Cursor := crHandPoint;
 
     // 图标垂直和水平居中
+
     Image.Left := (Panel.Width - Image.Width) div 2;
     Image.Top := (Panel.Height - Image.Height) div 2;
 
     // 绑定事件
     Image.OnClick := PanelDblClick;
-//    Panel.OnMouseEnter := PanelMouseEnter;
-//    Panel.OnMouseLeave := PanelMouseLeave;
+
     Panel.OnClick := PanelDblClick;
   finally
 
@@ -146,8 +166,7 @@ var
 begin
   if Sender is TImgButton then
     Identifier := string(StrPas(PChar(TImgButton(Sender).name)));
-//  if Sender is TImgPanel then
-//    Identifier := string(StrPas(PChar(TImgPanel(Sender).name)));
+
 
   try
     if Identifier = '关机' then
@@ -187,39 +206,29 @@ begin
 //    g_core.json.Config.style := 'style-2';   g_core.json.Config.style := 'style-1';
 end;
 
-procedure TbottomForm.PanelMouseEnter(Sender: TObject);
-begin
-  (Sender as TImgPanel).color := clYellow; // $f5f5f5;
-
-end;
-
-procedure TbottomForm.PanelMouseLeave(Sender: TObject);
-begin
-
-  (Sender as TImgPanel).color := oldcolor;
-
-end;
-
 procedure TbottomForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   KillTimer(Handle, 10);
 end;
 
-procedure TbottomForm.FormShow(Sender: TObject);
+procedure TbottomForm.init();
 var
   MainFormCenter: TPoint;
 begin
 //决定了 要不要调用 hook start
   caption := 'selfdefinestartmenu';
 
-  Width := 60;
   DoubleBuffered := true;
-  g_core.utils.round_rect(width, height, Handle);
-  into_snap_windows := false;
-  SetTimer(Handle, 10, 100, @sort_layout);
-  DragAcceptFiles(Handle, True);
 
-  SetWindowCornerPreference(Handle);
+  into_snap_windows := false;
+  KillTimer(Handle, 10);
+  SetTimer(Handle, 10, 100, @sort_layout);
+
+  ScrollBox1.Height := 60 * 6;
+  ScrollBox1.Width := Width;
+
+  ScrollBox1.Left := Left;
+  ScrollBox1.Top := (height - ScrollBox1.Height) div 2;
   ScrollBox1.VertScrollBar.Visible := True; // 启用垂直滚动条
   show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/close_hover.png', '关机', ExtractFilePath(ParamStr(0)) + '/imgapp/close.png', ExtractFilePath(ParamStr(0)) + '/imgapp/close_hover.png');
   show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/reset_hover.png', '重启', ExtractFilePath(ParamStr(0)) + '/imgapp/reset_hover.png', ExtractFilePath(ParamStr(0)) + '/imgapp/reset.png');
@@ -231,14 +240,19 @@ begin
   show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/cfg.png', '配置', ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-settings-100.png', ExtractFilePath(ParamStr(0)) + '/imgapp/cfg.png');
   show_aapp(ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-translation-64.png', '翻译', ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-translation-64.png', ExtractFilePath(ParamStr(0)) + '/imgapp/icons8-google-translate-100.png');
 
-  ScrollBox1.Height := 60 * 6;
-             // 计算主窗体中心点
-  MainFormCenter.X := (Width - ScrollBox1.Width) div 2;
-  MainFormCenter.Y := (height - ScrollBox1.Height) div 2;
+end;
 
-  // 设置窗体位置到主窗体中心
-  ScrollBox1.Left := MainFormCenter.X;
-  ScrollBox1.Top := MainFormCenter.Y;
+procedure TbottomForm.FormShow(Sender: TObject);
+var
+  MainFormCenter: TPoint;
+begin
+
+  SetWindowCornerPreference(Handle);
+  Height := 60 * 6 + 40;
+  width := round(70 * ScaleFactor);
+  init();
+
+  Top := (Screen.WorkAreaHeight - Height) div 2;
 
 end;
 
@@ -249,20 +263,4 @@ begin
 end;
 
 end.
-
-
-// if CheckBox1.Checked then
-//  begin
-//
-//    set_json_value('config', 'definestart', 'true');
-//
-//    Caption := 'selfdefinestartmenu';
-//
-//  end
-//  else
-//  begin
-//    set_json_value('config', 'definestart', 'false');
-//    Caption := 'toolform';
-//  end;
-
 

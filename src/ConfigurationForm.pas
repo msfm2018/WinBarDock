@@ -139,8 +139,6 @@ begin
     begin
       AddFileInfoToJson(Hash, ExtractFileName(key1), key2, TImgPanel(Sender).extendA);
 
-
-       // 使用 ListView 添加数据
       with ListView1.Items.Add do
       begin
         Caption := ExtractFileName(key1);  // 文件名
@@ -497,23 +495,18 @@ begin
   filedit.Text := '';
   file_map := TDictionary<string, string>.Create;
 
-//  ve1.Strings.Clear;
-
   for tmp_key in g_core.json.Settings.keys do
   begin
 
     if g_core.json.Settings.TryGetValue(tmp_key, v) then
       if (v.Is_path_valid) then
       begin
-        file_map.TryAdd(tmp_key, v.image_file_name + ',' + v.FilePath + ',' + v.tool_tip);
+        file_map.TryAdd(tmp_key, v.image_file_name + ',' + v.FilePath + ',' + v._tip);
 
-//        ve1.InsertRow(v.image_file_name, v.tool_tip, True);
-
-         // 将数据插入到 ListView
         with ListView1.Items.Add do
         begin
           Caption := v.image_file_name; // 文件名
-          SubItems.Add(v.tool_tip);      // 工具提示
+          SubItems.Add(v._tip);      // 工具提示
         end;
       end;
   end;

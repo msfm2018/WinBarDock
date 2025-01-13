@@ -6,12 +6,14 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Registry, Winapi.Dwmapi, core, Dialogs, ExtCtrls, Generics.Collections,
   Vcl.Imaging.pngimage, Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug,
-  ComObj, PsAPI, utils, Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs,
-  System.Math, System.JSON, u_json, ConfigurationForm, Vcl.Menus, InfoBarForm,
-  System.Generics.Collections, plug, TaskbarList, PopupMenuManager, event;
+  ComObj, PsAPI, utils, System.SyncObjs,
+  System.Math, System.JSON, u_json, Vcl.Menus, InfoBarForm,
+  System.Generics.Collections, plug, TaskbarList, event,
+  Vcl.StdCtrls;
 
 type
   TForm1 = class(TForm)
+    Label1: TLabel;
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -19,7 +21,7 @@ type
     procedure FormPaint(Sender: TObject);
 
   private
-    node_at_cursor: t_node;
+    node_at_cursor: _node;
 
     gdraw_text: string;
     procedure node_click(Sender: TObject);
@@ -43,28 +45,27 @@ type
   public
     procedure ConfigureLayout;
   private
+    ScaleFactor: double;
+ 
+
     procedure handle_ayout(Sender: TObject);
     procedure form_mouse_wheel(WheelMsg: TWMMouseWheel);
     procedure CleanupPopupMenu;
 
-    procedure FreeDic;
-    procedure AdjustNodeSize(Node: t_node; Rate: Double);
+    procedure AdjustNodeSize(Node: _node; Rate: Double);
 
     procedure repos(screenHeight: integer);
     procedure nodeimgload;
+    procedure show_side_form;
+
 
   end;
 
-const
-  DWMWCP_DEFAULT = 0;
-  DWMWCP_SQUARE = 1;
-  DWMWCP_ROUND = 2;
-  DWMWCP_CNTR_RADIUS = 3;
+
 
 var
   Form1: TForm1;
-  tmp_json: TDictionary<string, TSettingItem>;
-  cs: TCriticalSection;
+
   label_top, label_left: integer;
 
 var
@@ -77,7 +78,9 @@ var
   heventHook: THandle;
   inOnce: integer = 0;
   finish_layout: Boolean = false;
-//  ImageCache: TDictionary<string, timage>;  // New cache dictionary
+
+var
+  LastReposTime: TDateTime;
 
 implementation
 
@@ -108,11 +111,6 @@ begin
   finally
     Reg.Free;
   end;
-end;
-
-procedure ScaleFormForDPI(Form: TForm; ScaleFactor: Double);
-begin
-  Form.SetBounds(Round(Form.Left * ScaleFactor), Round(Form.Top * ScaleFactor), Round(Form.Width * ScaleFactor), Round(Form.Height * ScaleFactor));
 end;
 
 procedure TForm1.nodeimgload();
@@ -146,7 +144,7 @@ end;
 
 procedure TForm1.CalculateAndPositionNodes();
 var
-  Node: t_node;
+  Node: _node;
   I, NodeCount, NodeSize, NodeGap: Integer;
   v: TSettingItem;
   ClientCenterY: Integer;
@@ -158,9 +156,8 @@ begin
   NodeCount := g_core.json.Settings.Count;
   kys := g_core.json.Settings;
 
-  ClientCenterY := (Self.ClientHeight - NodeSize) div 2;
+  ClientCenterY := Round((Self.ClientHeight - NodeSize * ScaleFactor)) div 2;
 
-  cs.Enter;
   try
     try
 
@@ -183,10 +180,10 @@ begin
       for var Key in keys do
       begin
         var MValue := kys.Items[Key];
-        Node := t_node.Create(self);
+        Node := _node.Create(self);
         g_core.nodes.Nodes[I] := Node;
-        Node.Width := NodeSize;
-        Node.Height := NodeSize;
+        Node.Width := Round(NodeSize * ScaleFactor);
+        Node.Height := Round(NodeSize * ScaleFactor);
 
         if I = 0 then
           Node.Left := NodeGap + exptend
@@ -203,7 +200,7 @@ begin
           Transparent := true;
           Parent := self;
           file_path := MValue.FilePath;
-          tool_tip := MValue.tool_tip;
+          _tip := MValue._tip;
 
           if MValue.Is_path_valid then
           begin
@@ -251,18 +248,18 @@ begin
 
     end;
   finally
-    cs.Leave;
+
   end;
 
 end;
 
 procedure TForm1.node_mouse_enter(Sender: TObject);
 var
-  Node: t_node;
+  Node: _node;
 begin
-  Node := Sender as t_node;
+  Node := Sender as _node;
 
-  gdraw_text := Node.tool_tip;
+  gdraw_text := Node._tip;
 
   label_top := Node.Top - 65;
   label_left := Node.Left + (Node.Width div 2);
@@ -286,7 +283,7 @@ var
   I: Integer;
   NewWidth, NewHeight: Integer;
   Rate11: double;
-  Current_node: t_node;
+  Current_node: _node;
   lp: tpoint;
 begin
   if g_core.nodes.is_configuring then
@@ -307,7 +304,7 @@ begin
   else
   begin
 
-    var Node := t_node(Sender);
+    var Node := _node(Sender);
     if hoverLabel then
     begin
       label_top := Node.Top - 35;
@@ -316,7 +313,7 @@ begin
 
     GetCursorPos(lp);
 
-    node_at_cursor := t_node(Sender);
+    node_at_cursor := _node(Sender);
 
     if g_core.json.Config.style = 'style-2' then
     begin
@@ -418,17 +415,17 @@ end;
 
 procedure TForm1.node_click(Sender: TObject);
 begin
-  if t_node(Sender).file_path = '' then
+  if _node(Sender).file_path = '' then
     Exit;
-  if t_node(Sender).tool_tip = '开始菜单' then
+  if _node(Sender)._tip = '开始菜单' then
   begin
 //    if bottomForm.Caption = 'selfdefinestartmenu' then
-      PostMessage(handle, WM_USER + 1031, 0, 0)
+    PostMessage(handle, WM_USER + 1031, 0, 0)
 //    else
 //      SimulateCtrlEsc();
 
   end
-  else if t_node(Sender).tool_tip = '回收站' then
+  else if _node(Sender)._tip = '回收站' then
   begin
 
     if MessageDlg('Are you sure you want to empty the Recycle Bin?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
@@ -437,33 +434,18 @@ begin
       MessageDlg('The Recycle Bin has been emptied.', mtInformation, [mbOK], 0);
     end;
   end
-  else if t_node(Sender).tool_tip = '' then
-    g_core.utils.launch_app(t_node(Sender).file_path)
-  else if not BringWindowToFront(t_node(Sender).tool_tip) then
-    g_core.utils.launch_app(t_node(Sender).file_path)
+  else if _node(Sender)._tip = '' then
+    g_core.utils.launch_app(_node(Sender).file_path)
+  else if not BringWindowToFront(_node(Sender)._tip) then
+    g_core.utils.launch_app(_node(Sender).file_path)
   else
-    g_core.utils.launch_app(t_node(Sender).file_path);
+    g_core.utils.launch_app(_node(Sender).file_path);
 
   EventDef.isLeftClick := False;
 
 end;
 
-procedure tform1.FreeDic;
-var
-  Key: string;
-  SettingItem: TSettingItem;
-begin
-  for Key in tmp_json.Keys do
-  begin
-    SettingItem := tmp_json[Key];
-    if not SettingItem.Is_path_valid and Assigned(SettingItem.memory_image) then
-    begin
-      SettingItem.memory_image.Free;
-      SettingItem.memory_image := nil;
-    end;
-  end;
-  tmp_json.Free;
-end;
+
 
 procedure tform1.Initialize_form();
 begin
@@ -473,14 +455,13 @@ begin
   DoubleBuffered := True;
   BorderStyle := bsNone;
 
-  tmp_json := TDictionary<string, TSettingItem>.Create;
+//  tmp_json := TDictionary<string, TSettingItem>.Create;
   if main_background = nil then
     main_background := timage.Create(self);
   main_background.OnMouseDown := img_bgMouseDown;
   main_background.Width := Width;
   g_core.utils.init_background(main_background, self, 'bg.png');
 
-  cs := TCriticalSection.Create;
 
   form1.left := g_core.json.Config.Left;
   Form1.top := g_core.json.Config.Top;
@@ -489,14 +470,6 @@ begin
 
 end;
 
-function MonitorFromWindow(Handle: hWnd; dwFlags: DWORD): HMONITOR; stdcall; external 'user32.dll' name 'MonitorFromWindow';
-
-const
-  // 定义MONITOR_DEFAULTTONEAREST常量
-  MONITOR_DEFAULTTONEAREST = 2;
-  MDT_EFFECTIVE_DPI = 0;
-
-function GetDpiForMonitor(Monitor: HMONITOR; dpiType: DWORD; var dpiX: UINT; var dpiY: UINT): HRESULT; stdcall; external 'shcore.dll' name 'GetDpiForMonitor';
 
 procedure TForm1.wndproc(var Msg: tmessage);
 var
@@ -505,7 +478,6 @@ var
 var
   Monitor: HMONITOR;
   DpiX, DpiY: UINT;
-  ScaleFactor: Double;
   SuggestedRect: PRect;
 begin
   inherited;
@@ -529,8 +501,6 @@ begin
       //尝试使用 flutter
         var param := ExtractFilePath(ParamStr(0)) + 'img\app';
         var exepath := ExtractFilePath(ParamStr(0)) + 'startx\flutter_application_1.exe';
-//        g_core.utils.launch_app(exepath, param);
-
 
         var StartupInfo: TStartupInfo;
         var ProcessInfo: TProcessInformation;
@@ -557,22 +527,21 @@ begin
       end;
     WM_MY_CUSTOM_MESSAGE:
       begin
-        if finish_layout then
+
+        reducedRect := Rect(form1.BoundsRect.Left, form1.BoundsRect.Top, form1.BoundsRect.Right, form1.BoundsRect.Bottom - 64);
+        GetCursorPos(lp);
+        if not PtInRect(reducedRect, lp) then
         begin
-          finish_layout := False;
+          if (LastReposTime > 0) and (Now - LastReposTime < (2 / 86400)) then
+            Exit;
 
-          reducedRect := Rect(form1.BoundsRect.Left, form1.BoundsRect.Top, form1.BoundsRect.Right, form1.BoundsRect.Bottom - 64);
-          GetCursorPos(lp);
-          if not PtInRect(reducedRect, lp) then
-          begin
-            repos(Screen.WorkAreaHeight);
-          end;
+          LastReposTime := Now;
 
-          finish_layout := true;
-
+          repos(Screen.WorkAreaHeight);
         end;
+
       end;
-      //深色 浅色
+      //深色 浅色  选择主题颜色 会拦截
     WM_DWMCOLORIZATIONCOLORCHANGED:
       begin
         UpdateTheme(Handle);
@@ -587,14 +556,14 @@ begin
 
         // 计算缩放比例
         ScaleFactor := DpiX / 96.0;
+//         ScaleFactor:=1.0;
 
         // 获取建议的窗口矩形并调整窗口
-        SuggestedRect := PRect(Msg.lParam);
-        SetWindowPos(Handle, 0, SuggestedRect.Left, SuggestedRect.Top, SuggestedRect.Right - SuggestedRect.Left, SuggestedRect.Bottom - SuggestedRect.Top, SWP_NOZORDER or SWP_NOACTIVATE);
+     //   SuggestedRect := PRect(Msg.lParam);
+      //  SetWindowPos(Handle, 0, SuggestedRect.Left, SuggestedRect.Top, SuggestedRect.Right - SuggestedRect.Left, SuggestedRect.Bottom - SuggestedRect.Top, SWP_NOZORDER or SWP_NOACTIVATE);
 
-        // 调整窗体的其他内容（控件、字体等）
-        ScaleFormForDPI(Self, ScaleFactor);
-
+        repos(Screen.WorkAreaHeight);
+        show_side_form();
       end;
     WM_MOUSEWHEEL:
       form_mouse_wheel(TWMMouseWheel(Msg));
@@ -610,40 +579,51 @@ end;
 
 procedure TForm1.repos(screenHeight: integer);
 begin
-  if hoverLabel then
-    hoverLabel := false;
+  if finish_layout then
+  begin
+    try
+      finish_layout := false;
+      if hoverLabel then
+      begin
+        hoverLabel := false;
+        label1.Visible := false;
+      end;
     // 计算和定位节点
-  form1.CalculateAndPositionNodes();
+      form1.CalculateAndPositionNodes();
 
     // 窗体水平居中屏幕
-  form1.Left := Screen.Width div 2 - form1.Width div 2;
+      form1.Left := Screen.Width div 2 - form1.Width div 2;
 
     //顶部
-  if form1.Top < top_snap_distance then
-  begin
-    form1.Top := -(form1.Height - visible_height) + 50;
+      if form1.Top < top_snap_distance then
+      begin
+        form1.Top := -(form1.Height - visible_height) + 50;
 
-    form1.Left := Screen.Width div 2 - form1.Width div 2;
-    restore_state();
-    FormPosition := [fpTop];
-    g_core.utils.SetTaskbarAutoHide(false);
-  end
+        form1.Left := Screen.Width div 2 - form1.Width div 2;
+        restore_state();
+        FormPosition := [fpTop];
+        g_core.utils.SetTaskbarAutoHide(false);
+      end
     //底部
-  else if form1.top + form1.height > screenHeight then
-  begin
-    g_core.utils.SetTaskbarAutoHide(true);
-    form1.Top := screenHeight - form1.Height + 130;
-    form1.Left := Screen.Width div 2 - form1.Width div 2;
-    FormPosition := [fpBottom]; // 设置位置为底部
-  end
+      else if form1.top + form1.height > screenHeight then
+      begin
+        g_core.utils.SetTaskbarAutoHide(true);
+        form1.Top := screenHeight - form1.Height + 130;
+        form1.Left := Screen.Width div 2 - form1.Width div 2;
+        FormPosition := [fpBottom]; // 设置位置为底部
+      end
       //中间
-  else
-  begin
-    FormPosition := [];
+      else
+      begin
+        FormPosition := [];
 
-    g_core.utils.SetTaskbarAutoHide(false);              //隐藏任务栏
+        g_core.utils.SetTaskbarAutoHide(false);              //隐藏任务栏
+      end;
+    finally
+      finish_layout := true;
+    end;
+
   end;
-
 end;
 
 function LowLevelMouseProc(nCode: Integer; wParam: wParam; lParam: lParam): LRESULT; stdcall;
@@ -740,26 +720,20 @@ begin
   HandleNewProcessesExport();
 end;
 
-procedure TForm1.FormShow(Sender: TObject);
-var
-  processId, threadId: DWORD;
-var
-  Monitor: HMONITOR;
-  DpiX, DpiY: UINT;
-  ScaleFactor: Double;
+procedure TForm1.show_side_form();
 begin
-  // 获取窗口所在的监视器
-  Monitor := MonitorFromWindow(Handle, MONITOR_DEFAULTTONEAREST);
+  if bottomForm <> nil then
+    FreeAndNil(bottomForm);
 
-  // 获取 DPI
-  GetDpiForMonitor(Monitor, MDT_EFFECTIVE_DPI, DpiX, DpiY);
+  bottomForm := TbottomForm.Create(self);
 
-  // 计算缩放比例
-  ScaleFactor := DpiX / 96.0;
+  bottomForm.show;
+end;
 
-  // 调整窗体大小
-  ScaleFormForDPI(Self, ScaleFactor);
+procedure TForm1.FormShow(Sender: TObject);
+begin
 
+  ScaleFactor := 1.0;
   UpdateTheme(Handle);
   takeappico();
 
@@ -774,29 +748,7 @@ begin
   add_json('startx', 'Start Button.png', 'startx', '开始菜单', True, nil);
   add_json('recycle', 'recycle.png', 'recycle', '回收站', True, nil);
 
-  if bottomForm = nil then
-    bottomForm := TbottomForm.Create(self);
-
-
-
-// 设置窗体高度为屏幕高度的一半
-  bottomForm.Height := Screen.WorkAreaHeight div 2;
-
-// 将窗体顶部设置为屏幕高度的中间位置
-  bottomForm.Top := (Screen.WorkAreaHeight - bottomForm.Height) div 2;
-
-  if g_core.json.Config.layout = 'left' then
-  begin
-  // 将窗体放置在屏幕左侧
-    bottomForm.Left := 0; // 或者根据需要调整为 `-bottomForm.Width + 4`
-  end
-  else
-  begin
-  // 默认设置为屏幕右侧
-    bottomForm.Left := Screen.WorkAreaWidth - bottomForm.Width;
-  end;
-
-  bottomForm.show;
+  show_side_form();
 
   hwndMonitor := Handle;
   hMouseHook := SetWindowsHookEx(WH_MOUSE_LL, @LowLevelMouseProc, 0, 0);
@@ -805,6 +757,7 @@ begin
   //   监控 窗口创建   焦点
   SetCBTHook(Handle);
 
+  var processId: DWORD;
   //监控 窗口发生变化
   GetWindowThreadProcessId(hwndMonitor, processId);
   heventHook := SetWinEventHook(EVENT_OBJECT_LOCATIONCHANGE, EVENT_OBJECT_LOCATIONCHANGE, 0, @WinEventProc, processId, 0, WINEVENT_OUTOFCONTEXT);
@@ -860,7 +813,7 @@ begin
   end;
 end;
 
-procedure TForm1.AdjustNodeSize(Node: t_node; Rate: Double);
+procedure TForm1.AdjustNodeSize(Node: _node; Rate: Double);
 var
   NewWidth, NewHeight: Integer;
 begin
@@ -936,7 +889,6 @@ var
   v: TSettingItem;
   SettingsObj: TJSONObject;
 begin
-
   RemoveMouseHook();
   UninstallMouseHook();
 
@@ -949,7 +901,7 @@ begin
     if (SettingsObj.GetValue(KeyValuePair.key) = nil) then
     begin
       if (KeyValuePair.Value.Is_path_valid) then
-        add_or_update(SettingsObj, KeyValuePair.key, KeyValuePair.Value.image_file_name, KeyValuePair.Value.FilePath, KeyValuePair.Value.tool_tip);
+        add_or_update(SettingsObj, KeyValuePair.key, KeyValuePair.Value.image_file_name, KeyValuePair.Value.FilePath, KeyValuePair.Value._tip);
     end;
 
   end;
@@ -971,9 +923,7 @@ begin
   end;
 
   CleanupPopupMenu();
-  FreeDic();
 
-  cs.Free;
   set_json_value('config', 'left', left.ToString);
   set_json_value('config', 'top', top.ToString);
   main_background.Free;
@@ -981,33 +931,15 @@ begin
 end;
 
 procedure TForm1.FormPaint(Sender: TObject);
-var
-  g: TGPGraphics;
-  font: TGPFont;
 begin
   if (hoverLabel) then
   begin
-    g := TGPGraphics.Create(Canvas.Handle);
-    try
-      var sbRed := TGPSolidBrush.Create(aclWhite);
-      var sbBlack := TGPSolidBrush.Create(aclBlack);
-      font := TGPFont.Create('微软雅黑', 16, FontStyleRegular);
-      try
+    label1.Visible := true;
 
-        g.DrawString(gdraw_text, -1, font, MakePoint(label_left - 1, label_top + 0.0), sbBlack);
-        g.DrawString(gdraw_text, -1, font, MakePoint(label_left + 1, label_top + 0.0), sbBlack);
-        g.DrawString(gdraw_text, -1, font, MakePoint(label_left, label_top + 0.0 - 1), sbBlack);
-        g.DrawString(gdraw_text, -1, font, MakePoint(label_left, label_top + 0.0 + 1), sbBlack);
+    label1.Caption := gdraw_text;
+    label1.Left := label_left - 1;
+    label1.Top := label_top - 1;
 
-        g.DrawString(gdraw_text, -1, font, MakePoint(label_left, label_top + 0.0), sbRed);
-      finally
-        font.Free;
-        sbRed.Free;
-        sbBlack.Free;
-      end;
-    finally
-      g.Free;
-    end;
   end;
 
 end;

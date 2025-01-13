@@ -4,9 +4,9 @@ interface
 
 uses
   shellapi, classes, winapi.windows, Graphics, SysUtils, messages,
-  Vcl.Imaging.pngimage, System.IniFiles, Registry, forms, GDIPAPI, GDIPOBJ,
+  Vcl.Imaging.pngimage, System.IniFiles, Registry, forms,
   Dwmapi, u_json, vcl.controls, ComObj, System.Generics.Collections, utils,
-  ConfigurationForm, TlHelp32, Winapi.PsAPI, System.SyncObjs, vcl.ExtCtrls, math;
+  ConfigurationForm, Winapi.PsAPI, System.SyncObjs, vcl.ExtCtrls, math;
 
 const
   WM_MY_CUSTOM_MESSAGE = WM_USER + 1;
@@ -14,11 +14,11 @@ const
   WM_defaultStart_MESSAGE = WM_USER + 1031;
 
 type
-  t_node = class(TImage)
+  _node = class(TImage)
   public
     key: string;
     id: Integer;
-    tool_tip: string;
+    _tip: string;
     file_path: string;
 
     original_size: TSize;
@@ -27,7 +27,7 @@ type
 
   t_node_container = record
     count: Integer;
-    Nodes: array of t_node;
+    Nodes: array of _node;
     is_configuring: Boolean;
     node_size: Integer;
     node_gap: Integer;
@@ -35,7 +35,6 @@ type
 
   t_utils = record
   public
-    procedure round_rect(w, h: Integer; hdl: thandle);
 
     procedure SetTaskbarAutoHide(autoHide: Boolean);
 
@@ -83,15 +82,9 @@ const
   top_snap_distance = 40;   // 吸附距离
   exptend = 60;
 
-procedure GetRunningApplications(AppList: TStringList);
 
 function BringWindowToFront(const WindowTitle: string): boolean;
 
-procedure BmpToPng(const Bmp: TBitmap; PngFileName: string);
-
-function BmpToPngObj(const Bmp: TBitmap): TPNGImage;
-
-function GetFontHeight(hdc: HDC): Integer;
 
 procedure remove_json(Key: string);
 
@@ -101,10 +94,8 @@ procedure SimulateCtrlEsc;
 
 procedure EmptyRecycleBin;
 
-procedure UpdateCoreSettingsFromTmpJson(const tmp_json: TDictionary<string, TSettingItem>; var core_settings: TDictionary<string, TSettingItem>; cs: TCriticalSection);
 
 procedure SetWindowCornerPreference(hWnd: hWnd);
-
 var
   g_core: t_core_class;
   original_task_list: TStringList;
@@ -121,49 +112,8 @@ const
   SPI_SETWORKAREA = $002F;
   SPI_GETWORKAREA = $0030;
 
-procedure UpdateCoreSettingsFromTmpJson(const tmp_json: TDictionary<string, TSettingItem>; var core_settings: TDictionary<string, TSettingItem>; cs: TCriticalSection);
-var
-  tmp_key: string;
-  settingItem: TSettingItem;
-  existingItem: TSettingItem;
-  v: TSettingItem;
-begin
-  cs.Enter;
-  try
-    for tmp_key in core_settings.Keys do
-    begin
-      if core_settings.TryGetValue(tmp_key, v) then
-        if not v.Is_path_valid then
-        begin
-          if not tmp_json.TryGetValue(tmp_key, settingItem) then
-            core_settings.Remove(tmp_key);
-        end;
 
-    end;
 
-    for tmp_key in tmp_json.Keys do
-    begin
-      settingItem := tmp_json[tmp_key];
-      if not settingItem.Is_path_valid then
-      begin
-        if core_settings.TryGetValue(tmp_key, existingItem) then
-        begin
-//          // Update existing entry in core_settings
-//          existingItem.memory_image := settingItem.memory_image;
-//          existingItem.Is_path_valid := false;
-//          existingItem.Path := settingItem.Path;
-//          existingItem.Content := settingItem.Content;
-        end
-        else
-        begin
-          core_settings.Add(tmp_key, settingItem);
-        end;
-      end;
-    end;
-  finally
-    cs.Leave;
-  end;
-end;
 
 procedure SetWindowCornerPreference(hWnd: hWnd);
 var
@@ -206,315 +156,7 @@ begin
   end;
 end;
 
-function GetFontHeight(hdc: hdc): Integer;
-var
-  tm: TTextMetric;
-begin
-  GetTextMetrics(hdc, tm);
-  Result := tm.tmHeight;
-end;
 
-procedure BmpToPng(const Bmp: TBitmap; PngFileName: string);
-var
-  Png: TPNGImage;
-  x, y: Integer;
-  TransparentColor: TColor;
-begin
-
-  try
-    Png := TPNGImage.Create;
-    try
-      Png.Assign(Bmp);
-      Png.CreateAlpha;
-
-      TransparentColor := Bmp.Canvas.Pixels[0, 0];
-
-      for y := 0 to Bmp.Height - 1 do
-      begin
-        for x := 0 to Bmp.Width - 1 do
-        begin
-          if Bmp.Canvas.Pixels[x, y] = TransparentColor then
-            Png.AlphaScanline[y][x] := 0  // 透明
-          else
-            Png.AlphaScanline[y][x] := 255;  // 不透明
-        end;
-      end;
-
-      Png.SaveToFile(PngFileName);
-    finally
-      Png.Free;
-    end;
-  except
-
-  end;
-end;
-
-function BmpToPngObj1(const Bmp: TBitmap): TPNGImage;
-var
-  Png: TPNGImage;
-  x, y: Integer;
-  TransparentColor: TColor;
-begin
-
-  try
-    Png := TPNGImage.Create;
-    try
-      Png.Assign(Bmp);
-      Png.CreateAlpha;
-
-      TransparentColor := Bmp.Canvas.Pixels[0, 0];
-
-      for y := 0 to Bmp.Height - 1 do
-      begin
-        for x := 0 to Bmp.Width - 1 do
-        begin
-          if Bmp.Canvas.Pixels[x, y] = TransparentColor then
-            Png.AlphaScanline[y][x] := 0  // 透明
-          else
-            Png.AlphaScanline[y][x] := 255;  // 不透明
-        end;
-      end;
-
-//      Png.SaveToFile(PngFileName);
-    finally
-//      Png.Free;
-      result := Png;
-    end;
-  except
-
-  end;
-end;
-
-function BmpToPngObj(const Bmp: TBitmap): TPNGImage;
-var
-  GdiBitmap: TGPBitmap;
-  GdiGraphics: TGPGraphics;
-  TransparentColor: TColor;
-  x, y: Integer;
-  MemoryStream: TMemoryStream;
-  BmpStream: TStreamAdapter;
-  PixelColor: TColor;
-  Alpha: Byte;
-  SurroundColorCount: Integer;
-  R, G, B: Integer;
-  NeighborX, NeighborY: Integer;
-  NeighborColor: TColor;
-//  png:TPNGImage;
-begin
-  // 禁用范围检查
-  {$R-}
-//   Png := TPNGImage.Create;
-  // 创建 GDI+ Bitmap 对象
-  MemoryStream := TMemoryStream.Create;
-  try
-    Bmp.SaveToStream(MemoryStream);
-    MemoryStream.Position := 0;
-    BmpStream := TStreamAdapter.Create(MemoryStream, soReference);
-    GdiBitmap := TGPBitmap.Create(BmpStream, False);
-
-    try
-      // 创建 GDI+ Graphics 对象
-      GdiGraphics := TGPGraphics.Create(GdiBitmap);
-      try
-        // 设置抗锯齿和插值模式
-        GdiGraphics.SetSmoothingMode(SmoothingModeHighQuality);
-        GdiGraphics.SetInterpolationMode(InterpolationModeHighQualityBicubic);
-
-        // 获取透明色
-        TransparentColor := Bmp.Canvas.Pixels[0, 0];
-
-        // 创建新的 PNG 图像
-        Result := TPNGImage.Create;
-        Result.Assign(Bmp);
-        Result.CreateAlpha;
-
-        // 遍历位图的每个像素
-        for y := 0 to Bmp.Height - 1 do
-        begin
-          for x := 0 to Bmp.Width - 1 do
-          begin
-            PixelColor := Bmp.Canvas.Pixels[x, y];
-            if PixelColor = TransparentColor then
-            begin
-              Alpha := 0;
-            end
-            else
-            begin
-              // 检查周围像素的颜色
-              R := 0;
-              G := 0;
-              B := 0;
-              SurroundColorCount := 0;
-
-              for NeighborY := Max(0, y - 1) to Min(Bmp.Height - 1, y + 1) do
-              begin
-                for NeighborX := Max(0, x - 1) to Min(Bmp.Width - 1, x + 1) do
-                begin
-                  if (NeighborX <> x) or (NeighborY <> y) then
-                  begin
-                    NeighborColor := Bmp.Canvas.Pixels[NeighborX, NeighborY];
-                    if NeighborColor <> TransparentColor then
-                    begin
-                      R := R + Integer(GetRValue(NeighborColor));
-                      G := G + Integer(GetGValue(NeighborColor));
-                      B := B + Integer(GetBValue(NeighborColor));
-                      Inc(SurroundColorCount);
-                    end;
-                  end;
-                end;
-              end;
-
-              if SurroundColorCount > 0 then
-              begin
-                R := R div SurroundColorCount;
-                G := G div SurroundColorCount;
-                B := B div SurroundColorCount;
-                PixelColor := RGB(R, G, B);
-              end;
-
-              Alpha := 255; // 默认不透明
-            end;
-            Result.AlphaScanline[y][x] := Alpha;
-            Result.Pixels[x, y] := PixelColor;
-          end;
-        end;
-
-      finally
-//      result:=Png;
-        GdiGraphics.Free;
-      end;
-
-    finally
-      GdiBitmap.Free;
-    end;
-
-  finally
-    MemoryStream.Free;
-    // 恢复范围检查
-    {$R+}
-  end;
-end;
-
-function GetProcessIcon(PID: DWORD; ab: Boolean): TIcon;
-var
-  hProcess: THandle;
-  hIcon1: HICON;
-  hSnapshot: THandle;
-  me32: MODULEENTRY32;
-begin
-  Result := TIcon.Create;
-  hSnapshot := CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, PID);
-  if hSnapshot = INVALID_HANDLE_VALUE then
-    Exit;
-
-  try
-    me32.dwSize := SizeOf(MODULEENTRY32);
-    if Module32First(hSnapshot, me32) then
-    begin
-      hProcess := OpenProcess(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ, False, PID);
-      if hProcess = 0 then
-        Exit;
-
-      try
-        hIcon1 := ExtractIcon(hInstance, (me32.szExePath), 0);
-        if ab then
-          original_task_list.Add(me32.szExePath)
-        else
-          task_list.Add(me32.szExePath);
-
-        if hIcon1 > 1 then
-        begin
-          Result.Handle := hIcon1;
-        end;
-      finally
-        CloseHandle(hProcess);
-      end;
-    end;
-  finally
-    CloseHandle(hSnapshot);
-  end;
-end;
-
-procedure ListProcessIcons(f: Boolean);
-var
-  hSnapshot: THandle;
-  pe32: PROCESSENTRY32;
-  Icon: TIcon;
-begin
-  hSnapshot := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-  if hSnapshot = INVALID_HANDLE_VALUE then
-    Exit;
-  task_list.Clear;
-  try
-    pe32.dwSize := SizeOf(PROCESSENTRY32);
-    if Process32First(hSnapshot, pe32) then
-    begin
-      repeat
-        Icon := GetProcessIcon(pe32.th32ProcessID, f);
-        try
-          if not Icon.Empty then
-          begin
-
-          end;
-        finally
-          Icon.Free;
-        end;
-      until not Process32Next(hSnapshot, pe32);
-    end;
-  finally
-    CloseHandle(hSnapshot);
-  end;
-end;
-
-function IsMainWindowVisible(hWnd: hWnd): Boolean;
-begin
-  Result := IsWindowVisible(hWnd) and (GetWindowTextLength(hWnd) > 0);
-end;
-
-function GetProcessFileName(ProcessID: DWORD): string;
-var
-  hProcess: THandle;
-  FileName: array[0..MAX_PATH] of Char;
-begin
-  Result := '';
-  hProcess := OpenProcess(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ, False, ProcessID);
-  if hProcess <> 0 then
-  try
-    if GetModuleFileNameEx(hProcess, 0, FileName, MAX_PATH) > 0 then
-      Result := FileName;
-  finally
-    CloseHandle(hProcess);
-  end;
-end;
-
-function EnumWindowsProc(hWnd: hWnd; lParam: lParam): BOOL; stdcall;
-var
-  ProcessID: DWORD;
-  ProcessName: string;
-  WindowText: array[0..255] of Char;
-  UniqueProcesses: TStringList;
-begin
-  ZeroMemory(@WindowText, SizeOf(WindowText));
-  Result := True;
-  if IsMainWindowVisible(hWnd) then
-  begin
-    GetWindowThreadProcessId(hWnd, ProcessID);
-    ProcessName := GetProcessFileName(ProcessID);
-
-    UniqueProcesses := TStringList(lParam);
-    if UniqueProcesses.IndexOf(ExtractFileName(ProcessName)) = -1 then
-    begin
-      GetWindowText(hWnd, WindowText, 255);
-      UniqueProcesses.Add(Format('%s,%s', [ProcessName, WindowText]));
-    end;
-  end;
-end;
-
-procedure GetRunningApplications(AppList: TStringList);
-begin
-  AppList.Clear;
-  EnumWindows(@EnumWindowsProc, lParam(AppList));
-end;
 
 function BringWindowToFront(const WindowTitle: string): boolean;
 var
@@ -580,13 +222,7 @@ begin
   img.Picture.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'img\' + src);
 end;
 
-procedure t_utils.round_rect(w, h: Integer; hdl: thandle);
-var
-  Rgn: HRGN;
-begin
-  Rgn := CreateRoundRectRgn(0, 0, w, h, 8, 8);
-  SetWindowRgn(hdl, Rgn, true);
-end;
+
 
 procedure t_utils.launch_app(const Path: string; param: string = '');
 begin
@@ -626,7 +262,7 @@ var
 begin
   SettingItem.image_file_name := image_file_name;
   SettingItem.FilePath := FilePath;
-  SettingItem.tool_tip := tool_tip;
+  SettingItem._tip := tool_tip;
   SettingItem.Is_path_valid := Is_path_valid;
   SettingItem.memory_image := memory;
 
