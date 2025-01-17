@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Math,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Winapi.ShellAPI, Vcl.ComCtrls, Vcl.Grids, Vcl.ValEdit, Vcl.StdCtrls,
-  Vcl.ExtCtrls, Vcl.Buttons, utils, u_json, System.IniFiles, u_debug,
+  Vcl.ExtCtrls, Vcl.Buttons, utils, u_json, System.IniFiles,
   Vcl.Imaging.pngimage, System.JSON, System.Generics.Collections, Vcl.Menus,
   ImgButton, winapi.UxTheme, ImgPanel, Vcl.Mask, System.Hash, System.ImageList,
   Vcl.ImgList;

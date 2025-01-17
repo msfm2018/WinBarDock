@@ -3,12 +3,15 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+//记得 保留  Winapi.GDIPAPI, Winapi.GDIPOBJ 程序中没有使用这部分 奇怪了  少了运行报错
+
+
+   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Registry, Winapi.Dwmapi, core, Dialogs, ExtCtrls, Generics.Collections,
-  Vcl.Imaging.pngimage, Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg, u_debug,
-  ComObj, PsAPI, utils, System.SyncObjs,
-  System.Math, System.JSON, u_json, Vcl.Menus, InfoBarForm,
-  System.Generics.Collections, plug, TaskbarList, event,
+  Vcl.Imaging.pngimage, Winapi.ShellAPI, inifiles, Vcl.Imaging.jpeg,
+  ComObj, PsAPI, utils, Winapi.GDIPAPI, Winapi.GDIPOBJ, System.SyncObjs,
+  System.Math, System.JSON, u_json, ConfigurationForm, Vcl.Menus, InfoBarForm,
+  System.Generics.Collections, plug, TaskbarList, PopupMenuManager, event,
   Vcl.StdCtrls;
 
 type

@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.ExtCtrls, Winapi.ShellAPI, Vcl.ComCtrls, ActiveX, shlobj, u_json, ImgPanel,
-  ImgButton, System.JSON, u_debug, comobj, Vcl.ImgList, Vcl.Menus,
+  ImgButton, System.JSON, comobj, Vcl.ImgList, Vcl.Menus,
   System.ImageList, utils, Vcl.StdCtrls;
 
 type
