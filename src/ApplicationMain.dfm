@@ -20,7 +20,6 @@ object Form1: TForm1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnMouseDown = FormMouseDown
-  OnPaint = FormPaint
   OnShow = FormShow
   TextHeight = 12
   object Label1: TLabel

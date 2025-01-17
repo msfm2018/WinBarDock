@@ -16,7 +16,8 @@ uses
   utils in 'core\utils.pas',
   TaskbarList in 'core\TaskbarList.pas',
   ImgButton in 'core\ImgButton.pas',
-  ImgPanel in 'core\ImgPanel.pas';
+  ImgPanel in 'core\ImgPanel.pas',
+  u_debug in 'core\u_debug.pas';
 
 {$R *.res}
 

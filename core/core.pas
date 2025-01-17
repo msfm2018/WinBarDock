@@ -9,7 +9,7 @@ uses
   ConfigurationForm, Winapi.PsAPI, System.SyncObjs, vcl.ExtCtrls, math;
 
 const
-  WM_MY_CUSTOM_MESSAGE = WM_USER + 1;
+  WM_disActive = WM_USER + 1;
   WM_LBUTTON_MESSAGE = WM_USER + 1030;
   WM_defaultStart_MESSAGE = WM_USER + 1031;
 

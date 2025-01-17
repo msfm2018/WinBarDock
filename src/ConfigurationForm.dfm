@@ -25,9 +25,6 @@ object CfgForm: TCfgForm
     Align = alClient
     Caption = 'Panel1'
     TabOrder = 0
-    ExplicitLeft = 313
-    ExplicitWidth = 849
-    ExplicitHeight = 470
     object ListView1: TListView
       Left = 1
       Top = 1
@@ -46,8 +43,6 @@ object CfgForm: TCfgForm
       ViewStyle = vsReport
       OnDblClick = ListView1DblClick
       OnResize = ListView1Resize
-      ExplicitWidth = 877
-      ExplicitHeight = 468
     end
   end
   object ScrollBox1: TScrollBox
@@ -62,7 +57,6 @@ object CfgForm: TCfgForm
     TabOrder = 1
     OnMouseEnter = ScrollBox1MouseEnter
     OnMouseLeave = ScrollBox1MouseLeave
-    ExplicitHeight = 470
   end
   object Panel2: TPanel
     Left = 0
@@ -190,7 +184,6 @@ object CfgForm: TCfgForm
     BevelOuter = bvNone
     TabOrder = 3
     OnMouseDown = FormMouseDown
-    ExplicitWidth = 1192
   end
   object Button3: TButton
     Left = 1025

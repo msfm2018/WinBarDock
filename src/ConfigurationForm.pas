@@ -86,7 +86,7 @@ implementation
 {$R *.dfm}
 
 uses
-  core, System.UITypes;
+  core, System.UITypes, ApplicationMain;
 
 function SaveAppIconAsPng(const FilePath: string): string;
 var
@@ -423,6 +423,7 @@ end;
 
 procedure TCfgForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
+  form1.node_rebuilder(Screen.WorkAreaHeight);
   FreeAndNil(closebtn);
   FreeAndNil(close1);
   g_core.nodes.is_configuring := false;
