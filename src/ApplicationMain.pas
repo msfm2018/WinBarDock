@@ -191,6 +191,7 @@ begin
         begin
 
           id := I;
+          name := 'node' + I.ToString;
           Top := ClientCenterY;
           Center := true;
 
@@ -416,6 +417,7 @@ procedure TForm1.node_click(Sender: TObject);
 begin
   if _node(Sender).file_path = '' then
     Exit;
+
   if (oldNode = _node(Sender).Name) and (_node(Sender)._tip <> '开始菜单') then
     Exit;
   oldNode := _node(Sender).Name;
